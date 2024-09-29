@@ -6,10 +6,7 @@ import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.BasicPID;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
@@ -32,18 +29,18 @@ public class Lift {
         rightLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public class liftExtend implements Action {
+    public class liftTopBasket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
 
 
-            if (Math.abs(leftLiftPos - settings.liftExtension) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftExtension) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit) {
                 return false;
             } else {
 
-                double power = liftPID.calculate(settings.liftExtension, leftLiftPos);
+                double power = liftPID.calculate(settings.liftTopBasket, leftLiftPos);
 
                 leftLift.setPower(power);
                 rightLift.setPower(power);
@@ -51,13 +48,153 @@ public class Lift {
                 leftLiftPos = leftLift.getCurrentPosition();
                 rightLiftPos = rightLift.getCurrentPosition();
 
-                return Math.abs(leftLiftPos - settings.liftExtension) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftExtension) >= settings.allowableExtensionDeficit;
+                return Math.abs(leftLiftPos - settings.liftTopBasket) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopBasket) >= settings.allowableExtensionDeficit;
             }
         }
     }
 
-    public Action liftExtend() {
-        return new liftExtend();
+    public Action liftTopBasket() {
+        return new liftTopBasket();
+    }
+
+    public class liftBottomBasket implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+
+
+            if (Math.abs(leftLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit) {
+                return false;
+            } else {
+
+                double power = liftPID.calculate(settings.liftBottomBasket, leftLiftPos);
+
+                leftLift.setPower(power);
+                rightLift.setPower(power);
+
+                leftLiftPos = leftLift.getCurrentPosition();
+                rightLiftPos = rightLift.getCurrentPosition();
+
+                return Math.abs(leftLiftPos - settings.liftBottomBasket) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomBasket) >= settings.allowableExtensionDeficit;
+            }
+        }
+    }
+
+    public Action liftBottomBasket() {
+        return new liftBottomBasket();
+    }
+
+    public class liftTopRung implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+
+
+            if (Math.abs(leftLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit) {
+                return false;
+            } else {
+
+                double power = liftPID.calculate(settings.liftTopRung, leftLiftPos);
+
+                leftLift.setPower(power);
+                rightLift.setPower(power);
+
+                leftLiftPos = leftLift.getCurrentPosition();
+                rightLiftPos = rightLift.getCurrentPosition();
+
+                return Math.abs(leftLiftPos - settings.liftTopRung) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRung) >= settings.allowableExtensionDeficit;
+            }
+        }
+    }
+
+    public Action liftTopRung() {
+        return new liftTopRung();
+    }
+
+    public class liftTopRungAttached implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+
+
+            if (Math.abs(leftLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit) {
+                return false;
+            } else {
+
+                double power = liftPID.calculate(settings.liftTopRungAttached, leftLiftPos);
+
+                leftLift.setPower(power);
+                rightLift.setPower(power);
+
+                leftLiftPos = leftLift.getCurrentPosition();
+                rightLiftPos = rightLift.getCurrentPosition();
+
+                return Math.abs(leftLiftPos - settings.liftTopRungAttached) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRungAttached) >= settings.allowableExtensionDeficit;
+            }
+        }
+    }
+
+    public Action liftTopRungAttached() {
+        return new liftTopRungAttached();
+    }
+
+    public class liftBottomRung implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+
+
+            if (Math.abs(leftLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit) {
+                return false;
+            } else {
+
+                double power = liftPID.calculate(settings.liftBottomRung, leftLiftPos);
+
+                leftLift.setPower(power);
+                rightLift.setPower(power);
+
+                leftLiftPos = leftLift.getCurrentPosition();
+                rightLiftPos = rightLift.getCurrentPosition();
+
+                return Math.abs(leftLiftPos - settings.liftBottomRung) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRung) >= settings.allowableExtensionDeficit;
+            }
+        }
+    }
+
+    public Action liftBottomRung() {
+        return new liftBottomRung();
+    }
+
+    public class liftBottomRungAttached implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+
+
+            if (Math.abs(leftLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit) {
+                return false;
+            } else {
+
+                double power = liftPID.calculate(settings.liftBottomRungAttached, leftLiftPos);
+
+                leftLift.setPower(power);
+                rightLift.setPower(power);
+
+                leftLiftPos = leftLift.getCurrentPosition();
+                rightLiftPos = rightLift.getCurrentPosition();
+
+                return Math.abs(leftLiftPos - settings.liftBottomRungAttached) >= settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRungAttached) >= settings.allowableExtensionDeficit;
+            }
+        }
+    }
+
+    public Action liftBottomRungAttached() {
+        return new liftBottomRungAttached();
     }
 
     public class liftRetract implements Action {

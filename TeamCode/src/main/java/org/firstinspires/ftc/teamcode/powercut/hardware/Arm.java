@@ -20,6 +20,7 @@ public class Arm {
         grip = hardwareMap.get(Servo.class, "grip");
     }
 
+    //ARM
     public class raiseArm implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -34,12 +35,26 @@ public class Arm {
         return new raiseArm();
     }
 
+    public class depositArm implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            leftArm.setPosition(settings.armDeposit);
+            rightArm.setPosition(settings.armDeposit);
+
+            return false;
+        }
+    }
+
+    public Action depositArm() {
+        return new depositArm();
+    }
+
     public class lowerArm implements Action {
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             leftArm.setPosition(settings.armLowered);
-            rightArm.setPosition(settings.armRaised);
+            rightArm.setPosition(settings.armLowered);
 
             return false;
         }
@@ -48,6 +63,8 @@ public class Arm {
     public Action lowerArm() {
         return new lowerArm();
     }
+
+    //GRIP
 
     public class closeGrip implements Action {
         @Override
