@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
+import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,8 @@ public class mainTeleOp extends OpMode {
 
     private final Arm arm = new Arm();
     private final Lift lift = new Lift();
-    private Drivetrain drive = null;
+    private final Drivetrain drive = new Drivetrain();
+    private final LightSystem light = new LightSystem();
 
     private boolean authorised = false;
     private enum sequence {
@@ -45,6 +47,13 @@ public class mainTeleOp extends OpMode {
         Release
     }
     private rung rungCurrent = null;
+    private enum intake {
+        GripOpen,
+        ArmDown,
+        GripClosed,
+        ArmUp
+    }
+    private intake intakeCurrent = null;
 
     // Actions
     private FtcDashboard dash = FtcDashboard.getInstance();
@@ -55,14 +64,17 @@ public class mainTeleOp extends OpMode {
         arm.init(hardwareMap);
         lift.init(hardwareMap);
         drive.init(hardwareMap);
+        light.init(hardwareMap);
 
+
+        light.confetti();
         telemetry.addLine("Initialised");
         telemetry.update();
     }
 
     @Override
     public void start() {
-
+        light.greyLarson();
     }
 
     @Override
@@ -77,6 +89,8 @@ public class mainTeleOp extends OpMode {
 
         ancillarySystemControl();
 
+        telemetry.addData("Yaw", drive.getYaw());
+
         List<Action> newActions = new ArrayList<>();
         for (Action action : runningActions) {
             action.preview(packet.fieldOverlay());
@@ -85,6 +99,8 @@ public class mainTeleOp extends OpMode {
             }
         }
         runningActions = newActions;
+
+        telemetry.update();
     }
 
     private void ancillarySystemControl() {
@@ -106,6 +122,8 @@ public class mainTeleOp extends OpMode {
             authorised = true;
         } else if (gamepad2.left_bumper) {
             current = sequence.Intake;
+            intakeCurrent = intake.GripOpen;
+            authorised = true;
         }
 
         if (gamepad2.cross) {
@@ -120,10 +138,25 @@ public class mainTeleOp extends OpMode {
             runningActions.clear();
         }
 
+        if (gamepad2.triangle) {
+            authorised = false;
+            current = null;
+            basketCurrent = null;
+            rungCurrent = null;
+            runningActions.clear();
+
+            runningActions.add(new ParallelAction(
+                    lift.liftRetract(),
+                    arm.raiseArm()
+                    )
+            );
+        }
+
         if (authorised) {
             if (current == sequence.TopBasket) {
                 if (basketCurrent == basket.LiftExtend) {
                     runningActions.add(new SequentialAction(
+                                    arm.raiseArm(),
                                     lift.liftTopBasket(),
                                     new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> basketCurrent = basket.ArmDeposit)
@@ -131,7 +164,7 @@ public class mainTeleOp extends OpMode {
                     );
                 }
 
-                if (basketCurrent == basket.ArmDeposit) {
+                else if (basketCurrent == basket.ArmDeposit) {
                     runningActions.add(new SequentialAction(
                             arm.depositArm(),
                             new InstantAction(() -> authorised = false),
@@ -139,12 +172,12 @@ public class mainTeleOp extends OpMode {
                     ));
                 }
 
-                if (basketCurrent == basket.Release) {
+                else if (basketCurrent == basket.Release) {
                     runningActions.add(
                             new ParallelAction(
                                 new SequentialAction(
                                     arm.openGrip(),
-                                    new SleepAction(0.2),
+                                    new SleepAction(0.1),
                                     new ParallelAction(
                                         arm.raiseArm(),
                                         lift.liftRetract()
@@ -161,6 +194,7 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.BottomBasket) {
                 if (basketCurrent == basket.LiftExtend) {
                     runningActions.add(new SequentialAction(
+                                    arm.raiseArm(),
                                     lift.liftBottomBasket(),
                                     new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> basketCurrent = basket.ArmDeposit)
@@ -168,7 +202,7 @@ public class mainTeleOp extends OpMode {
                     );
                 }
 
-                if (basketCurrent == basket.ArmDeposit) {
+                else if (basketCurrent == basket.ArmDeposit) {
                     runningActions.add(new SequentialAction(
                             arm.depositArm(),
                             new InstantAction(() -> authorised = false),
@@ -176,12 +210,12 @@ public class mainTeleOp extends OpMode {
                     ));
                 }
 
-                if (basketCurrent == basket.Release) {
+                else if (basketCurrent == basket.Release) {
                     runningActions.add(
                             new ParallelAction(
                                     new SequentialAction(
                                             arm.openGrip(),
-                                            new SleepAction(0.2),
+                                            new SleepAction(0.1),
                                             new ParallelAction(
                                                     arm.raiseArm(),
                                                     lift.liftRetract()
@@ -198,6 +232,7 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.TopRung) {
                 if (rungCurrent == rung.LiftExtend) {
                     runningActions.add(new SequentialAction(
+                            arm.raiseArm(),
                             lift.liftTopRung(),
                             arm.depositArm(),
                             new InstantAction(() -> authorised = false),
@@ -216,6 +251,7 @@ public class mainTeleOp extends OpMode {
                 if (rungCurrent == rung.Release) {
                     runningActions.add(new SequentialAction(
                             arm.openGrip(),
+                            new SleepAction(0.1),
                             new ParallelAction(
                                    arm.raiseArm(),
                                    lift.liftRetract(),
@@ -230,6 +266,7 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.BottomRung) {
                 if (rungCurrent == rung.LiftExtend) {
                     runningActions.add(new SequentialAction(
+                            arm.raiseArm(),
                             lift.liftBottomRung(),
                             arm.depositArm(),
                             new InstantAction(() -> authorised = false),
@@ -237,7 +274,7 @@ public class mainTeleOp extends OpMode {
                     ));
                 }
 
-                if (rungCurrent == rung.LowerLift) {
+                else if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftBottomRungAttached(),
                             new InstantAction(() -> authorised = false),
@@ -245,9 +282,10 @@ public class mainTeleOp extends OpMode {
                     ));
                 }
 
-                if (rungCurrent == rung.Release) {
+                else if (rungCurrent == rung.Release) {
                     runningActions.add(new SequentialAction(
                             arm.openGrip(),
+                            new SleepAction(0.1),
                             new ParallelAction(
                                     arm.raiseArm(),
                                     lift.liftRetract(),
@@ -259,6 +297,43 @@ public class mainTeleOp extends OpMode {
                 }
             }
 
+            if (current == sequence.Intake) {
+                if (intakeCurrent == intake.GripOpen) {
+                    runningActions.add(new SequentialAction(
+                    new ParallelAction(
+                            arm.raiseArm(),
+                            arm.openGrip()
+                    ),
+                            new InstantAction(() -> authorised = false),
+                            new InstantAction(() -> intakeCurrent = intake.ArmDown)
+                    ));
+                }
+
+                else if (intakeCurrent == intake.ArmDown) {
+                    runningActions.add(new SequentialAction(
+                            arm.lowerArm(),
+                            new InstantAction(() -> authorised = false),
+                            new InstantAction(() -> intakeCurrent = intake.GripClosed)
+                    ));
+                }
+
+                else if (intakeCurrent == intake.GripClosed) {
+                    runningActions.add(new SequentialAction(
+                            arm.closeGrip(),
+                            new InstantAction(() -> authorised = false),
+                            new InstantAction(() -> intakeCurrent = intake.ArmUp)
+                    ));
+                }
+
+                else if (intakeCurrent == intake.ArmUp) {
+                    runningActions.add(new SequentialAction(
+                            arm.raiseArm(),
+                            new InstantAction(() -> authorised = false),
+                            new InstantAction(() -> intakeCurrent = null),
+                            new InstantAction(() -> current = null)
+                    ));
+                }
+            }
         }
     }
 
