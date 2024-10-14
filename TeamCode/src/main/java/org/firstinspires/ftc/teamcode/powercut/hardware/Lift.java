@@ -6,13 +6,14 @@ import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.BasicPID;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
 public class Lift {
-    private DcMotor leftLift = null;
-    private DcMotor rightLift = null;
+    public DcMotor leftLift = null;
+    public DcMotor rightLift = null;
 
     private BasicPID liftPID = new BasicPID(settings.liftCoefficients);
 
@@ -27,6 +28,8 @@ public class Lift {
         rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        rightLift.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public class liftTopBasket implements Action {

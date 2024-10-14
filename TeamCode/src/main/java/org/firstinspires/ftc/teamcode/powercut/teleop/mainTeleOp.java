@@ -105,22 +105,27 @@ public class mainTeleOp extends OpMode {
 
     private void ancillarySystemControl() {
         if (gamepad2.dpad_up) {
+            runningActions.clear();
             current = sequence.TopBasket;
             basketCurrent = basket.LiftExtend;
             authorised = true;
         } else if (gamepad2.dpad_right) {
+            runningActions.clear();
             current = sequence.BottomBasket;
             basketCurrent = basket.LiftExtend;
             authorised = true;
         } else if (gamepad2.dpad_left) {
+            runningActions.clear();
             current = sequence.TopRung;
             rungCurrent = rung.LiftExtend;
             authorised = true;
         } else if (gamepad2.dpad_down) {
+            runningActions.clear();
             current = sequence.BottomRung;
             rungCurrent = rung.LiftExtend;
             authorised = true;
         } else if (gamepad2.left_bumper) {
+            runningActions.clear();
             current = sequence.Intake;
             intakeCurrent = intake.GripOpen;
             authorised = true;
@@ -301,6 +306,7 @@ public class mainTeleOp extends OpMode {
                 if (intakeCurrent == intake.GripOpen) {
                     runningActions.add(new SequentialAction(
                     new ParallelAction(
+                            lift.liftRetract(),
                             arm.raiseArm(),
                             arm.openGrip()
                     ),
