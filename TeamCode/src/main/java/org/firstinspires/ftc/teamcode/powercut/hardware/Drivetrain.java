@@ -14,7 +14,7 @@ public class Drivetrain {
     private DcMotorEx leftBack = null;
     private DcMotorEx rightFront = null;
     private DcMotorEx rightBack = null;
-    private IMU imu = null;
+    public IMU imu = null;
 
     public void init(@NonNull HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");

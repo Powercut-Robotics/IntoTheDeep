@@ -66,6 +66,7 @@ public class mainTeleOp extends OpMode {
         drive.init(hardwareMap);
         light.init(hardwareMap);
 
+        drive.imu.resetYaw();
 
         light.confetti();
         telemetry.addLine("Initialised");
@@ -80,12 +81,16 @@ public class mainTeleOp extends OpMode {
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
+        double yaw = drive.getYaw();
 
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
+
+        double x_rotated = x * Math.cos(yaw) - y * Math.sin(yaw);
+        double y_rotated = x * Math.sin(yaw) + y * Math.cos(yaw);
         double theta = gamepad1.right_stick_x;
 
-        drive.setDrivetrainPowers(x, y, theta,1);
+        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
 
         ancillarySystemControl();
 
