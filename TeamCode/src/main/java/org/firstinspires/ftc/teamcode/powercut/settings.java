@@ -22,4 +22,6 @@ public class settings {
 
     public static double gripClosed = 0;
     public static double gripOpen = 0.1;
+
+    public static double driveCacheAmount = 0.01;
 }

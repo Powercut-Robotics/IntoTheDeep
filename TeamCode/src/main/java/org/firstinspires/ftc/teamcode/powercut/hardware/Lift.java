@@ -6,21 +6,23 @@ import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.BasicPID;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
 public class Lift {
-    public DcMotor leftLift = null;
-    public DcMotor rightLift = null;
+    public DcMotorEx leftLift = null;
+    public DcMotorEx rightLift = null;
 
     private BasicPID liftPID = new BasicPID(settings.liftCoefficients);
 
     // resets and inits
     public void init(HardwareMap hardwareMap) {
-        leftLift = hardwareMap.get(DcMotor.class, "leftLift");
-        rightLift = hardwareMap.get(DcMotor.class, "rightLift");
+        leftLift = hardwareMap.get(DcMotorEx.class, "leftLift");
+        rightLift = hardwareMap.get(DcMotorEx.class, "rightLift");
 
         leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -30,6 +32,14 @@ public class Lift {
         rightLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         rightLift.setDirection(DcMotor.Direction.REVERSE);
+    }
+
+    public double getLeftLiftCurrent() {
+        return leftLift.getCurrent(CurrentUnit.AMPS);
+    }
+
+    public double getRightLiftCurrent() {
+        return rightLift.getCurrent(CurrentUnit.AMPS);
     }
 
     public class liftTopBasket implements Action {

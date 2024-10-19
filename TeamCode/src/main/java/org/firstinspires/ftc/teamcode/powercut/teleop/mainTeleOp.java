@@ -7,24 +7,37 @@ import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.settings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 @TeleOp
 public class mainTeleOp extends OpMode {
-
     private final Arm arm = new Arm();
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
+    private List<LynxModule> allHubs = null;
+
+    private double maxLeftCurrent = 0;
+    private double maxRightCurrent = 0;
+    private ElapsedTime loopTimer = new ElapsedTime();
+
+    private double lastX = 0;
+    private double lastY = 0;
+    private double lastTheta = 0;
 
     private boolean authorised = false;
     private enum sequence {
@@ -61,6 +74,12 @@ public class mainTeleOp extends OpMode {
 
     @Override
     public void init() {
+        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         arm.init(hardwareMap);
         lift.init(hardwareMap);
         drive.init(hardwareMap);
@@ -76,25 +95,47 @@ public class mainTeleOp extends OpMode {
     @Override
     public void start() {
         light.greyLarson();
+        loopTimer.reset();
     }
 
     @Override
     public void loop() {
+
         TelemetryPacket packet = new TelemetryPacket();
         double yaw = drive.getYaw();
 
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
-
+        double theta = gamepad1.right_stick_x;
         double x_rotated = x * Math.cos(yaw) - y * Math.sin(yaw);
         double y_rotated = x * Math.sin(yaw) + y * Math.cos(yaw);
-        double theta = gamepad1.right_stick_x;
 
-        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
+        //cache motor control for faster loop times
+        if ((Math.abs(x_rotated-lastX) > org.firstinspires.ftc.teamcode.powercut.settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > org.firstinspires.ftc.teamcode.powercut.settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > org.firstinspires.ftc.teamcode.powercut.settings.driveCacheAmount)){
+            drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
+            lastX = x_rotated;
+            lastY = y_rotated;
+            lastTheta = theta;
+        }
 
         ancillarySystemControl();
 
+        double leftLiftCurrent = lift.getLeftLiftCurrent();
+        double rightLiftCurrent = lift.getRightLiftCurrent();
+
+        if (leftLiftCurrent > maxLeftCurrent) {
+            maxLeftCurrent = leftLiftCurrent;
+        }
+        if (rightLiftCurrent > maxRightCurrent) {
+            maxRightCurrent = rightLiftCurrent;
+        }
+
         telemetry.addData("Yaw", drive.getYaw());
+        telemetry.addData("Left Lift Current", leftLiftCurrent);
+        telemetry.addData("Right Lift Current", rightLiftCurrent);
+        telemetry.addData("Left Lift Max Current", maxLeftCurrent);
+        telemetry.addData("Right Lift Max Current", maxRightCurrent);
+        telemetry.addData("Loop Timer", loopTimer.time(TimeUnit.MILLISECONDS));
 
         List<Action> newActions = new ArrayList<>();
         for (Action action : runningActions) {
@@ -106,6 +147,7 @@ public class mainTeleOp extends OpMode {
         runningActions = newActions;
 
         telemetry.update();
+        loopTimer.reset();
     }
 
     private void ancillarySystemControl() {
