@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.powercut.hardware;
 
 import androidx.annotation.NonNull;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -10,15 +11,24 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
+import java.util.List;
+
 
 public class Drivetrain {
     private DcMotorEx leftFront = null;
     private DcMotorEx leftBack = null;
     private DcMotorEx rightFront = null;
     private DcMotorEx rightBack = null;
+    private List<LynxModule> allHubs = null;
     public IMU imu = null;
 
     public void init(@NonNull HardwareMap hardwareMap) {
+        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
@@ -39,10 +49,6 @@ public class Drivetrain {
         leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-        leftFront.setDirection(DcMotorEx.Direction.REVERSE);
-        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
-        rightBack.setDirection(DcMotorEx.Direction.REVERSE);
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {

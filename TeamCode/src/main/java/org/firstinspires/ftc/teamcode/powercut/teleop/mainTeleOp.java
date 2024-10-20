@@ -111,7 +111,7 @@ public class mainTeleOp extends OpMode {
         double y_rotated = x * Math.sin(yaw) + y * Math.cos(yaw);
 
         //cache motor control for faster loop times
-        if ((Math.abs(x_rotated-lastX) > org.firstinspires.ftc.teamcode.powercut.settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > org.firstinspires.ftc.teamcode.powercut.settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > org.firstinspires.ftc.teamcode.powercut.settings.driveCacheAmount)){
+        if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
             drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
             lastX = x_rotated;
             lastY = y_rotated;
@@ -130,7 +130,7 @@ public class mainTeleOp extends OpMode {
             maxRightCurrent = rightLiftCurrent;
         }
 
-        telemetry.addData("Yaw", drive.getYaw());
+        telemetry.addData("Yaw", yaw);
         telemetry.addData("Left Lift Current", leftLiftCurrent);
         telemetry.addData("Right Lift Current", rightLiftCurrent);
         telemetry.addData("Left Lift Max Current", maxLeftCurrent);
