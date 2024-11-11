@@ -20,7 +20,6 @@ import org.firstinspires.ftc.teamcode.powercut.settings;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 @TeleOp
@@ -29,11 +28,10 @@ public class mainTeleOp extends OpMode {
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
-    private List<LynxModule> allHubs = null;
 
     private double maxLeftCurrent = 0;
     private double maxRightCurrent = 0;
-    private ElapsedTime loopTimer = new ElapsedTime();
+    private final ElapsedTime loopTimer = new ElapsedTime();
 
     private double lastX = 0;
     private double lastY = 0;
@@ -69,12 +67,12 @@ public class mainTeleOp extends OpMode {
     private intake intakeCurrent = null;
 
     // Actions
-    private FtcDashboard dash = FtcDashboard.getInstance();
+    private final FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
 
     @Override
     public void init() {
-        allHubs = hardwareMap.getAll(LynxModule.class);
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);

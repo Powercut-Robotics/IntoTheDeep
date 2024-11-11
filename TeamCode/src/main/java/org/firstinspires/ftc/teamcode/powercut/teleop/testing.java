@@ -39,21 +39,24 @@ public class testing extends OpMode {
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
-        if (gamepad1.right_bumper) {
-            drive.setDrivetrainPowers(1,0,0,1);
-        }
+        double x = gamepad1.left_stick_x;
+        double y = -gamepad1.left_stick_y;
+        double theta = gamepad2.right_stick_x;
+
+            drive.setDrivetrainPowers(x,y,theta,1);
+
 
         if (gamepad1.cross) {
             lift.leftLift.setPower(0.25);
-        }
-        if (gamepad1.circle) {
+        } else if (gamepad1.circle) {
             lift.leftLift.setPower(-0.25);
-        }
-        if (gamepad1.triangle) {
+        } else if (gamepad1.triangle) {
             lift.rightLift.setPower(0.25);
-        }
-        if (gamepad1.square) {
+        } else if (gamepad1.square) {
             lift.rightLift.setPower(-0.25);
+        } else {
+            lift.leftLift.setPower(0);
+            lift.rightLift.setPower(0);
         }
 
         if (gamepad1.dpad_up) {
