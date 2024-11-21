@@ -39,7 +39,7 @@ public class Drivetrain {
                 new IMU.Parameters(
                         new RevHubOrientationOnRobot(
                                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                                RevHubOrientationOnRobot.UsbFacingDirection.DOWN
+                                RevHubOrientationOnRobot.UsbFacingDirection.UP
                         )
                 )
         );
