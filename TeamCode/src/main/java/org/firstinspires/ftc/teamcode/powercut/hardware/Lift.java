@@ -52,6 +52,37 @@ public class Lift {
         return rightLift.getCurrent(CurrentUnit.AMPS);
     }
 
+    public void setLiftPower(power) {
+            if (power > 1.0) {
+                power = 1.0;
+            }
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            double error = leftLiftPos - rightLiftPos;
+
+            double equaliser = error * settings.liftEqCoef
+
+            double leftPowerRaw = power;
+            double rightPowerRaw = power + equaliser;
+
+            if (rightPowerRaw > 1.0) {
+                double multiplier = 1.0 / rightPowerRaw;
+                double leftPower = leftPowerRaw * multiplier;
+                double rightPower = rightPowerRaw * multiplier;
+            } else {
+                double leftPower = leftPowerRaw;
+                double rightPower = rightPowerRaw;
+            }
+
+            leftLift.setPower(leftPower);
+            rightLift.setPower(rightPower);
+    }
+
+    public void kill() {
+        leftLift.setPower(0);
+        rightLift.setPower(0);
+    }
+
     public class liftTopBasket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -61,13 +92,13 @@ public class Lift {
 
 
             if (Math.abs(leftLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftTopBasket, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
@@ -86,13 +117,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftBottomBasket, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
@@ -111,13 +142,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftTopRung, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
@@ -136,13 +167,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftTopRungAttached, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
@@ -161,13 +192,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftBottomRung, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
@@ -186,13 +217,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftBottomRungAttached, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
@@ -211,13 +242,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit) {
+                kill();
                 return false;
             } else {
 
                 double power = liftPID.calculate(settings.liftRetraction, averagePos);
 
-                leftLift.setPower(power);
-                rightLift.setPower(power);
+                setLiftPower(power);
 
                 return true;
             }
