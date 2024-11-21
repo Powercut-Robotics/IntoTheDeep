@@ -110,7 +110,7 @@ public class mainTeleOp extends OpMode {
 
         //cache motor control for faster loop times
         if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
-            drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
+            drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
             lastX = x_rotated;
             lastY = y_rotated;
             lastTheta = theta;
@@ -176,6 +176,7 @@ public class mainTeleOp extends OpMode {
 
         if (gamepad2.cross) {
             authorised = true;
+            
         }
 
         if (gamepad2.circle) {
