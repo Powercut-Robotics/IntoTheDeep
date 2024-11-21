@@ -21,6 +21,10 @@ public class LightSystem {
         pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
         driver.setPattern(pattern);
     }
+    public void green() {
+        pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
+        driver.setPattern(pattern);
+    }
 
     public void blue() {
         pattern = RevBlinkinLedDriver.BlinkinPattern.BLUE;
