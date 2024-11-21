@@ -129,10 +129,8 @@ public class mainTeleOp extends OpMode {
         }
 
         telemetry.addData("Yaw", yaw);
-        telemetry.addData("Left Lift Current", leftLiftCurrent);
-        telemetry.addData("Right Lift Current", rightLiftCurrent);
-        telemetry.addData("Left Lift Max Current", maxLeftCurrent);
-        telemetry.addData("Right Lift Max Current", maxRightCurrent);
+        telemetry.addData("Left Lift Current/Max", "%4.2f, %4.2f", leftLiftCurrent, maxLeftCurrent);
+        telemetry.addData("Right Lift Current/Max", "%4.2f, %4.2f", rightLiftCurrent, maxRightCurrent);
         telemetry.addData("Loop Timer", loopTimer.time(TimeUnit.MILLISECONDS));
 
         List<Action> newActions = new ArrayList<>();
