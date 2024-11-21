@@ -18,6 +18,8 @@ public class Arm {
         leftArm = hardwareMap.get(Servo.class, "leftArm");
         rightArm = hardwareMap.get(Servo.class, "rightArm");
         grip = hardwareMap.get(Servo.class, "grip");
+
+        leftArm.setDrirection(Servo.Direction.REVERSE);
     }
 
     //ARM
