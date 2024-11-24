@@ -66,6 +66,8 @@ public class mainTeleOp extends OpMode {
     }
     private intake intakeCurrent = null;
 
+    private boolean authLast = false;
+
     // Actions
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
@@ -174,10 +176,11 @@ public class mainTeleOp extends OpMode {
             authorised = true;
         }
 
-        if (gamepad2.cross) {
+
+        if (gamepad2.cross && !authLast) {
             authorised = true;
-            
         }
+        authLast = gamepad2.cross;
 
         if (gamepad2.circle) {
             authorised = false;
@@ -202,12 +205,12 @@ public class mainTeleOp extends OpMode {
         }
 
         if (authorised) {
+            authorised = false;
             if (current == sequence.TopBasket) {
                 if (basketCurrent == basket.LiftExtend) {
                     runningActions.add(new SequentialAction(
                                     arm.raiseArm(),
                                     lift.liftTopBasket(),
-                                    new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> basketCurrent = basket.ArmDeposit)
                             )
                     );
@@ -216,7 +219,6 @@ public class mainTeleOp extends OpMode {
                 else if (basketCurrent == basket.ArmDeposit) {
                     runningActions.add(new SequentialAction(
                             arm.depositArm(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> basketCurrent = basket.Release)
                     ));
                 }
@@ -232,7 +234,6 @@ public class mainTeleOp extends OpMode {
                                         lift.liftRetract()
                                     )
                                 ),
-                                    new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> basketCurrent = null),
                                     new InstantAction(() -> current = null)
                             ));
@@ -245,7 +246,6 @@ public class mainTeleOp extends OpMode {
                     runningActions.add(new SequentialAction(
                                     arm.raiseArm(),
                                     lift.liftBottomBasket(),
-                                    new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> basketCurrent = basket.ArmDeposit)
                             )
                     );
@@ -254,7 +254,6 @@ public class mainTeleOp extends OpMode {
                 else if (basketCurrent == basket.ArmDeposit) {
                     runningActions.add(new SequentialAction(
                             arm.depositArm(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> basketCurrent = basket.Release)
                     ));
                 }
@@ -270,7 +269,6 @@ public class mainTeleOp extends OpMode {
                                                     lift.liftRetract()
                                             )
                                     ),
-                                    new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> basketCurrent = null),
                                     new InstantAction(() -> current = null)
                             ));
@@ -284,7 +282,6 @@ public class mainTeleOp extends OpMode {
                             arm.raiseArm(),
                             lift.liftTopRung(),
                             arm.depositArm(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> rungCurrent = rung.LowerLift)
                             ));
                 }
@@ -292,7 +289,6 @@ public class mainTeleOp extends OpMode {
                 if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftTopRungAttached(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> rungCurrent = rung.Release)
                     ));
                 }
@@ -304,7 +300,6 @@ public class mainTeleOp extends OpMode {
                             new ParallelAction(
                                    arm.raiseArm(),
                                    lift.liftRetract(),
-                                    new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> rungCurrent = null),
                                     new InstantAction(() -> current = null)
                             )
@@ -318,7 +313,6 @@ public class mainTeleOp extends OpMode {
                             arm.raiseArm(),
                             lift.liftBottomRung(),
                             arm.depositArm(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> rungCurrent = rung.LowerLift)
                     ));
                 }
@@ -326,7 +320,6 @@ public class mainTeleOp extends OpMode {
                 else if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftBottomRungAttached(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> rungCurrent = rung.Release)
                     ));
                 }
@@ -338,7 +331,6 @@ public class mainTeleOp extends OpMode {
                             new ParallelAction(
                                     arm.raiseArm(),
                                     lift.liftRetract(),
-                                    new InstantAction(() -> authorised = false),
                                     new InstantAction(() -> rungCurrent = null),
                                     new InstantAction(() -> current = null)
                             )
@@ -354,7 +346,6 @@ public class mainTeleOp extends OpMode {
                             arm.raiseArm(),
                             arm.openGrip()
                     ),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> intakeCurrent = intake.ArmDown)
                     ));
                 }
@@ -362,7 +353,6 @@ public class mainTeleOp extends OpMode {
                 else if (intakeCurrent == intake.ArmDown) {
                     runningActions.add(new SequentialAction(
                             arm.lowerArm(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> intakeCurrent = intake.GripClosed)
                     ));
                 }
@@ -370,7 +360,6 @@ public class mainTeleOp extends OpMode {
                 else if (intakeCurrent == intake.GripClosed) {
                     runningActions.add(new SequentialAction(
                             arm.closeGrip(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> intakeCurrent = intake.ArmUp)
                     ));
                 }
@@ -378,7 +367,6 @@ public class mainTeleOp extends OpMode {
                 else if (intakeCurrent == intake.ArmUp) {
                     runningActions.add(new SequentialAction(
                             arm.raiseArm(),
-                            new InstantAction(() -> authorised = false),
                             new InstantAction(() -> intakeCurrent = null),
                             new InstantAction(() -> current = null)
                     ));

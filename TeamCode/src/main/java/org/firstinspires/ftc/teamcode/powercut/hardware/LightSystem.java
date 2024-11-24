@@ -21,8 +21,8 @@ public class LightSystem {
         pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
         driver.setPattern(pattern);
     }
-    public void green() {
-        pattern = RevBlinkinLedDriver.BlinkinPattern.GREEN;
+    public void yellow() {
+        pattern = RevBlinkinLedDriver.BlinkinPattern.YELLOW;
         driver.setPattern(pattern);
     }
 
@@ -33,6 +33,11 @@ public class LightSystem {
 
     public void greyLarson() {
         pattern = RevBlinkinLedDriver.BlinkinPattern.LARSON_SCANNER_GRAY;
+        driver.setPattern(pattern);
+    }
+
+    public void redLarson() {
+        pattern = RevBlinkinLedDriver.BlinkinPattern.LARSON_SCANNER_RED;
         driver.setPattern(pattern);
     }
 

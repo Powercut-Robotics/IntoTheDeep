@@ -4,22 +4,55 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.PwmControl;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
 public class Arm {
-    private Servo leftArm = null;
-    private Servo rightArm = null;
-    private Servo grip = null;
+    private ServoImplEx leftArm = null;
+    private ServoImplEx rightArm = null;
+    private ServoImplEx grip = null;
+
+    public enum sampleColour {
+        BLUE,
+        RED,
+        YELLOW,
+        NONE
+    }
+
+    public ColorRangeSensor colourRangeSensor = null;
 
     public void init(HardwareMap hardwareMap) {
-        leftArm = hardwareMap.get(Servo.class, "leftArm");
-        rightArm = hardwareMap.get(Servo.class, "rightArm");
-        grip = hardwareMap.get(Servo.class, "grip");
+        leftArm = hardwareMap.get(ServoImplEx.class, "leftArm");
+        rightArm = hardwareMap.get(ServoImplEx.class, "rightArm");
+        grip = hardwareMap.get(ServoImplEx.class, "grip");
+        colourRangeSensor = hardwareMap.get(ColorRangeSensor.class, "gripSensor");
 
-        leftArm.setDrirection(Servo.Direction.REVERSE);
+        leftArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        rightArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
+
+        colourRangeSensor.enableLed(true);
+
+        leftArm.setDirection(ServoImplEx.Direction.REVERSE);
+    }
+
+    public sampleColour getSampleColour() {
+        double red = colourRangeSensor.red();
+        double green = colourRangeSensor.green();
+        double blue = colourRangeSensor.blue();
+
+        if (red > settings.redThresh) {
+            return sampleColour.RED;
+        } else if (blue > settings.blueThresh) {
+            return sampleColour.BLUE;
+        } else if ((red > settings.yellowThresh[0]) && (green > settings.yellowThresh[1])) {
+            return sampleColour.YELLOW;
+        }else{
+            return sampleColour.NONE;
+        }
     }
 
     //ARM

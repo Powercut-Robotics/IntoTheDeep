@@ -17,12 +17,15 @@ public class settings {
     public static int liftRetraction = 0;
     public static int allowableExtensionDeficit= 10;
 
-    public static double armRaised = 0;
-    public static double armDeposit = 0.1;
-    public static double armLowered = 0.5;
+    public static double armRaised = 0.5;
+    public static double armDeposit = 0.6;
+    public static double armLowered = 0.8;
 
-    public static double gripClosed = 0;
-    public static double gripOpen = 0.1;
+    public static double gripClosed = 0.5;
+    public static double gripOpen = 0.6;
 
+    public static int redThresh = 100;
+    public static int blueThresh = 100;
+    public static int[] yellowThresh = {100, 100};
     public static double driveCacheAmount = 0.01;
 }

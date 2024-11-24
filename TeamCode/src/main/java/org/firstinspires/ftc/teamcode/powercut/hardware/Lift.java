@@ -8,7 +8,6 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -52,7 +51,7 @@ public class Lift {
         return rightLift.getCurrent(CurrentUnit.AMPS);
     }
 
-    public void setLiftPower(power) {
+    public void setLiftPower(double power) {
             if (power > 1.0) {
                 power = 1.0;
             }
@@ -60,18 +59,21 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             double error = leftLiftPos - rightLiftPos;
 
-            double equaliser = error * settings.liftEqCoef
+            double equaliser = error * settings.liftEqCoef;
 
             double leftPowerRaw = power;
             double rightPowerRaw = power + equaliser;
 
+            double leftPower = 0.0;
+            double rightPower = 0.0;
+
             if (rightPowerRaw > 1.0) {
                 double multiplier = 1.0 / rightPowerRaw;
-                double leftPower = leftPowerRaw * multiplier;
-                double rightPower = rightPowerRaw * multiplier;
+               leftPower = leftPowerRaw * multiplier;
+               rightPower = rightPowerRaw * multiplier;
             } else {
-                double leftPower = leftPowerRaw;
-                double rightPower = rightPowerRaw;
+                leftPower = leftPowerRaw;
+                rightPower = rightPowerRaw;
             }
 
             leftLift.setPower(leftPower);
