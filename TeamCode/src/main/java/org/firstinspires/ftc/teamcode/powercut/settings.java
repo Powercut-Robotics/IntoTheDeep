@@ -6,11 +6,11 @@ import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficients;
 @Config
 public class settings {
     public static PIDCoefficients liftCoefficients = new PIDCoefficients(0,0,0);
-    public static double liftEqCoef = 0;
-
+    public static double liftEqCoef = 0.015;
+    
     public static int liftTopBasket = 10;
     public static int liftBottomBasket = 10;
-    public static int liftTopRung = 10;
+    public static int liftTopRung = 6500;
     public static int liftTopRungAttached = 10;
     public static int liftBottomRung = 10;
     public static int liftBottomRungAttached = 10;

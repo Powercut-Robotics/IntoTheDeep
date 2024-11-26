@@ -29,8 +29,6 @@ public class mainTeleOp extends OpMode {
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
 
-    private double maxLeftCurrent = 0;
-    private double maxRightCurrent = 0;
     private final ElapsedTime loopTimer = new ElapsedTime();
 
     private double lastX = 0;
@@ -120,19 +118,8 @@ public class mainTeleOp extends OpMode {
 
         ancillarySystemControl();
 
-        double leftLiftCurrent = lift.getLeftLiftCurrent();
-        double rightLiftCurrent = lift.getRightLiftCurrent();
-
-        if (leftLiftCurrent > maxLeftCurrent) {
-            maxLeftCurrent = leftLiftCurrent;
-        }
-        if (rightLiftCurrent > maxRightCurrent) {
-            maxRightCurrent = rightLiftCurrent;
-        }
 
         telemetry.addData("Yaw", yaw);
-        telemetry.addData("Left Lift Current/Max", "%4.2f, %4.2f", leftLiftCurrent, maxLeftCurrent);
-        telemetry.addData("Right Lift Current/Max", "%4.2f, %4.2f", rightLiftCurrent, maxRightCurrent);
         telemetry.addData("Loop Timer", loopTimer.time(TimeUnit.MILLISECONDS));
 
         List<Action> newActions = new ArrayList<>();
