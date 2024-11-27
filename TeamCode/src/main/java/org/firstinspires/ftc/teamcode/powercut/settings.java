@@ -7,7 +7,7 @@ import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficients;
 public class settings {
     public static PIDCoefficients liftCoefficients = new PIDCoefficients(0,0,0);
     public static double liftEqCoef = 0.015;
-    
+
     public static int liftTopBasket = 10;
     public static int liftBottomBasket = 10;
     public static int liftTopRung = 6500;
@@ -15,6 +15,7 @@ public class settings {
     public static int liftBottomRung = 10;
     public static int liftBottomRungAttached = 10;
     public static int liftRetraction = 0;
+
     public static int allowableExtensionDeficit= 10;
 
     public static double armRaised = 0.5;
