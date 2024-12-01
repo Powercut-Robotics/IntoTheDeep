@@ -278,9 +278,8 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.TopRung) {
                 if (rungCurrent == rung.LiftExtend) {
                     runningActions.add(new SequentialAction(
-                            arm.raiseArm(),
-                            lift.liftTopRung(),
                             arm.depositArm(),
+                            lift.liftTopRung(),
                             new InstantAction(() -> rungCurrent = rung.LowerLift)
                             ));
                 }
@@ -309,9 +308,8 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.BottomRung) {
                 if (rungCurrent == rung.LiftExtend) {
                     runningActions.add(new SequentialAction(
-                            arm.raiseArm(),
-                            lift.liftBottomRung(),
                             arm.depositArm(),
+                            lift.liftBottomRung(),
                             new InstantAction(() -> rungCurrent = rung.LowerLift)
                     ));
                 }
