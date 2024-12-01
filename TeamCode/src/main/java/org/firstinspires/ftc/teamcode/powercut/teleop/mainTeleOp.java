@@ -55,7 +55,6 @@ public class mainTeleOp extends OpMode {
     private enum rung {
         LiftExtend,
         LowerLift,
-        Release
     }
     private rung rungCurrent = null;
     private enum intake {
@@ -287,22 +286,18 @@ public class mainTeleOp extends OpMode {
                 if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftTopRungAttached(),
-                            new InstantAction(() -> rungCurrent = rung.Release)
-                    ));
-                }
-
-                if (rungCurrent == rung.Release) {
-                    runningActions.add(new SequentialAction(
                             arm.openGrip(),
                             new SleepAction(0.1),
                             new ParallelAction(
-                                   arm.raiseArm(),
-                                   lift.liftRetract(),
+                                    arm.raiseArm(),
+                                    lift.liftRetract(),
                                     new InstantAction(() -> rungCurrent = null),
                                     new InstantAction(() -> current = null)
                             )
                     ));
                 }
+
+
             }
 
             if (current == sequence.BottomRung) {
@@ -317,12 +312,6 @@ public class mainTeleOp extends OpMode {
                 else if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftBottomRungAttached(),
-                            new InstantAction(() -> rungCurrent = rung.Release)
-                    ));
-                }
-
-                else if (rungCurrent == rung.Release) {
-                    runningActions.add(new SequentialAction(
                             arm.openGrip(),
                             new SleepAction(0.1),
                             new ParallelAction(
@@ -333,6 +322,7 @@ public class mainTeleOp extends OpMode {
                             )
                     ));
                 }
+
             }
 
             if (current == sequence.Intake) {

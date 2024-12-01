@@ -21,11 +21,11 @@ public class MeepMeepTesting {
                         .lineTo(new Vector2d(-49, -42))
                         .waitSeconds(2)
                         .lineToLinearHeading(new Pose2d(-55, -57, Math.toRadians(45.00)))
-                        .waitSeconds(6)
+                        .waitSeconds(1)
                         .lineToLinearHeading(new Pose2d(-60, -42, Math.toRadians(-90.00)))
                         .waitSeconds(2)
                         .lineToLinearHeading(new Pose2d(-55, -57, Math.toRadians(45.00)))
-                        .waitSeconds(6)
+                        .waitSeconds(1)
                         .splineToLinearHeading(new Pose2d(-22, -11, Math.toRadians(180.00)), Math.toRadians(0.00))
                         .build());
 
