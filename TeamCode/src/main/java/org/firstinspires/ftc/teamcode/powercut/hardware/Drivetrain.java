@@ -56,10 +56,25 @@ public class Drivetrain {
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
-        leftFront.setPower((x + y + theta) * modifier);
-        leftBack.setPower((x - y + theta) * modifier);
-        rightFront.setPower((x - y - theta) * modifier);
-        rightBack.setPower((x + y - theta) * modifier);
+        double leftFrontPower = (x + y + theta) * modifier;
+        double leftBackPower = ((x - y + theta) * modifier);
+        double rightFrontPower = ((x - y - theta) * modifier);
+        double rightBackPower = ((x + y - theta) * modifier);
+
+        double max = Math.max(1.0, Math.abs(leftFrontPower));
+        max = Math.max(max, Math.abs(rightFrontPower));
+        max = Math.max(max, Math.abs(leftBackPower));
+        max = Math.max(max, Math.abs(rightBackPower));
+
+        leftFrontPower /= max;
+        rightFrontPower /= max;
+        leftBackPower /= max;
+        rightBackPower /= max;
+
+        leftFront.setPower(leftFrontPower);
+        rightFront.setPower(rightFrontPower);
+        leftBack.setPower(leftBackPower);
+        rightBack.setPower(rightBackPower);
     }
 
     public double getYaw() {

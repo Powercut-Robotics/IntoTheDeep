@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
+import static org.firstinspires.ftc.teamcode.powercut.settings.intakeDistThresh;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -12,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
@@ -100,7 +103,8 @@ public class mainTeleOp extends OpMode {
     public void loop() {
 
         TelemetryPacket packet = new TelemetryPacket();
-        double yaw = drive.getYaw();
+        double yawDegrees = drive.getYaw();
+        double yaw = Math.toRadians(yawDegrees);
 
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
@@ -116,10 +120,15 @@ public class mainTeleOp extends OpMode {
             lastTheta = theta;
         }
 
+        if (current == sequence.Intake) {
+            gripBasedLightControl();
+        }
+
+
         ancillarySystemControl();
 
 
-        telemetry.addData("Yaw", yaw);
+        telemetry.addData("Yaw", yawDegrees);
         telemetry.addData("Loop Timer", loopTimer.time(TimeUnit.MILLISECONDS));
 
         List<Action> newActions = new ArrayList<>();
@@ -133,6 +142,21 @@ public class mainTeleOp extends OpMode {
 
         telemetry.update();
         loopTimer.reset();
+    }
+
+    private void gripBasedLightControl() {
+        Arm.sampleColour sampleColour = arm.getSampleColour();
+        double sampleDistance = arm.colourRangeSensor.getDistance(DistanceUnit.MM);
+
+        if ((sampleColour == Arm.sampleColour.RED) && (sampleDistance < intakeDistThresh)) {
+            light.red();
+        } else if ((sampleColour == Arm.sampleColour.YELLOW) && (sampleDistance < intakeDistThresh)) {
+            light.yellow();
+        } else if ((sampleColour == Arm.sampleColour.BLUE) && (sampleDistance < intakeDistThresh)) {
+            light.red();
+        } else {
+            light.greyLarson();
+        }
     }
 
     private void ancillarySystemControl() {

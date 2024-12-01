@@ -7,6 +7,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
@@ -44,20 +45,22 @@ public class testing extends OpMode {
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double yaw = drive.getYaw();
+        double yawDegrees = drive.getYaw();
+        double yaw = Math.toRadians(yawDegrees);
+
         double x_rotated = x * Math.cos(-yaw) - y * Math.sin(-yaw);
         double y_rotated = x * Math.sin(-yaw) + y * Math.cos(-yaw);
-
+        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
 
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("xRot, yRot", "%3.2f, %3.2f", x_rotated, y_rotated);
         telemetry.addData("LeftLift:", lift.leftLift.getCurrentPosition());
         telemetry.addData("RightLift:", lift.rightLift.getCurrentPosition());
+        telemetry.addData("Colour Sensor Values (RGBA), Range", "%3.0f, %3.0f, %3.0f, %3.0f, %5.2f", arm.colourRangeSensor.red(), arm.colourRangeSensor.green(), arm.colourRangeSensor.blue(), arm.colourRangeSensor.alpha(), arm.colourRangeSensor.getDistance(DistanceUnit.MM));
 
-        drive.setDrivetrainPowers(x,y,theta,1);
 
         double liftPower = -gamepad2.right_stick_y;
-            lift.setLiftPower(liftPower);
+        lift.setLiftPower(liftPower);
 
 
         if (gamepad1.dpad_up) {
@@ -72,17 +75,17 @@ public class testing extends OpMode {
             runningActions.add(arm.lowerArm());
         }
 
-//        if (gamepad2.triangle) {
-//            runningActions.add(lift.liftTopRung());
-//        }
-//
-//        if (gamepad2.circle) {
-//            runningActions.add(lift.liftTopBasket());
-//        }
-//
-//        if (gamepad2.cross) {
-//            runningActions.add(lift.liftRetract());
-//        }
+        if (gamepad2.triangle) {
+            runningActions.add(lift.liftTopRung());
+        }
+
+        if (gamepad2.circle) {
+            runningActions.add(lift.liftTopBasket());
+        }
+
+        if (gamepad2.cross) {
+            runningActions.add(lift.liftRetract());
+        }
 
         if (gamepad1.left_bumper) {
             runningActions.add(arm.closeGrip());
@@ -96,6 +99,24 @@ public class testing extends OpMode {
             runningActions.clear();
         }
 
+
+        Arm.sampleColour sampleColour = arm.getSampleColour();
+        String colour = "";
+        if (sampleColour == Arm.sampleColour.RED) {
+            light.red();
+            colour = "Red";
+        } else if (sampleColour == Arm.sampleColour.YELLOW) {
+            light.yellow();
+            colour = "Green";
+        } else if (sampleColour == Arm.sampleColour.BLUE) {
+            light.red();
+            colour = "Blue";
+        } else {
+            light.greyLarson();
+            colour = "None";
+        }
+
+        telemetry.addLine("Sample: " + colour);
 
 
         List<Action> newActions = new ArrayList<>();
