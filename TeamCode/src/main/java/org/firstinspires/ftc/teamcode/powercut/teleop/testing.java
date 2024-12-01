@@ -109,7 +109,7 @@ public class testing extends OpMode {
             light.yellow();
             colour = "Green";
         } else if (sampleColour == Arm.sampleColour.BLUE) {
-            light.red();
+            light.blue();
             colour = "Blue";
         } else {
             light.greyLarson();

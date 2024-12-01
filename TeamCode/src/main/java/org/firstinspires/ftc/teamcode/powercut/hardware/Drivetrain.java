@@ -16,15 +16,11 @@ import java.util.List;
 
 
 public class Drivetrain {
-    private DcMotorEx leftFront = null;
-    private DcMotorEx leftBack = null;
-    private DcMotorEx rightFront = null;
-    private DcMotorEx rightBack = null;
-    private List<LynxModule> allHubs = null;
+    private DcMotorEx leftFront, leftBack, rightFront, rightBack;
     public IMU imu = null;
 
     public void init(@NonNull HardwareMap hardwareMap) {
-        allHubs = hardwareMap.getAll(LynxModule.class);
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);

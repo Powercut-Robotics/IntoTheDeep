@@ -17,10 +17,12 @@ public class LightSystem {
         pattern = RevBlinkinLedDriver.BlinkinPattern.CONFETTI;
         driver.setPattern(pattern);
     }
+
     public void red() {
         pattern = RevBlinkinLedDriver.BlinkinPattern.RED;
         driver.setPattern(pattern);
     }
+
     public void yellow() {
         pattern = RevBlinkinLedDriver.BlinkinPattern.YELLOW;
         driver.setPattern(pattern);

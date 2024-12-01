@@ -16,8 +16,7 @@ import org.firstinspires.ftc.teamcode.powercut.settings;
 import java.util.List;
 
 public class Lift {
-    public DcMotorEx leftLift = null;
-    public DcMotorEx rightLift = null;
+    public DcMotorEx leftLift, rightLift;
     private List<LynxModule> allHubs = null;
 
     private BasicPID liftPID = new BasicPID(settings.liftCoefficients);

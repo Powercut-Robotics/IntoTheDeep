@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -11,10 +12,10 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
+import java.util.List;
+
 public class Arm {
-    private ServoImplEx leftArm = null;
-    private ServoImplEx rightArm = null;
-    private ServoImplEx grip = null;
+    private ServoImplEx leftArm, rightArm, grip;
 
     public enum sampleColour {
         BLUE,
@@ -26,6 +27,12 @@ public class Arm {
     public ColorRangeSensor colourRangeSensor = null;
 
     public void init(HardwareMap hardwareMap) {
+        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         leftArm = hardwareMap.get(ServoImplEx.class, "leftArm");
         rightArm = hardwareMap.get(ServoImplEx.class, "rightArm");
         grip = hardwareMap.get(ServoImplEx.class, "grip");

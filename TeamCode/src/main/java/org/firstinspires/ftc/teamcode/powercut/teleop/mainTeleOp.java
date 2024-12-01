@@ -49,7 +49,6 @@ public class mainTeleOp extends OpMode {
     private sequence current = null;
     private enum basket {
         LiftExtend,
-        ArmDeposit,
         Release
     }
     private basket basketCurrent = null;
@@ -153,7 +152,7 @@ public class mainTeleOp extends OpMode {
         } else if ((sampleColour == Arm.sampleColour.YELLOW) && (sampleDistance < intakeDistThresh)) {
             light.yellow();
         } else if ((sampleColour == Arm.sampleColour.BLUE) && (sampleDistance < intakeDistThresh)) {
-            light.red();
+            light.blue();
         } else {
             light.greyLarson();
         }
@@ -222,17 +221,12 @@ public class mainTeleOp extends OpMode {
                     runningActions.add(new SequentialAction(
                                     arm.raiseArm(),
                                     lift.liftTopBasket(),
-                                    new InstantAction(() -> basketCurrent = basket.ArmDeposit)
+                                    arm.depositArm(),
+                                    new InstantAction(() -> basketCurrent = basket.Release)
                             )
                     );
                 }
 
-                else if (basketCurrent == basket.ArmDeposit) {
-                    runningActions.add(new SequentialAction(
-                            arm.depositArm(),
-                            new InstantAction(() -> basketCurrent = basket.Release)
-                    ));
-                }
 
                 else if (basketCurrent == basket.Release) {
                     runningActions.add(
@@ -257,16 +251,10 @@ public class mainTeleOp extends OpMode {
                     runningActions.add(new SequentialAction(
                                     arm.raiseArm(),
                                     lift.liftBottomBasket(),
-                                    new InstantAction(() -> basketCurrent = basket.ArmDeposit)
+                                    arm.depositArm(),
+                                    new InstantAction(() -> basketCurrent = basket.Release)
                             )
                     );
-                }
-
-                else if (basketCurrent == basket.ArmDeposit) {
-                    runningActions.add(new SequentialAction(
-                            arm.depositArm(),
-                            new InstantAction(() -> basketCurrent = basket.Release)
-                    ));
                 }
 
                 else if (basketCurrent == basket.Release) {
