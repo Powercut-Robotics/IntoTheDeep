@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.settings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,8 @@ public class testing extends OpMode {
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
+
+    private boolean isActionRunning = false;
 
     private FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
@@ -45,23 +48,27 @@ public class testing extends OpMode {
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double yawDegrees = drive.getYaw();
-        double yaw = Math.toRadians(yawDegrees);
-
-        double x_rotated = x * Math.cos(-yaw) - y * Math.sin(-yaw);
-        double y_rotated = x * Math.sin(-yaw) + y * Math.cos(-yaw);
-        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
+        double yaw = drive.getYaw();
+        drive.setDrivetrainPowers(x, y, theta,1);
 
         telemetry.addData("Yaw:", yaw);
-        telemetry.addData("xRot, yRot", "%3.2f, %3.2f", x_rotated, y_rotated);
-        telemetry.addData("LeftLift:", lift.leftLift.getCurrentPosition());
-        telemetry.addData("RightLift:", lift.rightLift.getCurrentPosition());
-        telemetry.addData("Colour Sensor Values (RGBA), Range", "%3.0f, %3.0f, %3.0f, %3.0f, %5.2f", arm.colourRangeSensor.red(), arm.colourRangeSensor.green(), arm.colourRangeSensor.blue(), arm.colourRangeSensor.alpha(), arm.colourRangeSensor.getDistance(DistanceUnit.MM));
+        telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
+        telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
+        telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d, %5.2f", arm.colourRangeSensor.red(), arm.colourRangeSensor.green(), arm.colourRangeSensor.blue(), arm.colourRangeSensor.alpha(), arm.colourRangeSensor.getDistance(DistanceUnit.MM));
 
 
-        double liftPower = -gamepad2.right_stick_y;
-        lift.setLiftPower(liftPower);
+        if (Math.abs(-gamepad2.right_stick_y) > 0.05) {
+            isActionRunning = false;
+            double liftPower = -gamepad2.right_stick_y;
+            lift.setLiftPower(liftPower);
+        } else if (!isActionRunning) {
+            double liftPower = settings.liftHoldPower;
+            lift.setLiftPower(liftPower);
+        }
 
+        if (!isActionRunning) {
+            runningActions.clear();
+        }
 
         if (gamepad1.dpad_up) {
             runningActions.add(arm.raiseArm());
@@ -76,14 +83,20 @@ public class testing extends OpMode {
         }
 
         if (gamepad2.triangle) {
+            runningActions.clear();
+            isActionRunning = true;
             runningActions.add(lift.liftTopRung());
         }
 
         if (gamepad2.circle) {
+            runningActions.clear();
+            isActionRunning = true;
             runningActions.add(lift.liftTopBasket());
         }
 
         if (gamepad2.cross) {
+            runningActions.clear();
+            isActionRunning = true;
             runningActions.add(lift.liftRetract());
         }
 

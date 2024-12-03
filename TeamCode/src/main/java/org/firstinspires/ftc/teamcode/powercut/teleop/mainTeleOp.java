@@ -107,14 +107,12 @@ public class mainTeleOp extends OpMode {
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double x_rotated = x * Math.cos(yaw) - y * Math.sin(yaw);
-        double y_rotated = x * Math.sin(yaw) + y * Math.cos(yaw);
 
         //cache motor control for faster loop times
-        if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
-            drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
-            lastX = x_rotated;
-            lastY = y_rotated;
+        if ((Math.abs(x-lastX) > settings.driveCacheAmount) || (Math.abs(y-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
+            drive.setDrivetrainPowers(x, y, theta, 1);
+            lastX = x;
+            lastY = y;
             lastTheta = theta;
         }
 
@@ -158,6 +156,10 @@ public class mainTeleOp extends OpMode {
     }
 
     private void ancillarySystemControl() {
+        if (lift.isLiftAvailable) {
+            lift.setLiftPower(settings.liftHoldPower);
+        }
+
         if (gamepad2.dpad_up) {
             runningActions.clear();
             current = sequence.TopBasket;
@@ -196,6 +198,7 @@ public class mainTeleOp extends OpMode {
             current = null;
             basketCurrent = null;
             rungCurrent = null;
+            lift.isLiftAvailable = true;
             runningActions.clear();
         }
 
@@ -206,9 +209,13 @@ public class mainTeleOp extends OpMode {
             rungCurrent = null;
             runningActions.clear();
 
-            runningActions.add(new ParallelAction(
-                    lift.liftRetract(),
-                    arm.raiseArm()
+            runningActions.add(
+                    new SequentialAction(
+                    new ParallelAction(
+                        lift.liftRetract(),
+                        arm.raiseArm()
+                    ),
+                            new InstantAction(() -> lift.isLiftAvailable = true)
                     )
             );
         }

@@ -50,14 +50,13 @@ public class Arm {
         double red = colourRangeSensor.red();
         double green = colourRangeSensor.green();
         double blue = colourRangeSensor.blue();
-
-        if (red > settings.redThresh) {
+        if ((red > settings.yellowThresh[0]) && (green > settings.yellowThresh[1])) {
+            return sampleColour.YELLOW;
+        } else if (red > settings.redThresh) {
             return sampleColour.RED;
         } else if (blue > settings.blueThresh) {
             return sampleColour.BLUE;
-        } else if ((red > settings.yellowThresh[0]) && (green > settings.yellowThresh[1])) {
-            return sampleColour.YELLOW;
-        }else{
+        } else {
             return sampleColour.NONE;
         }
     }

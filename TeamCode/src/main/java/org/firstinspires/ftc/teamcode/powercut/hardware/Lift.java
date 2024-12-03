@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.powercut.hardware;
 
+import static org.firstinspires.ftc.teamcode.powercut.settings.liftCoefficients;
+
 import androidx.annotation.NonNull;
 
-import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.BasicPID;
+import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -13,22 +14,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
-import java.util.List;
-
 public class Lift {
     public DcMotorEx leftLift, rightLift;
-    private List<LynxModule> allHubs = null;
 
-    private BasicPID liftPID = new BasicPID(settings.liftCoefficients);
+    private PIDEx liftPID = new PIDEx(liftCoefficients);
+
+    public boolean isLiftAvailable = true;
 
     // resets and inits
     public void init(HardwareMap hardwareMap) {
-        allHubs = hardwareMap.getAll(LynxModule.class);
-
-        for (LynxModule hub : allHubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
         leftLift = hardwareMap.get(DcMotorEx.class, "leftLift");
         rightLift = hardwareMap.get(DcMotorEx.class, "rightLift");
 
@@ -82,17 +76,19 @@ public class Lift {
     public void kill() {
         leftLift.setPower(0);
         rightLift.setPower(0);
+        isLiftAvailable = true;
     }
 
     public class liftTopBasket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
@@ -113,11 +109,12 @@ public class Lift {
     public class liftBottomBasket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
@@ -138,11 +135,12 @@ public class Lift {
     public class liftTopRung implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
@@ -163,11 +161,12 @@ public class Lift {
     public class liftTopRungAttached implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
@@ -188,11 +187,12 @@ public class Lift {
     public class liftBottomRung implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
@@ -213,11 +213,12 @@ public class Lift {
     public class liftBottomRungAttached implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
@@ -238,11 +239,12 @@ public class Lift {
     public class liftRetract implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit && Math.abs(rightLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit) {
                 kill();
                 return false;
             } else {
