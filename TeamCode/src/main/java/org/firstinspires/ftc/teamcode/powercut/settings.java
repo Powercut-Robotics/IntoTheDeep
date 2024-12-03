@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class settings {
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.00015,0.001,0.001, 500, 100, 0.1);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.00015,0.00001,0.001, 500, 10000, 0.1);
     public static double liftEqCoef = 0.015;
     public static double liftHoldPower = 0.05;
 
