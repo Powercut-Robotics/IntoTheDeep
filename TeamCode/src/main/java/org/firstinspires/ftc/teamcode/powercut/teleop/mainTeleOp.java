@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
-import static org.firstinspires.ftc.teamcode.powercut.settings.intakeDistThresh;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -14,7 +12,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
@@ -101,9 +98,8 @@ public class mainTeleOp extends OpMode {
     public void loop() {
 
         TelemetryPacket packet = new TelemetryPacket();
-        double yawDegrees = drive.getYaw();
-        double yaw = Math.toRadians(yawDegrees);
-
+        double yaw = drive.getYaw();
+        telemetry.addData("Yaw", yaw);
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
@@ -124,7 +120,26 @@ public class mainTeleOp extends OpMode {
         ancillarySystemControl();
 
 
-        telemetry.addData("Yaw", yawDegrees);
+
+
+        Arm.sampleColour sampleColour = arm.getSampleColour();
+        String colour = "";
+        if (sampleColour == Arm.sampleColour.RED) {
+            light.red();
+            colour = "Red";
+        } else if (sampleColour == Arm.sampleColour.YELLOW) {
+            light.yellow();
+            colour = "Green";
+        } else if (sampleColour == Arm.sampleColour.BLUE) {
+            light.blue();
+            colour = "Blue";
+        } else {
+            light.greyLarson();
+            colour = "None";
+        }
+
+        telemetry.addLine("Sample: " + colour);
+
         telemetry.addData("Loop Timer", loopTimer.time(TimeUnit.MILLISECONDS));
 
         List<Action> newActions = new ArrayList<>();
@@ -142,13 +157,12 @@ public class mainTeleOp extends OpMode {
 
     private void gripBasedLightControl() {
         Arm.sampleColour sampleColour = arm.getSampleColour();
-        double sampleDistance = arm.colourRangeSensor.getDistance(DistanceUnit.MM);
 
-        if ((sampleColour == Arm.sampleColour.RED) && (sampleDistance < intakeDistThresh)) {
+        if (sampleColour == Arm.sampleColour.RED) {
             light.red();
-        } else if ((sampleColour == Arm.sampleColour.YELLOW) && (sampleDistance < intakeDistThresh)) {
+        } else if (sampleColour == Arm.sampleColour.YELLOW) {
             light.yellow();
-        } else if ((sampleColour == Arm.sampleColour.BLUE) && (sampleDistance < intakeDistThresh)) {
+        } else if (sampleColour == Arm.sampleColour.BLUE) {
             light.blue();
         } else {
             light.greyLarson();
