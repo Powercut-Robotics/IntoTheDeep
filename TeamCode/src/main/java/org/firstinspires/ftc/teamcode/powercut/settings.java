@@ -26,9 +26,8 @@ public class settings {
     public static double gripClosed = 0.63;
     public static double gripOpen = 0.3;
 
-    public static int redThresh = 2000;
-    public static int blueThresh = 2000;
-    public static int[] yellowThresh = {1500, 1500};
+    public static double colourThreshMultiplier = 1.5;
+
     public static int intakeDistThresh = 100;
     public static double driveCacheAmount = 0.01;
 }

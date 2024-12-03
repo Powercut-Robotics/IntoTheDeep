@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
 import java.util.List;
@@ -50,12 +51,14 @@ public class Arm {
         double red = colourRangeSensor.red();
         double green = colourRangeSensor.green();
         double blue = colourRangeSensor.blue();
-        if ((red > settings.yellowThresh[0]) && (green > settings.yellowThresh[1])) {
-            return sampleColour.YELLOW;
-        } else if (red > settings.redThresh) {
+        double distance = colourRangeSensor.getDistance(DistanceUnit.MM);
+
+        if ((red > (blue * settings.colourThreshMultiplier) && red > (green * settings.colourThreshMultiplier)) && !Double.isNaN(distance)) {
             return sampleColour.RED;
-        } else if (blue > settings.blueThresh) {
+        } else if ((blue > (red * settings.colourThreshMultiplier) && blue > (green * settings.colourThreshMultiplier)) && !Double.isNaN(distance)) {
             return sampleColour.BLUE;
+        } else if ((red > (blue * settings.colourThreshMultiplier) && green > (blue * settings.colourThreshMultiplier)) && !Double.isNaN(distance)) {
+            return sampleColour.YELLOW;
         } else {
             return sampleColour.NONE;
         }
