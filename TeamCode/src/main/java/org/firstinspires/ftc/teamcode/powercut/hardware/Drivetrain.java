@@ -16,7 +16,7 @@ import java.util.List;
 
 
 public class Drivetrain {
-    private DcMotorEx leftFront, leftBack, rightFront, rightBack;
+    public DcMotorEx leftFront, leftBack, rightFront, rightBack;
     public IMU imu = null;
 
     public void init(@NonNull HardwareMap hardwareMap) {
@@ -47,15 +47,15 @@ public class Drivetrain {
         rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
-        double leftFrontPower = (x + y + theta) * modifier;
-        double leftBackPower = ((x - y + theta) * modifier);
-        double rightFrontPower = ((x - y - theta) * modifier);
-        double rightBackPower = ((x + y - theta) * modifier);
+        double leftFrontPower = (y+x+theta) * modifier;
+        double leftBackPower = (y-x+theta) * modifier;
+        double rightFrontPower = (y-x-theta) * modifier;
+        double rightBackPower = (y+x-theta) * modifier;
 
         leftFront.setPower(leftFrontPower);
         rightFront.setPower(rightFrontPower);

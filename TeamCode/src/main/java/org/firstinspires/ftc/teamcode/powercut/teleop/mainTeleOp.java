@@ -116,6 +116,19 @@ public class mainTeleOp extends OpMode {
             gripBasedLightControl();
         }
 
+        String routine = "";
+        if (current == sequence.Intake) {
+            routine = "Intake";
+        } else if (current == sequence.TopBasket) {
+            routine = "Top Basket";
+        } else if (current == sequence.BottomBasket) {
+            routine = "Bottom Basket";
+        } else if (current == sequence.TopRung) {
+            routine = "Top Rung";
+        } else if (current == sequence.BottomRung) {
+            routine = "Bottom Rung";
+        }
+
 
         ancillarySystemControl();
 

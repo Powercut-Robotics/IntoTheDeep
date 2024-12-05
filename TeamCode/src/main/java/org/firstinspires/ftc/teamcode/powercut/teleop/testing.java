@@ -54,7 +54,7 @@ public class testing extends OpMode {
         double theta = gamepad1.right_stick_x;
         double yaw = drive.getYaw();
         drive.setDrivetrainPowers(x, y, theta,1);
-
+telemetry.addData("Theta", theta);
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
         telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
@@ -73,18 +73,28 @@ public class testing extends OpMode {
         if (!isActionRunning) {
             runningActions.clear();
         }
-
         if (gamepad1.dpad_up) {
             runningActions.add(arm.raiseArm());
         }
-
-        if (gamepad1.dpad_down) {
+        if (gamepad1.dpad_right) {
             runningActions.add(arm.depositArm());
         }
-
-        if (gamepad1.dpad_right) {
+        if (gamepad1.dpad_down) {
             runningActions.add(arm.lowerArm());
         }
+
+
+//        if (gamepad1.dpad_up) {
+//            runningActions.add(arm.raiseArm());
+//        }
+//
+//        if (gamepad1.dpad_down) {
+//            runningActions.add(arm.depositArm());
+//        }
+//
+//        if (gamepad1.dpad_right) {
+//            runningActions.add(arm.lowerArm());
+//        }
 
         if (gamepad2.triangle) {
             runningActions.clear();
