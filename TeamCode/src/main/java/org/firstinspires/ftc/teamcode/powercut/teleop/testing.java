@@ -4,6 +4,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -87,19 +89,19 @@ public class testing extends OpMode {
         if (gamepad2.triangle) {
             runningActions.clear();
             isActionRunning = true;
-            runningActions.add(lift.liftTopRung());
+            runningActions.add(new SequentialAction(lift.liftTopRung(),new InstantAction(() -> isActionRunning = false)));
         }
 
         if (gamepad2.circle) {
             runningActions.clear();
             isActionRunning = true;
-            runningActions.add(lift.liftTopBasket());
+            runningActions.add(new SequentialAction(lift.liftTopBasket(),new InstantAction(() -> isActionRunning = false)));
         }
 
         if (gamepad2.cross) {
             runningActions.clear();
             isActionRunning = true;
-            runningActions.add(lift.liftRetract());
+            runningActions.add(new SequentialAction(lift.liftRetract(),new InstantAction(() -> isActionRunning = false)));
         }
 
         if (gamepad1.left_bumper) {
@@ -122,7 +124,7 @@ public class testing extends OpMode {
             colour = "Red";
         } else if (sampleColour == Arm.sampleColour.YELLOW) {
             light.yellow();
-            colour = "Green";
+            colour = "Yellow";
         } else if (sampleColour == Arm.sampleColour.BLUE) {
             light.blue();
             colour = "Blue";

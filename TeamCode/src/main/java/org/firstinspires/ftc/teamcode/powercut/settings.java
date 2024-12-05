@@ -5,17 +5,17 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class settings {
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.00015,0.00001,0.001, 500, 5, 0.05);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0025,0.00001,0.0015, 500, 5, 0.05);
     public static double liftEqCoef = 0.015;
     public static double liftHoldPower = 0.05;
 
-    public static int liftTopBasket = 5500;
+    public static int liftTopBasket = 6000;
     public static int liftBottomBasket = 2500;
     public static int liftTopRung = 3000;
     public static int liftTopRungAttached = 2800;
-    public static int liftBottomRung = 10;
-    public static int liftBottomRungAttached = 10;
-    public static int liftRetraction = 0;
+    public static int liftBottomRung = 2500;
+    public static int liftBottomRungAttached = 2300;
+    public static int liftRetraction = 25;
 
     public static int allowableExtensionDeficit= 50;
 

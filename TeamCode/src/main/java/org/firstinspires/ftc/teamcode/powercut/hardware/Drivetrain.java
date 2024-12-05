@@ -57,16 +57,6 @@ public class Drivetrain {
         double rightFrontPower = ((x - y - theta) * modifier);
         double rightBackPower = ((x + y - theta) * modifier);
 
-        double max = Math.max(1.0, Math.abs(leftFrontPower));
-        max = Math.max(max, Math.abs(rightFrontPower));
-        max = Math.max(max, Math.abs(leftBackPower));
-        max = Math.max(max, Math.abs(rightBackPower));
-
-        leftFrontPower /= max;
-        rightFrontPower /= max;
-        leftBackPower /= max;
-        rightBackPower /= max;
-
         leftFront.setPower(leftFrontPower);
         rightFront.setPower(rightFrontPower);
         leftBack.setPower(leftBackPower);
