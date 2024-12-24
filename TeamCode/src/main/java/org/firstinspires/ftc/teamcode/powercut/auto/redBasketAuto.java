@@ -10,7 +10,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 @Autonomous
 public class redBasketAuto extends OpMode {
     private MecanumDrive drive;
-    private final Arm arm = new Arm();
+    private final Outtake outtake = new Outtake();
     private final Lift lift = new Lift();
     private final LightSystem light = new LightSystem();
 
@@ -32,13 +32,13 @@ public class redBasketAuto extends OpMode {
     @Override
     public void init() {
         drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63.5, Math.toRadians(270)));
-        arm.init(hardwareMap);
+        outtake.init(hardwareMap);
         lift.init(hardwareMap);
         light.init(hardwareMap);
 
         Actions.runBlocking(
                 new ParallelAction(
-                         arm.closeGrip()
+                         outtake.closeGrip()
                 )
         );
 
@@ -77,7 +77,7 @@ public class redBasketAuto extends OpMode {
                         ),
                         lift.liftTopRungAttached(),
                         new ParallelAction(
-                                arm.openGrip(),
+                                outtake.openGrip(),
                                 new SleepAction(0.1)
                         ),
                         new ParallelAction(
@@ -85,51 +85,51 @@ public class redBasketAuto extends OpMode {
                                 toSpike1
                         ),
                         new ParallelAction(
-                                arm.lowerArm(),
+                                outtake.lowerArm(),
                                 new SleepAction(0.25)
                         ),
                         new ParallelAction(
-                                arm.closeGrip(),
+                                outtake.closeGrip(),
                                 new SleepAction(0.1)
                         ),
                         new ParallelAction(
-                                arm.raiseArm(),
+                                outtake.raiseArm(),
                                 toBasket1,
                                 lift.liftTopBasket()
                         ),
-                        arm.depositArm(),
+                        outtake.depositArm(),
                         new ParallelAction(
-                                arm.openGrip(),
+                                outtake.openGrip(),
                                 new SleepAction(0.1)
                         ),
-                        arm.raiseArm(),
+                        outtake.raiseArm(),
                         new ParallelAction(
                             lift.liftRetract(),
                             toSpike2
                         ),
                         new ParallelAction(
-                                arm.lowerArm(),
+                                outtake.lowerArm(),
                                 new SleepAction(0.25)
                         ),
                         new ParallelAction(
-                                arm.closeGrip(),
+                                outtake.closeGrip(),
                                 new SleepAction(0.25)
                         ),
                         new ParallelAction(
-                                arm.raiseArm(),
+                                outtake.raiseArm(),
                                 toBasket2,
                                 lift.liftTopBasket()
                         ),
                         new ParallelAction(
-                                arm.depositArm(),
+                                outtake.depositArm(),
                                 new SleepAction(0.25)
                         ),
                         new ParallelAction(
-                                arm.openGrip(),
+                                outtake.openGrip(),
                                 new SleepAction(0.1)
                         ),
                         new ParallelAction(
-                                arm.raiseArm(),
+                                outtake.raiseArm(),
                                 new SleepAction(0.1)
                         ),
                         new ParallelAction(

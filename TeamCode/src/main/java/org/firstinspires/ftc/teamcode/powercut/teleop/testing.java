@@ -11,7 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
@@ -22,8 +23,8 @@ import java.util.List;
 
 @TeleOp
 public class testing extends OpMode {
-
-    private final Arm arm = new Arm();
+    private final Intake intake = new Intake();
+    private final Outtake outtake = new Outtake();
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
@@ -34,7 +35,7 @@ public class testing extends OpMode {
     private List<Action> runningActions = new ArrayList<>();
     @Override
     public void init() {
-        arm.init(hardwareMap);
+        outtake.init(hardwareMap);
         lift.init(hardwareMap);
         drive.init(hardwareMap);
         light.init(hardwareMap);
@@ -58,7 +59,7 @@ telemetry.addData("Theta", theta);
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
         telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
-        telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d, %5.2f", arm.colourRangeSensor.red(), arm.colourRangeSensor.green(), arm.colourRangeSensor.blue(), arm.colourRangeSensor.alpha(), arm.colourRangeSensor.getDistance(DistanceUnit.MM));
+        telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d, %5.2f", intake.colourRangeSensor.red(), intake.colourRangeSensor.green(), intake.colourRangeSensor.blue(), intake.colourRangeSensor.alpha(), intake.colourRangeSensor.getDistance(DistanceUnit.MM));
 
 
         if (Math.abs(-gamepad2.right_stick_y) > 0.05) {
@@ -74,26 +75,26 @@ telemetry.addData("Theta", theta);
             runningActions.clear();
         }
         if (gamepad1.dpad_up) {
-            runningActions.add(arm.raiseArm());
+            runningActions.add(outtake.raiseArm());
         }
         if (gamepad1.dpad_right) {
-            runningActions.add(arm.depositArm());
+            runningActions.add(outtake.specIntakeArm());
         }
         if (gamepad1.dpad_down) {
-            runningActions.add(arm.lowerArm());
+            runningActions.add(outtake.lowerArm());
         }
 
 
 //        if (gamepad1.dpad_up) {
-//            runningActions.add(arm.raiseArm());
+//            runningActions.add(outtake.raiseArm());
 //        }
 //
 //        if (gamepad1.dpad_down) {
-//            runningActions.add(arm.depositArm());
+//            runningActions.add(outtake.depositArm());
 //        }
 //
 //        if (gamepad1.dpad_right) {
-//            runningActions.add(arm.lowerArm());
+//            runningActions.add(outtake.lowerArm());
 //        }
 
         if (gamepad2.triangle) {
@@ -115,11 +116,11 @@ telemetry.addData("Theta", theta);
         }
 
         if (gamepad1.left_bumper) {
-            runningActions.add(arm.closeGrip());
+            runningActions.add(outtake.closeGrip());
         }
 
         if (gamepad1.right_bumper) {
-            runningActions.add(arm.openGrip());
+            runningActions.add(outtake.openGrip());
         }
 
         if (gamepad1.square || gamepad2.square) {
@@ -127,15 +128,15 @@ telemetry.addData("Theta", theta);
         }
 
 
-        Arm.sampleColour sampleColour = arm.getSampleColour();
+        Intake.sampleColour sampleColour = intake.getSampleColour();
         String colour = "";
-        if (sampleColour == Arm.sampleColour.RED) {
+        if (sampleColour == Intake.sampleColour.RED) {
             light.red();
             colour = "Red";
-        } else if (sampleColour == Arm.sampleColour.YELLOW) {
+        } else if (sampleColour == Intake.sampleColour.YELLOW) {
             light.yellow();
             colour = "Yellow";
-        } else if (sampleColour == Arm.sampleColour.BLUE) {
+        } else if (sampleColour == Intake.sampleColour.BLUE) {
             light.blue();
             colour = "Blue";
         } else {

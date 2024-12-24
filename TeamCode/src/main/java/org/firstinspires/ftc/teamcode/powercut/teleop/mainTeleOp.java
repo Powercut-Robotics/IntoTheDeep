@@ -12,7 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.powercut.hardware.Arm;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
@@ -24,7 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 @TeleOp
 public class mainTeleOp extends OpMode {
-    private final Arm arm = new Arm();
+    private final Outtake outtake = new Outtake();
+    private final Intake intake = new Intake();
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
@@ -54,13 +56,13 @@ public class mainTeleOp extends OpMode {
         LowerLift,
     }
     private rung rungCurrent = null;
-    private enum intake {
+    private enum intakeEnum {
         GripOpen,
         ArmDown,
         GripClosed,
         ArmUp
     }
-    private intake intakeCurrent = null;
+    private intakeEnum intakeCurrent = null;
 
     private boolean authLast = false;
 
@@ -76,7 +78,7 @@ public class mainTeleOp extends OpMode {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        arm.init(hardwareMap);
+        outtake.init(hardwareMap);
         lift.init(hardwareMap);
         drive.init(hardwareMap);
         light.init(hardwareMap);
@@ -135,15 +137,15 @@ public class mainTeleOp extends OpMode {
 
 
 
-        Arm.sampleColour sampleColour = arm.getSampleColour();
+        Intake.sampleColour sampleColour = intake.getSampleColour();
         String colour = "";
-        if (sampleColour == Arm.sampleColour.RED) {
+        if (sampleColour == Intake.sampleColour.RED) {
             light.red();
             colour = "Red";
-        } else if (sampleColour == Arm.sampleColour.YELLOW) {
+        } else if (sampleColour == Intake.sampleColour.YELLOW) {
             light.yellow();
             colour = "Green";
-        } else if (sampleColour == Arm.sampleColour.BLUE) {
+        } else if (sampleColour == Intake.sampleColour.BLUE) {
             light.blue();
             colour = "Blue";
         } else {
@@ -169,13 +171,13 @@ public class mainTeleOp extends OpMode {
     }
 
     private void gripBasedLightControl() {
-        Arm.sampleColour sampleColour = arm.getSampleColour();
+        Intake.sampleColour sampleColour = intake.getSampleColour();
 
-        if (sampleColour == Arm.sampleColour.RED) {
+        if (sampleColour == Intake.sampleColour.RED) {
             light.red();
-        } else if (sampleColour == Arm.sampleColour.YELLOW) {
+        } else if (sampleColour == Intake.sampleColour.YELLOW) {
             light.yellow();
-        } else if (sampleColour == Arm.sampleColour.BLUE) {
+        } else if (sampleColour == Intake.sampleColour.BLUE) {
             light.blue();
         } else {
             light.greyLarson();
@@ -210,7 +212,7 @@ public class mainTeleOp extends OpMode {
         } else if (gamepad2.left_bumper) {
             runningActions.clear();
             current = sequence.Intake;
-            intakeCurrent = intake.GripOpen;
+            intakeCurrent = intakeEnum.GripOpen;
             authorised = true;
         }
 
@@ -240,7 +242,7 @@ public class mainTeleOp extends OpMode {
                     new SequentialAction(
                     new ParallelAction(
                         lift.liftRetract(),
-                        arm.raiseArm()
+                        outtake.raiseArm()
                     ),
                             new InstantAction(() -> lift.isLiftAvailable = true)
                     )
@@ -252,9 +254,9 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.TopBasket) {
                 if (basketCurrent == basket.LiftExtend) {
                     runningActions.add(new SequentialAction(
-                                    arm.raiseArm(),
+                                    outtake.lowerArm(),
                                     lift.liftTopBasket(),
-                                    arm.depositArm(),
+                                    outtake.lowerArm(),
                                     new InstantAction(() -> basketCurrent = basket.Release)
                             )
                     );
@@ -265,10 +267,10 @@ public class mainTeleOp extends OpMode {
                     runningActions.add(
                             new ParallelAction(
                                 new SequentialAction(
-                                    arm.openGrip(),
+                                    outtake.openGrip(),
                                     new SleepAction(0.1),
                                     new ParallelAction(
-                                        arm.raiseArm(),
+                                        outtake.raiseArm(),
                                         lift.liftRetract()
                                     )
                                 ),
@@ -282,9 +284,9 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.BottomBasket) {
                 if (basketCurrent == basket.LiftExtend) {
                     runningActions.add(new SequentialAction(
-                                    arm.raiseArm(),
+                                    outtake.raiseArm(),
                                     lift.liftBottomBasket(),
-                                    arm.depositArm(),
+                                    outtake.depositArm(),
                                     new InstantAction(() -> basketCurrent = basket.Release)
                             )
                     );
@@ -294,10 +296,10 @@ public class mainTeleOp extends OpMode {
                     runningActions.add(
                             new ParallelAction(
                                     new SequentialAction(
-                                            arm.openGrip(),
+                                            outtake.openGrip(),
                                             new SleepAction(0.1),
                                             new ParallelAction(
-                                                    arm.raiseArm(),
+                                                    outtake.raiseArm(),
                                                     lift.liftRetract()
                                             )
                                     ),
@@ -311,7 +313,7 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.TopRung) {
                 if (rungCurrent == rung.LiftExtend) {
                     runningActions.add(new SequentialAction(
-                            arm.depositArm(),
+                            outtake.depositArm(),
                             lift.liftTopRung(),
                             new InstantAction(() -> rungCurrent = rung.LowerLift)
                             ));
@@ -320,10 +322,10 @@ public class mainTeleOp extends OpMode {
                 if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftTopRungAttached(),
-                            arm.openGrip(),
+                            outtake.openGrip(),
                             new SleepAction(0.1),
                             new ParallelAction(
-                                    arm.raiseArm(),
+                                    outtake.raiseArm(),
                                     lift.liftRetract(),
                                     new InstantAction(() -> rungCurrent = null),
                                     new InstantAction(() -> current = null)
@@ -337,7 +339,7 @@ public class mainTeleOp extends OpMode {
             if (current == sequence.BottomRung) {
                 if (rungCurrent == rung.LiftExtend) {
                     runningActions.add(new SequentialAction(
-                            arm.depositArm(),
+                            outtake.depositArm(),
                             lift.liftBottomRung(),
                             new InstantAction(() -> rungCurrent = rung.LowerLift)
                     ));
@@ -346,10 +348,10 @@ public class mainTeleOp extends OpMode {
                 else if (rungCurrent == rung.LowerLift) {
                     runningActions.add(new SequentialAction(
                             lift.liftBottomRungAttached(),
-                            arm.openGrip(),
+                            outtake.openGrip(),
                             new SleepAction(0.1),
                             new ParallelAction(
-                                    arm.raiseArm(),
+                                    outtake.raiseArm(),
                                     lift.liftRetract(),
                                     new InstantAction(() -> rungCurrent = null),
                                     new InstantAction(() -> current = null)
@@ -364,8 +366,8 @@ public class mainTeleOp extends OpMode {
                     runningActions.add(new SequentialAction(
                     new ParallelAction(
                             lift.liftRetract(),
-                            arm.raiseArm(),
-                            arm.openGrip()
+                            outtake.raiseArm(),
+                            outtake.openGrip()
                     ),
                             new InstantAction(() -> intakeCurrent = intake.ArmDown)
                     ));
@@ -373,21 +375,21 @@ public class mainTeleOp extends OpMode {
 
                 else if (intakeCurrent == intake.ArmDown) {
                     runningActions.add(new SequentialAction(
-                            arm.lowerArm(),
+                            outtake.lowerArm(),
                             new InstantAction(() -> intakeCurrent = intake.GripClosed)
                     ));
                 }
 
                 else if (intakeCurrent == intake.GripClosed) {
                     runningActions.add(new SequentialAction(
-                            arm.closeGrip(),
+                            outtake.closeGrip(),
                             new InstantAction(() -> intakeCurrent = intake.ArmUp)
                     ));
                 }
 
                 else if (intakeCurrent == intake.ArmUp) {
                     runningActions.add(new SequentialAction(
-                            arm.raiseArm(),
+                            outtake.raiseArm(),
                             new InstantAction(() -> intakeCurrent = null),
                             new InstantAction(() -> current = null)
                     ));
