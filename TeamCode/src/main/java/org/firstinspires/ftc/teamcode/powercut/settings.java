@@ -31,7 +31,8 @@ public class settings {
 
     public static double basketAlignDistance = 15;
     public static double basketXYKp = 0.1;
-
+    public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
+    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(-0.1,0,0,0,0,0);
     public static double basketAlignYawKp = -0.1;
 
     public static double colourThreshMultiplier = 1.5;

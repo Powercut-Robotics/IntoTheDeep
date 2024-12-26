@@ -2,9 +2,12 @@ package org.firstinspires.ftc.teamcode.powercut.hardware;
 
 import androidx.annotation.NonNull;
 
+import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -17,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
 import org.firstinspires.ftc.teamcode.powercut.settings;
+import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 
 import java.util.List;
 
@@ -26,9 +30,11 @@ public class Drivetrain {
     public URM09Sensor leftUltrasonic, rightUltrasonic;
     public Rev2mDistanceSensor frontToF;
     public IMU imu = null;
+    private PIDEx XYAlignPID = new PIDEx(settings.basketXYCoefficients);
+    private PIDEx yawAlignPID = new PIDEx(settings.basketYawCoefficients);
 
-    public static double yawAlignDeadzone = 2;
-    public static double xyAlignDeadzone= 5;
+    public static double yawAlignDeadzone = 5;
+    public static double xyAlignDeadzone = 5;
 
     public void init(@NonNull HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -93,22 +99,24 @@ public class Drivetrain {
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
             double yawError = (-45 - yaw);
-            double leftDistance = leftUltrasonic.getDistance();
-            double rightDistance = rightUltrasonic.getDistance();
-            double xError = settings.basketAlignDistance - leftDistance;
-            double yError = settings.basketAlignDistance - rightDistance;
+            double yawErrorRad = Math.toRadians(yawError);
 
-            if (Math.abs(yawError) > yawAlignDeadzone) {
-                setDrivetrainPowers(0, 0, yawError * settings.basketAlignYawKp, 1);
-            } else {
-                double x = xError * settings.basketXYKp;
-                double y = yError * settings.basketXYKp;
-                double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
-                double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
-                setDrivetrainPowers(x_rotated, y_rotated, 0, 1);
-            }
+            double leftDistanceRaw = leftUltrasonic.getDistance();
+            double rightDistanceRaw = rightUltrasonic.getDistance();
 
-            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(xError) < xyAlignDeadzone) && (Math.abs(yError) < xyAlignDeadzone)) {
+            double leftDistance = Math.cos(yawErrorRad) * leftDistanceRaw;
+            double rightDistance = Math.cos(yawErrorRad) * rightDistanceRaw;
+
+            double x = XYAlignPID.calculate(settings.basketAlignDistance, leftDistance);
+            double y = XYAlignPID.calculate(settings.basketAlignDistance, rightDistance);
+            double theta = yawAlignPID.calculate(-45, yaw);
+            double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+            double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+            setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+
+            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54)), (-70.5 + (y / 2.54))), yawRad));
+
+            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(settings.basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone)) {
                 setDrivetrainPowers(0,0,0,1);
                 return false;
             } else {
