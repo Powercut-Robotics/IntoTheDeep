@@ -114,7 +114,7 @@ public class Drivetrain {
             double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
             setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
 
-            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54)), (-70.5 + (y / 2.54))), yawRad));
+            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
 
             if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(settings.basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone)) {
                 setDrivetrainPowers(0,0,0,1);
