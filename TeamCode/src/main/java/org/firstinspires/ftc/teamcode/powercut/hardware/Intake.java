@@ -8,6 +8,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
@@ -17,7 +18,7 @@ import org.firstinspires.ftc.teamcode.powercut.settings;
 import java.util.List;
 
 public class Intake {
-    private ServoImplEx lowerLeftArm, lowerRightArm, intakeWheels;
+    private ServoImplEx intakeLeftArm, intakeRightArm, extendoLeft, extendoRight, intakeWheels;
     public ColorRangeSensor colourRangeSensor = null;
     public TouchSensor trayTouchSensor;
 
@@ -35,20 +36,24 @@ public class Intake {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        lowerLeftArm = hardwareMap.get(ServoImplEx.class, "upperLeftArm");
-        lowerRightArm = hardwareMap.get(ServoImplEx.class, "upperRightArm");
+        intakeLeftArm = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
+        intakeRightArm = hardwareMap.get(ServoImplEx.class, "intakeRightArm");
+        extendoLeft = hardwareMap.get(ServoImplEx.class, "extendoRight");
+        extendoRight = hardwareMap.get(ServoImplEx.class, "extendoRight");
         intakeWheels = hardwareMap.get(ServoImplEx.class, "intakeWheels");
-        colourRangeSensor = hardwareMap.get(ColorRangeSensor.class, "intakeColourSensor");
-        trayTouchSensor = hardwareMap.get(TouchSensor.class, "trayTouchSensor");
+        colourRangeSensor = hardwareMap.get(ColorRangeSensor.class, "intakeColour");
+        trayTouchSensor = hardwareMap.get(TouchSensor.class, "trayTouch");
 
         colourRangeSensor.enableLed(true);
 
-        lowerLeftArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        lowerRightArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        intakeLeftArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        intakeRightArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
         intakeWheels.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        extendoLeft.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        extendoRight.setPwmRange(new PwmControl.PwmRange(500, 2500));
 
-
-        lowerLeftArm.setDirection(ServoImplEx.Direction.REVERSE);
+        intakeLeftArm.setDirection(ServoImplEx.Direction.REVERSE);
+        extendoLeft.setDirection(Servo.Direction.REVERSE);
     }
 
     public sampleColour getSampleColour() {
@@ -68,94 +73,177 @@ public class Intake {
         }
     }
 
-    public class raiseArm implements Action {
+    // ARM
+    public class IntakeExtendo implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            lowerLeftArm.setPosition(settings.lowerArmRaised);
-            lowerRightArm.setPosition(settings.lowerArmRaised);
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
 
-            return false;
+            extendoLeft.setPosition(settings.extendoIntake);
+            extendoRight.setPosition(settings.extendoIntake);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action intakeExtendo() {
+        return new IntakeExtendo();
+    }
+
+    public class TransferExtendo implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            extendoLeft.setPosition(settings.extendoTransfer);
+            extendoRight.setPosition(settings.extendoTransfer);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action transferExtendo() {
+        return new TransferExtendo();
+    }
+
+    public class RaiseArm implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            intakeLeftArm.setPosition(settings.intakeArmTransfer);
+            intakeRightArm.setPosition(settings.intakeArmTransfer);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
 
     public Action raiseArm() {
-        return new raiseArm();
+        return new RaiseArm();
     }
 
-    public class lowerArm implements Action {
+    public class LowerArm implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            lowerLeftArm.setPosition(settings.lowerArmLowered);
-            lowerRightArm.setPosition(settings.lowerArmLowered);
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
 
-            return false;
+            intakeLeftArm.setPosition(settings.intakeArmIntake);
+            intakeRightArm.setPosition(settings.intakeArmIntake);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
 
     public Action lowerArm() {
-        return new lowerArm();
+        return new LowerArm();
     }
 
-    public class intake implements Action {
+    // INTAKE
+    public class IntakeAction implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
             sampleColour sample = getSampleColour();
 
             if (sample == sampleColour.NONE) {
                 intakeWheels.setPosition(1);
-                return true;
             } else {
                 intakeWheels.setPosition(0.5);
-                return false;
             }
 
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
+
     public Action intake() {
-        return new intake();
+        return new IntakeAction();
     }
 
-    public class expel implements Action {
+    // EXPEL
+    public class ExpelAction implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
             sampleColour sample = getSampleColour();
 
             if (sample == sampleColour.NONE) {
                 intakeWheels.setPosition(0.5);
-                return false;
             } else {
                 intakeWheels.setPosition(0);
-                return true;
             }
 
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
+
     public Action expel() {
-        return new expel();
+        return new ExpelAction();
     }
 
-    public class transfer implements Action {
+    // TRANSFER
+    public class TransferAction implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
             sampleColour sample = getSampleColour();
             boolean inTray = trayTouchSensor.isPressed();
 
             if (inTray) {
                 intakeWheels.setPosition(0.5);
-                return false;
             } else {
                 intakeWheels.setPosition(0);
-                return true;
             }
 
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
+
     public Action transfer() {
-        return new transfer();
+        return new TransferAction();
     }
 }

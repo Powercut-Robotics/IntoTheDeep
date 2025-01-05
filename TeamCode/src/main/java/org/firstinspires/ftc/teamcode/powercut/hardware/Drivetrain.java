@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
 import org.firstinspires.ftc.teamcode.powercut.settings;
@@ -27,14 +28,15 @@ import java.util.List;
 @Config
 public class Drivetrain {
     public DcMotorEx leftFront, leftBack, rightFront, rightBack;
-    public URM09Sensor leftUltrasonic, rightUltrasonic;
-    public Rev2mDistanceSensor frontToF;
+    public URM09Sensor leftRearUltrasonic, rightRearUltrasonic;
+    public Rev2mDistanceSensor frontLeftToF, frontRightToF;
     public IMU imu = null;
     private PIDEx XYAlignPID = new PIDEx(settings.basketXYCoefficients);
     private PIDEx yawAlignPID = new PIDEx(settings.basketYawCoefficients);
 
     public static double yawAlignDeadzone = 5;
     public static double xyAlignDeadzone = 5;
+    public static double ToFCentreDistance = 180;
 
     public void init(@NonNull HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -47,9 +49,10 @@ public class Drivetrain {
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-        leftUltrasonic = hardwareMap.get(URM09Sensor.class, "leftUltrasonic");
-        rightUltrasonic = hardwareMap.get(URM09Sensor.class, "rightUltrasonic");
-        frontToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontDistance");
+        leftRearUltrasonic = hardwareMap.get(URM09Sensor.class, "leftRearUltrasonic");
+        rightRearUltrasonic = hardwareMap.get(URM09Sensor.class, "rightRearUltrasonic");
+        frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftTof");
+        frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightTof");
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -62,8 +65,8 @@ public class Drivetrain {
                 )
         );
 
-        leftUltrasonic.setMeasurementMode(true);
-        rightUltrasonic.setMeasurementMode(true);
+        leftRearUltrasonic.setMeasurementMode(true);
+        rightRearUltrasonic.setMeasurementMode(true);
 
         leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -93,6 +96,15 @@ public class Drivetrain {
         return robotOrientation.getYaw(AngleUnit.DEGREES);
     }
 
+    public double getYawFromToF() {
+        double leftDistance = frontLeftToF.getDistance(DistanceUnit.MM);
+        double rightDistance = frontRightToF.getDistance(DistanceUnit.MM);
+
+        double difference = rightDistance - leftDistance;
+
+        return Math.toDegrees(Math.atan(difference/ToFCentreDistance));
+    }
+
     public class alignBasket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -101,8 +113,8 @@ public class Drivetrain {
             double yawError = (-45 - yaw);
             double yawErrorRad = Math.toRadians(yawError);
 
-            double leftDistanceRaw = leftUltrasonic.getDistance();
-            double rightDistanceRaw = rightUltrasonic.getDistance();
+            double leftDistanceRaw = leftRearUltrasonic.getDistance();
+            double rightDistanceRaw = rightRearUltrasonic.getDistance();
 
             double leftDistance = Math.cos(yawErrorRad) * leftDistanceRaw;
             double rightDistance = Math.cos(yawErrorRad) * rightDistanceRaw;

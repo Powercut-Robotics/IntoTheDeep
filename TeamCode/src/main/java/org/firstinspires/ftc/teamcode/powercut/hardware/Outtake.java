@@ -13,12 +13,10 @@ import org.firstinspires.ftc.teamcode.powercut.settings;
 public class Outtake {
     private ServoImplEx leftArm, rightArm, grip;
 
-
     public void init(HardwareMap hardwareMap) {
         leftArm = hardwareMap.get(ServoImplEx.class, "leftArm");
         rightArm = hardwareMap.get(ServoImplEx.class, "rightArm");
         grip = hardwareMap.get(ServoImplEx.class, "grip");
-
 
         leftArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
         rightArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
@@ -26,73 +24,113 @@ public class Outtake {
         leftArm.setDirection(ServoImplEx.Direction.REVERSE);
     }
 
-    //ARM
-    public class raiseArm implements Action {
+    // ARM
+    public class DepositArm implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            leftArm.setPosition(settings.upperArmRaised);
-            rightArm.setPosition(settings.upperArmRaised);
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
 
-            return false;
+            leftArm.setPosition(settings.upperArmDeposit);
+            rightArm.setPosition(settings.upperArmDeposit);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
 
-    public Action raiseArm() {
-        return new raiseArm();
+    public Action depositArm() {
+        return new DepositArm();
     }
 
-    public class specIntakeArm implements Action {
+    public class SpecIntakeArm implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
             leftArm.setPosition(settings.upperArmIntake);
             rightArm.setPosition(settings.upperArmIntake);
 
-            return false;
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
 
     public Action specIntakeArm() {
-        return new specIntakeArm();
+        return new SpecIntakeArm();
     }
 
-    public class lowerArm implements Action {
+    public class TransferArm implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            leftArm.setPosition(settings.upperArmLowered);
-            rightArm.setPosition(settings.upperArmLowered);
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
 
-            return false;
+            leftArm.setPosition(settings.upperArmTransfer);
+            rightArm.setPosition(settings.upperArmTransfer);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
 
-    public Action lowerArm() {
-        return new lowerArm();
+    public Action transferArm() {
+        return new TransferArm();
     }
 
-    //GRIP
+    // GRIP
+    public class CloseGrip implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
 
-    public class closeGrip implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
             grip.setPosition(settings.gripClosed);
-            return false;
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
 
     public Action closeGrip() {
-        return new closeGrip();
+        return new CloseGrip();
     }
 
-    public class openGrip implements Action {
+    public class OpenGrip implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
             grip.setPosition(settings.gripOpen);
 
-            return false;
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
         }
     }
+
     public Action openGrip() {
-        return new openGrip();
+        return new OpenGrip();
     }
 }

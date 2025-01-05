@@ -3,16 +3,14 @@ package org.firstinspires.ftc.teamcode.powercut.auto;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 @Autonomous
@@ -69,75 +67,7 @@ public class redBasketAuto extends OpMode {
 
     @Override
     public void start() {
-        Actions.runBlocking(
-                new SequentialAction(
-                        new ParallelAction(
-                                toRung,
-                                lift.liftTopRung()
-                        ),
-                        lift.liftTopRungAttached(),
-                        new ParallelAction(
-                                outtake.openGrip(),
-                                new SleepAction(0.1)
-                        ),
-                        new ParallelAction(
-                                lift.liftRetract(),
-                                toSpike1
-                        ),
-                        new ParallelAction(
-                                outtake.lowerArm(),
-                                new SleepAction(0.25)
-                        ),
-                        new ParallelAction(
-                                outtake.closeGrip(),
-                                new SleepAction(0.1)
-                        ),
-                        new ParallelAction(
-                                outtake.raiseArm(),
-                                toBasket1,
-                                lift.liftTopBasket()
-                        ),
-                        outtake.depositArm(),
-                        new ParallelAction(
-                                outtake.openGrip(),
-                                new SleepAction(0.1)
-                        ),
-                        outtake.raiseArm(),
-                        new ParallelAction(
-                            lift.liftRetract(),
-                            toSpike2
-                        ),
-                        new ParallelAction(
-                                outtake.lowerArm(),
-                                new SleepAction(0.25)
-                        ),
-                        new ParallelAction(
-                                outtake.closeGrip(),
-                                new SleepAction(0.25)
-                        ),
-                        new ParallelAction(
-                                outtake.raiseArm(),
-                                toBasket2,
-                                lift.liftTopBasket()
-                        ),
-                        new ParallelAction(
-                                outtake.depositArm(),
-                                new SleepAction(0.25)
-                        ),
-                        new ParallelAction(
-                                outtake.openGrip(),
-                                new SleepAction(0.1)
-                        ),
-                        new ParallelAction(
-                                outtake.raiseArm(),
-                                new SleepAction(0.1)
-                        ),
-                        new ParallelAction(
-                                lift.liftRetract(),
-                                toAscent
-                        )
-                )
-        );
+
     }
 
     @Override

@@ -3,20 +3,19 @@ package org.firstinspires.ftc.teamcode.powercut.teleop;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
 import java.util.ArrayList;
@@ -54,6 +53,8 @@ public class mainTeleOp extends OpMode {
     private enum rung {
         LiftExtend,
         LowerLift,
+
+        Release
     }
     private rung rungCurrent = null;
     private enum intakeEnum {
@@ -69,6 +70,7 @@ public class mainTeleOp extends OpMode {
     // Actions
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
+    private Gamepad gamepad2Last;
 
     @Override
     public void init() {
@@ -94,6 +96,7 @@ public class mainTeleOp extends OpMode {
     public void start() {
         light.greyLarson();
         loopTimer.reset();
+        gamepad2Last = gamepad2;
     }
 
     @Override
@@ -102,21 +105,26 @@ public class mainTeleOp extends OpMode {
         TelemetryPacket packet = new TelemetryPacket();
         double yaw = drive.getYaw();
         telemetry.addData("Yaw", yaw);
+        double yawRad = Math.toRadians(yaw);
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
+        double x_rotated = y * Math.cos(yawRad) - x * Math.sin(yawRad);
+        double y_rotated = y * Math.sin(yawRad) + x * Math.cos(yawRad);
 
         //cache motor control for faster loop times
-        if ((Math.abs(x-lastX) > settings.driveCacheAmount) || (Math.abs(y-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
-            drive.setDrivetrainPowers(x, y, theta, 1);
-            lastX = x;
-            lastY = y;
+        if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
+            drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+            lastX = x_rotated;
+            lastY = y_rotated;
             lastTheta = theta;
         }
 
         if (current == sequence.Intake) {
             gripBasedLightControl();
         }
+
+        ancillarySystemControl();
 
         String routine = "";
         if (current == sequence.Intake) {
@@ -130,12 +138,6 @@ public class mainTeleOp extends OpMode {
         } else if (current == sequence.BottomRung) {
             routine = "Bottom Rung";
         }
-
-
-        ancillarySystemControl();
-
-
-
 
         Intake.sampleColour sampleColour = intake.getSampleColour();
         String colour = "";
@@ -154,8 +156,9 @@ public class mainTeleOp extends OpMode {
         }
 
         telemetry.addLine("Sample: " + colour);
-
+        telemetry.addLine("Routine: " + routine);
         telemetry.addData("Loop Timer", loopTimer.time(TimeUnit.MILLISECONDS));
+        telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
 
         List<Action> newActions = new ArrayList<>();
         for (Action action : runningActions) {
@@ -166,6 +169,7 @@ public class mainTeleOp extends OpMode {
         }
         runningActions = newActions;
 
+        gamepad2Last = gamepad2;
         telemetry.update();
         loopTimer.reset();
     }
@@ -188,214 +192,66 @@ public class mainTeleOp extends OpMode {
         if (lift.isLiftAvailable) {
             lift.setLiftPower(settings.liftHoldPower);
         }
-
-        if (gamepad2.dpad_up) {
-            runningActions.clear();
-            current = sequence.TopBasket;
-            basketCurrent = basket.LiftExtend;
-            authorised = true;
-        } else if (gamepad2.dpad_right) {
-            runningActions.clear();
-            current = sequence.BottomBasket;
-            basketCurrent = basket.LiftExtend;
-            authorised = true;
-        } else if (gamepad2.dpad_left) {
-            runningActions.clear();
-            current = sequence.TopRung;
-            rungCurrent = rung.LiftExtend;
-            authorised = true;
-        } else if (gamepad2.dpad_down) {
-            runningActions.clear();
-            current = sequence.BottomRung;
-            rungCurrent = rung.LiftExtend;
-            authorised = true;
-        } else if (gamepad2.left_bumper) {
-            runningActions.clear();
+//Intake
+        if (gamepad2.dpad_up && !gamepad2Last.dpad_up) {
             current = sequence.Intake;
-            intakeCurrent = intakeEnum.GripOpen;
-            authorised = true;
-        }
-
-
-        if (gamepad2.cross && !authLast) {
-            authorised = true;
-        }
-        authLast = gamepad2.cross;
-
-        if (gamepad2.circle) {
-            authorised = false;
-            current = null;
-            basketCurrent = null;
-            rungCurrent = null;
-            lift.isLiftAvailable = true;
-            runningActions.clear();
-        }
-
-        if (gamepad2.triangle) {
-            authorised = false;
-            current = null;
-            basketCurrent = null;
-            rungCurrent = null;
-            runningActions.clear();
-
             runningActions.add(
                     new SequentialAction(
-                    new ParallelAction(
-                        lift.liftRetract(),
-                        outtake.raiseArm()
-                    ),
-                            new InstantAction(() -> lift.isLiftAvailable = true)
+                            new ParallelAction(
+                                    intake.intakeExtendo(),
+                                    intake.intake(),
+                                    lift.liftRetract(),
+                                    outtake.transferArm(),
+                                    outtake.openGrip()
+                            ),
+                            intake.lowerArm()
                     )
             );
+
+
+
+        } else if (!gamepad2.dpad_up && gamepad2Last.dpad_up && (current == sequence.Intake)) {
+            current = null;
+            runningActions.add(
+                    new SequentialAction(
+                            intake.transfer(),
+                            outtake.closeGrip()
+                    )
+            );
+
         }
 
-        if (authorised) {
-            authorised = false;
-            if (current == sequence.TopBasket) {
-                if (basketCurrent == basket.LiftExtend) {
-                    runningActions.add(new SequentialAction(
-                                    outtake.lowerArm(),
-                                    lift.liftTopBasket(),
-                                    outtake.lowerArm(),
-                                    new InstantAction(() -> basketCurrent = basket.Release)
-                            )
-                    );
-                }
+// Top Basket
+        if (gamepad2.dpad_down && !gamepad2Last.dpad_down) {
+            current = sequence.TopBasket;
+            runningActions.add(
+                   new SequentialAction(
+                           new ParallelAction(
+                           lift.liftTopRung(),
+                           drive.alignBasket()
+                           ),
+                           outtake.depositArm()
+                   )
+            );
 
 
-                else if (basketCurrent == basket.Release) {
-                    runningActions.add(
-                            new ParallelAction(
-                                new SequentialAction(
-                                    outtake.openGrip(),
-                                    new SleepAction(0.1),
-                                    new ParallelAction(
-                                        outtake.raiseArm(),
-                                        lift.liftRetract()
-                                    )
-                                ),
-                                    new InstantAction(() -> basketCurrent = null),
-                                    new InstantAction(() -> current = null)
-                            ));
-                }
 
-            }
-
-            if (current == sequence.BottomBasket) {
-                if (basketCurrent == basket.LiftExtend) {
-                    runningActions.add(new SequentialAction(
-                                    outtake.raiseArm(),
-                                    lift.liftBottomBasket(),
-                                    outtake.depositArm(),
-                                    new InstantAction(() -> basketCurrent = basket.Release)
-                            )
-                    );
-                }
-
-                else if (basketCurrent == basket.Release) {
-                    runningActions.add(
-                            new ParallelAction(
-                                    new SequentialAction(
-                                            outtake.openGrip(),
-                                            new SleepAction(0.1),
-                                            new ParallelAction(
-                                                    outtake.raiseArm(),
-                                                    lift.liftRetract()
-                                            )
-                                    ),
-                                    new InstantAction(() -> basketCurrent = null),
-                                    new InstantAction(() -> current = null)
-                            ));
-                }
-
-            }
-
-            if (current == sequence.TopRung) {
-                if (rungCurrent == rung.LiftExtend) {
-                    runningActions.add(new SequentialAction(
-                            outtake.depositArm(),
-                            lift.liftTopRung(),
-                            new InstantAction(() -> rungCurrent = rung.LowerLift)
-                            ));
-                }
-
-                if (rungCurrent == rung.LowerLift) {
-                    runningActions.add(new SequentialAction(
-                            lift.liftTopRungAttached(),
+        } else if (!gamepad2.dpad_down && gamepad2Last.dpad_down && (current == sequence.TopBasket)) {
+            current = null;
+            runningActions.add(
+                    new SequentialAction(
                             outtake.openGrip(),
-                            new SleepAction(0.1),
                             new ParallelAction(
-                                    outtake.raiseArm(),
                                     lift.liftRetract(),
-                                    new InstantAction(() -> rungCurrent = null),
-                                    new InstantAction(() -> current = null)
+                                    outtake.transferArm()
                             )
-                    ));
-                }
 
+                    )
+            );
 
-            }
-
-            if (current == sequence.BottomRung) {
-                if (rungCurrent == rung.LiftExtend) {
-                    runningActions.add(new SequentialAction(
-                            outtake.depositArm(),
-                            lift.liftBottomRung(),
-                            new InstantAction(() -> rungCurrent = rung.LowerLift)
-                    ));
-                }
-
-                else if (rungCurrent == rung.LowerLift) {
-                    runningActions.add(new SequentialAction(
-                            lift.liftBottomRungAttached(),
-                            outtake.openGrip(),
-                            new SleepAction(0.1),
-                            new ParallelAction(
-                                    outtake.raiseArm(),
-                                    lift.liftRetract(),
-                                    new InstantAction(() -> rungCurrent = null),
-                                    new InstantAction(() -> current = null)
-                            )
-                    ));
-                }
-
-            }
-
-            if (current == sequence.Intake) {
-                if (intakeCurrent == intake.GripOpen) {
-                    runningActions.add(new SequentialAction(
-                    new ParallelAction(
-                            lift.liftRetract(),
-                            outtake.raiseArm(),
-                            outtake.openGrip()
-                    ),
-                            new InstantAction(() -> intakeCurrent = intake.ArmDown)
-                    ));
-                }
-
-                else if (intakeCurrent == intake.ArmDown) {
-                    runningActions.add(new SequentialAction(
-                            outtake.lowerArm(),
-                            new InstantAction(() -> intakeCurrent = intake.GripClosed)
-                    ));
-                }
-
-                else if (intakeCurrent == intake.GripClosed) {
-                    runningActions.add(new SequentialAction(
-                            outtake.closeGrip(),
-                            new InstantAction(() -> intakeCurrent = intake.ArmUp)
-                    ));
-                }
-
-                else if (intakeCurrent == intake.ArmUp) {
-                    runningActions.add(new SequentialAction(
-                            outtake.raiseArm(),
-                            new InstantAction(() -> intakeCurrent = null),
-                            new InstantAction(() -> current = null)
-                    ));
-                }
-            }
         }
+
+
     }
 
 }
