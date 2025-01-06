@@ -50,12 +50,20 @@ public class testing extends OpMode {
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
+        double yaw = drive.getYaw();
+        double yawRad = Math.toRadians(yaw);
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double yaw = drive.getYaw();
-        drive.setDrivetrainPowers(x, y, theta,1);
-telemetry.addData("Theta", theta);
+        double x_rotated = y * Math.cos(yawRad) - x * Math.sin(yawRad);
+        double y_rotated = y * Math.sin(yawRad) + x * Math.cos(yawRad);
+        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
+
+        telemetry.addData("X:", x);
+        telemetry.addData("Y:", y);
+        telemetry.addData("XRot:", x_rotated);
+        telemetry.addData("YRot:", y_rotated);
+        telemetry.addData("Theta", theta);
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
         telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
@@ -75,13 +83,13 @@ telemetry.addData("Theta", theta);
             runningActions.clear();
         }
         if (gamepad1.dpad_up) {
-            runningActions.add(outtake.raiseArm());
+            runningActions.add(outtake.depositArm());
         }
         if (gamepad1.dpad_right) {
             runningActions.add(outtake.specIntakeArm());
         }
         if (gamepad1.dpad_down) {
-            runningActions.add(outtake.lowerArm());
+            runningActions.add(outtake.transferArm());
         }
 
 
