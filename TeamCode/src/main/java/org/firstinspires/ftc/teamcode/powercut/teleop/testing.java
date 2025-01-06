@@ -36,6 +36,7 @@ public class testing extends OpMode {
     @Override
     public void init() {
         outtake.init(hardwareMap);
+        intake.init(hardwareMap);
         lift.init(hardwareMap);
         drive.init(hardwareMap);
         light.init(hardwareMap);
@@ -66,6 +67,7 @@ public class testing extends OpMode {
         telemetry.addData("Theta", theta);
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
+        telemetry.addData("US Reads", "%d, %d", drive.leftRearUltrasonic, lift.rightLift.getCurrentPosition());
         telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
         telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d, %5.2f", intake.colourRangeSensor.red(), intake.colourRangeSensor.green(), intake.colourRangeSensor.blue(), intake.colourRangeSensor.alpha(), intake.colourRangeSensor.getDistance(DistanceUnit.MM));
 
@@ -93,17 +95,14 @@ public class testing extends OpMode {
         }
 
 
-//        if (gamepad1.dpad_up) {
-//            runningActions.add(outtake.raiseArm());
-//        }
-//
-//        if (gamepad1.dpad_down) {
-//            runningActions.add(outtake.depositArm());
-//        }
-//
-//        if (gamepad1.dpad_right) {
-//            runningActions.add(outtake.lowerArm());
-//        }
+        if (gamepad2.dpad_up) {
+            runningActions.add(intake.intakeExtendo());
+        }
+
+        if (gamepad2.dpad_down) {
+            runningActions.add(intake.transferExtendo());
+        }
+
 
         if (gamepad2.triangle) {
             runningActions.clear();
