@@ -68,7 +68,7 @@ public class testing extends OpMode {
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
         telemetry.addData("US Reads LR", "%d, %d", drive.leftRearUltrasonic.getDistance(), drive.rightRearUltrasonic.getDistance());
-        telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM);
+        telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
         telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
         telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d, %5.2f", intake.colourRangeSensor.red(), intake.colourRangeSensor.green(), intake.colourRangeSensor.blue(), intake.colourRangeSensor.alpha(), intake.colourRangeSensor.getDistance(DistanceUnit.MM));
 
