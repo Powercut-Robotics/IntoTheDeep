@@ -196,20 +196,15 @@ public class mainTeleOp extends OpMode {
         if (gamepad2.dpad_up && !gamepad2Last.dpad_up) {
             current = sequence.Intake;
             runningActions.add(
-                    new SequentialAction(
                             new ParallelAction(
                                     intake.intakeExtendo(),
                                     intake.intake(),
                                     lift.liftRetract(),
                                     outtake.transferArm(),
-                                    outtake.openGrip()
-                            ),
-                            intake.lowerArm()
-                    )
+                                    outtake.openGrip(),
+                                    intake.lowerArm()
+                            )
             );
-
-
-
         } else if (!gamepad2.dpad_up && gamepad2Last.dpad_up && (current == sequence.Intake)) {
             current = null;
             runningActions.add(
@@ -233,9 +228,6 @@ public class mainTeleOp extends OpMode {
                            outtake.depositArm()
                    )
             );
-
-
-
         } else if (!gamepad2.dpad_down && gamepad2Last.dpad_down && (current == sequence.TopBasket)) {
             current = null;
             runningActions.add(
@@ -249,6 +241,29 @@ public class mainTeleOp extends OpMode {
                     )
             );
 
+        }
+
+        //top rung
+        if (gamepad2.dpad_left && !gamepad2Last.dpad_left) {
+            current = sequence.TopRung;
+            runningActions.add(
+                    new ParallelAction(
+                            outtake.depositArm(),
+                            lift.liftTopRung()
+                    )
+            );
+        } else if (!gamepad2.dpad_left && gamepad2Last.dpad_left && (current == sequence.TopRung)) {
+            current = null;
+            runningActions.add(
+                    new SequentialAction(
+                            outtake.specIntakeArm(),
+                            new ParallelAction(
+                                    outtake.openGrip(),
+                                    lift.liftRetract()
+                            ),
+                            outtake.transferArm()
+                    )
+            );
         }
 
 
