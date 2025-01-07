@@ -41,10 +41,15 @@ public class LightSystem {
     public void blueChase() {
         pattern = RevBlinkinLedDriver.BlinkinPattern.LIGHT_CHASE_BLUE;
         driver.setPattern(pattern);
-    }
 
+    }
     public void redLarson() {
         pattern = RevBlinkinLedDriver.BlinkinPattern.LARSON_SCANNER_RED;
+        driver.setPattern(pattern);
+    }
+
+    public void redStrobe() {
+        pattern = RevBlinkinLedDriver.BlinkinPattern.STROBE_RED;
         driver.setPattern(pattern);
     }
 

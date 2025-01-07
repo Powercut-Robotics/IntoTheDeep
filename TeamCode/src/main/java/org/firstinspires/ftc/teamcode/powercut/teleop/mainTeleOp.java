@@ -45,27 +45,6 @@ public class mainTeleOp extends OpMode {
         Intake
     }
     private sequence current = null;
-    private enum basket {
-        LiftExtend,
-        Release
-    }
-    private basket basketCurrent = null;
-    private enum rung {
-        LiftExtend,
-        LowerLift,
-
-        Release
-    }
-    private rung rungCurrent = null;
-    private enum intakeEnum {
-        GripOpen,
-        ArmDown,
-        GripClosed,
-        ArmUp
-    }
-    private intakeEnum intakeCurrent = null;
-
-    private boolean authLast = false;
 
     // Actions
     private final FtcDashboard dash = FtcDashboard.getInstance();

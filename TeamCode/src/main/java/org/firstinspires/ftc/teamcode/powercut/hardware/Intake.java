@@ -165,7 +165,6 @@ public class Intake {
     // INTAKE
     public class IntakeAction implements Action {
         private long startTime;
-        private static final long DURATION = 300;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -177,12 +176,11 @@ public class Intake {
 
             if (sample == sampleColour.NONE) {
                 intakeWheels.setPosition(1);
+                return true;
             } else {
                 intakeWheels.setPosition(0.5);
+                return false;
             }
-
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            return elapsedTime < DURATION;
         }
     }
 
@@ -205,12 +203,12 @@ public class Intake {
 
             if (sample == sampleColour.NONE) {
                 intakeWheels.setPosition(0.5);
+                return false;
             } else {
                 intakeWheels.setPosition(0);
+                return true;
             }
 
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            return elapsedTime < DURATION;
         }
     }
 
@@ -234,12 +232,13 @@ public class Intake {
 
             if (inTray) {
                 intakeWheels.setPosition(0.5);
+                return false;
             } else {
                 intakeWheels.setPosition(0);
+                return true;
             }
 
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            return elapsedTime < DURATION;
+
         }
     }
 
