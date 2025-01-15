@@ -11,7 +11,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.TCS34725;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
@@ -28,8 +29,14 @@ import java.util.List;
 @Config
 public class Drivetrain {
     public DcMotorEx leftFront, leftBack, rightFront, rightBack;
-    public URM09Sensor leftRearUltrasonic, rightRearUltrasonic;
+    public URM09Sensor leftUpperUS;
+    public URM09Sensor rightUpperUS;
+    public TCS34725 colorSensor;
+
+    public AnalogInput leftLowerUS, rightLowerUS;
     public Rev2mDistanceSensor frontLeftToF, frontRightToF;
+
+
     public IMU imu = null;
     private PIDEx XYAlignPID = new PIDEx(settings.basketXYCoefficients);
     private PIDEx yawAlignPID = new PIDEx(settings.basketYawCoefficients);
@@ -45,14 +52,17 @@ public class Drivetrain {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-        leftRearUltrasonic = hardwareMap.get(URM09Sensor.class, "leftRearUltrasonic");
-        rightRearUltrasonic = hardwareMap.get(URM09Sensor.class, "rightRearUltrasonic");
-        frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftTof");
-        frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightTof");
+//        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+//        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+//        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+//        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+//        leftUpperUS = hardwareMap.get(URM09Sensor.class, "leftUpperUS");
+//        rightUpperUS = hardwareMap.get(URM09Sensor.class, "rightUpperUS");
+        leftLowerUS = hardwareMap.get(AnalogInput.class, "leftLowerUS");
+        rightLowerUS = hardwareMap.get(AnalogInput.class, "rightLowerUS");
+        colorSensor = hardwareMap.get(TCS34725.class, "colour");
+//        frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftToF");
+//        frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightToF");
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -65,16 +75,16 @@ public class Drivetrain {
                 )
         );
 
-        leftRearUltrasonic.setMeasurementMode(true);
-        rightRearUltrasonic.setMeasurementMode(true);
-
-        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
+//        leftUpperUS.setMeasurementMode(true);
+//        rightUpperUS.setMeasurementMode(true);
+//
+//        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//        leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//        rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//
+//        rightFront.setDirection(DcMotor.Direction.REVERSE);
+//        rightBack.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
@@ -102,8 +112,10 @@ public class Drivetrain {
 
         double difference = rightDistance - leftDistance;
 
-        return Math.toDegrees(Math.atan(difference/ToFCentreDistance));
+        return Math.toDegrees(Math.asin(difference/ToFCentreDistance));
     }
+
+   
 
     public class alignBasket implements Action {
         @Override
@@ -113,8 +125,8 @@ public class Drivetrain {
             double yawError = (-45 - yaw);
             double yawErrorRad = Math.toRadians(yawError);
 
-            double leftDistanceRaw = leftRearUltrasonic.getDistance();
-            double rightDistanceRaw = rightRearUltrasonic.getDistance();
+            double leftDistanceRaw = leftUpperUS.getDistance();
+            double rightDistanceRaw = rightUpperUS.getDistance();
 
             double leftDistance = Math.cos(yawErrorRad) * leftDistanceRaw;
             double rightDistance = Math.cos(yawErrorRad) * rightDistanceRaw;
