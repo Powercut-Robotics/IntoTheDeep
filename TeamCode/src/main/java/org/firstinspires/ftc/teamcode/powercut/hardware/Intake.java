@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.powercut.settings;
 import java.util.List;
 
 public class Intake {
-    private ServoImplEx intakeLeftArm, intakeRightArm, extendoLeft, extendoRight, intakeWheels;
+    public ServoImplEx intakeLeftArm, intakeRightArm, extendoLeft, extendoRight, intakeWheels;
     public ColorRangeSensor colourRangeSensor = null;
     public TouchSensor trayTouchSensor;
 
@@ -38,7 +38,7 @@ public class Intake {
 
         intakeLeftArm = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
         intakeRightArm = hardwareMap.get(ServoImplEx.class, "intakeRightArm");
-        extendoLeft = hardwareMap.get(ServoImplEx.class, "extendoRight");
+        extendoLeft = hardwareMap.get(ServoImplEx.class, "extendoLeft");
         extendoRight = hardwareMap.get(ServoImplEx.class, "extendoRight");
         intakeWheels = hardwareMap.get(ServoImplEx.class, "intakeWheels");
         colourRangeSensor = hardwareMap.get(ColorRangeSensor.class, "intakeColour");

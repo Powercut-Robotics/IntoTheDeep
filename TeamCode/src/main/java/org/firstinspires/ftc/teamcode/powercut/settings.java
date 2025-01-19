@@ -22,7 +22,7 @@ public class settings {
     public static double intakeArmTransfer = 0.45;
     public static double intakeArmIntake = 0.8;
 
-    public static double extendoIntake = 0.7;
+    public static double extendoIntake = 0.23;
     public static double extendoTransfer = 0.5;
 
     public static double upperArmDeposit = 0.45;

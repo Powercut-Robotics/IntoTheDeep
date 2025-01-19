@@ -4,27 +4,23 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
-import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp
-public class testing extends OpMode {
-    private final Intake intake = new Intake();
-    private final Outtake outtake = new Outtake();
-    private final Lift lift = new Lift();
+public class drivetest extends OpMode {
+   private final Intake intake = new Intake();
+//    private final Outtake outtake = new Outtake();
+//    private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
-    private final LightSystem light = new LightSystem();
+//    private final LightSystem light = new LightSystem();
 
     private boolean isActionRunning = false;
 
@@ -32,17 +28,14 @@ public class testing extends OpMode {
     private List<Action> runningActions = new ArrayList<>();
     @Override
     public void init() {
-        outtake.init(hardwareMap);
-        intake.init(hardwareMap);
-        lift.init(hardwareMap);
+
         drive.init(hardwareMap);
-        light.init(hardwareMap);
+intake.init(hardwareMap);
 
         drive.imu.resetYaw();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        light.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP1_2_COLOR_WAVES);
         telemetry.addLine("Initialised");
         telemetry.update();
     }
@@ -50,13 +43,14 @@ public class testing extends OpMode {
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
+        runningActions.add(intake.transferExtendo());
         double yaw = drive.getYaw();
         double yawRad = Math.toRadians(yaw);
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double x_rotated = y * Math.cos(yawRad) - x * Math.sin(yawRad);
-        double y_rotated = y * Math.sin(yawRad) + x * Math.cos(yawRad);
+        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
         drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
 
         telemetry.addData("X:", x);
@@ -65,11 +59,8 @@ public class testing extends OpMode {
         telemetry.addData("YRot:", y_rotated);
         telemetry.addData("Theta", theta);
         telemetry.addData("Yaw:", yaw);
-        telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
-        telemetry.addData("US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
 
-        telemetry.addData("Lift Power", "%4.3f, %4.3f", lift.leftLift.getPower(), lift.rightLift.getPower());
-        telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d, %5.2f", intake.colourRangeSensor.red(), intake.colourRangeSensor.green(), intake.colourRangeSensor.blue(), intake.colourRangeSensor.alpha(), intake.colourRangeSensor.getDistance(DistanceUnit.MM));
+        telemetry.addData("US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
 
         telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
 //        if (Math.abs(-gamepad2.right_stick_y) > 0.05) {

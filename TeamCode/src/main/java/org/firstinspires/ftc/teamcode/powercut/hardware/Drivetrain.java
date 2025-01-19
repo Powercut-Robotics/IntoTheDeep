@@ -12,6 +12,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -52,17 +53,16 @@ public class Drivetrain {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-//        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-//        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-//        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-//        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-//        leftUpperUS = hardwareMap.get(URM09Sensor.class, "leftUpperUS");
-//        rightUpperUS = hardwareMap.get(URM09Sensor.class, "rightUpperUS");
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        leftUpperUS = hardwareMap.get(URM09Sensor.class, "leftUpperUS");
+        rightUpperUS = hardwareMap.get(URM09Sensor.class, "rightUpperUS");
         leftLowerUS = hardwareMap.get(AnalogInput.class, "leftLowerUS");
         rightLowerUS = hardwareMap.get(AnalogInput.class, "rightLowerUS");
-        colorSensor = hardwareMap.get(TCS34725.class, "colour");
-//        frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftToF");
-//        frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightToF");
+        frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftToF");
+        frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightToF");
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -75,16 +75,16 @@ public class Drivetrain {
                 )
         );
 
-//        leftUpperUS.setMeasurementMode(true);
-//        rightUpperUS.setMeasurementMode(true);
-//
-//        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//        leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//        rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-//
-//        rightFront.setDirection(DcMotor.Direction.REVERSE);
-//        rightBack.setDirection(DcMotor.Direction.REVERSE);
+        leftUpperUS.setMeasurementMode(true);
+        rightUpperUS.setMeasurementMode(true);
+
+        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
