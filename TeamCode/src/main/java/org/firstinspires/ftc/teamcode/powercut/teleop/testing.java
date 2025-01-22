@@ -65,8 +65,8 @@ public class testing extends OpMode {
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double x_rotated = y * Math.cos(yawRad) - x * Math.sin(yawRad);
-        double y_rotated = y * Math.sin(yawRad) + x * Math.cos(yawRad);
+        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
         drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
 
         telemetry.addData("X:", x);

@@ -80,17 +80,23 @@ public class mainTeleOp extends OpMode {
 
     @Override
     public void loop() {
-
         TelemetryPacket packet = new TelemetryPacket();
+
         double yaw = drive.getYaw();
-        telemetry.addData("Yaw", yaw);
         double yawRad = Math.toRadians(yaw);
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double x_rotated = y * Math.cos(yawRad) - x * Math.sin(yawRad);
-        double y_rotated = y * Math.sin(yawRad) + x * Math.cos(yawRad);
+        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
 
+        telemetry.addData("X:", x);
+        telemetry.addData("Y:", y);
+        telemetry.addData("XRot:", x_rotated);
+        telemetry.addData("YRot:", y_rotated);
+        telemetry.addData("Theta", theta);
+        telemetry.addData("Yaw:", yaw);
         //cache motor control for faster loop times
         if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
             drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
