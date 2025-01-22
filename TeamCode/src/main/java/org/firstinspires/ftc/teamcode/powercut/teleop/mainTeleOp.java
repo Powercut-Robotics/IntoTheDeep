@@ -177,7 +177,7 @@ public class mainTeleOp extends OpMode {
             runningActions.add(
                             new ParallelAction(
                                     intake.intakeExtendo(),
-                                    intake.intake(),
+                                    intake.intakeAction(),
                                     lift.liftRetract(),
                                     outtake.transferArm(),
                                     outtake.openGrip(),
@@ -188,7 +188,7 @@ public class mainTeleOp extends OpMode {
             current = null;
             runningActions.add(
                     new SequentialAction(
-                            intake.transfer(),
+                            intake.transferAction(),
                             outtake.closeGrip()
                     )
             );

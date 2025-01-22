@@ -37,12 +37,10 @@ public class USTest extends OpMode {
 //        telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
         double leftLowerMVout = drive.leftLowerUS.getVoltage() * 1000;
         double rightLowerMVout = drive.rightLowerUS.getVoltage() * 1000;
-        drive.colorSensor.enable();
+
 
         telemetry.addData("Analog", "%5.2f, %5.2f", leftLowerMVout , rightLowerMVout);
         telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
-        telemetry.addData("Colour", "%d, %d, %d, %d", drive.colorSensor.red(), drive.colorSensor.green(),drive.colorSensor.blue(),drive.colorSensor.alpha());
-
 
 
 

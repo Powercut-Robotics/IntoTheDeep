@@ -20,7 +20,6 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.TCS34725;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
@@ -32,7 +31,7 @@ public class Drivetrain {
     public DcMotorEx leftFront, leftBack, rightFront, rightBack;
     public URM09Sensor leftUpperUS;
     public URM09Sensor rightUpperUS;
-    public TCS34725 colorSensor;
+
 
     public AnalogInput leftLowerUS, rightLowerUS;
     public Rev2mDistanceSensor frontLeftToF, frontRightToF;
@@ -63,6 +62,9 @@ public class Drivetrain {
         rightLowerUS = hardwareMap.get(AnalogInput.class, "rightLowerUS");
         frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftToF");
         frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightToF");
+
+
+
 
         imu = hardwareMap.get(IMU.class, "imu");
 

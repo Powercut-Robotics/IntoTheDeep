@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
 public class Outtake {
-    private ServoImplEx leftArm, rightArm, grip;
+    public ServoImplEx leftArm, rightArm, grip;
 
     public void init(HardwareMap hardwareMap) {
         leftArm = hardwareMap.get(ServoImplEx.class, "leftArm");
@@ -20,6 +20,7 @@ public class Outtake {
 
         leftArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
         rightArm.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        grip.setPwmRange(new PwmControl.PwmRange(500, 2500));
 
         leftArm.setDirection(ServoImplEx.Direction.REVERSE);
     }
