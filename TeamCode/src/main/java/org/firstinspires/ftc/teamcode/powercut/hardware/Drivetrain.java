@@ -29,10 +29,7 @@ import java.util.List;
 @Config
 public class Drivetrain {
     public DcMotorEx leftFront, leftBack, rightFront, rightBack;
-    public URM09Sensor leftUpperUS;
-    public URM09Sensor rightUpperUS;
-
-
+    public URM09Sensor leftUpperUS, rightUpperUS;
     public AnalogInput leftLowerUS, rightLowerUS;
     public Rev2mDistanceSensor frontLeftToF, frontRightToF;
 
@@ -44,6 +41,7 @@ public class Drivetrain {
     public static double yawAlignDeadzone = 5;
     public static double xyAlignDeadzone = 5;
     public static double ToFCentreDistance = 180;
+    public static double USCentreDistance = 33;
 
     public void init(@NonNull HardwareMap hardwareMap) {
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -117,7 +115,17 @@ public class Drivetrain {
         return Math.toDegrees(Math.asin(difference/ToFCentreDistance));
     }
 
-   
+    public double getYawFromUS() {
+        double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
+        double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
+
+        double leftDistance = (leftLowerMVout*520)/3300;
+        double rightDistance = (rightLowerMVout*520)/3300;
+
+        double difference = rightDistance - leftDistance;
+
+        return Math.toDegrees(Math.asin(difference/USCentreDistance));
+    }
 
     public class alignBasket implements Action {
         @Override
@@ -153,5 +161,37 @@ public class Drivetrain {
 
     public Action alignBasket() {
         return new alignBasket();
+    }
+
+    public class alignRung implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            double yaw = getYaw();
+            double yawError = (0 - yaw);
+
+            packet.addLine("Yaw Error " + yawError);
+
+            double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
+            double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
+
+            double leftDistance = (leftLowerMVout*520)/3300;
+            double rightDistance = (rightLowerMVout*520)/3300;
+
+            double y = XYAlignPID.calculate(settings.rungAlignDistance, (rightDistance+leftDistance)/2);
+            double theta = yawAlignPID.calculate(0, yaw);
+            packet.addLine("Theta " + theta);
+            setDrivetrainPowers(0, y, 0, 1);;
+
+            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < xyAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < xyAlignDeadzone)) {
+                setDrivetrainPowers(0,0,0,1);
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    public Action alignRung() {
+        return new alignRung();
     }
 }

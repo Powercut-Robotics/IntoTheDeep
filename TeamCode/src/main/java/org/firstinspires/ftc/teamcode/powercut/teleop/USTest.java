@@ -39,7 +39,7 @@ public class USTest extends OpMode {
         double rightLowerMVout = drive.rightLowerUS.getVoltage() * 1000;
 
 
-        telemetry.addData("Analog", "%5.2f, %5.2f", leftLowerMVout , rightLowerMVout);
+//        telemetry.addData("Analog", "%5.2f, %5.2f", leftLowerMVout , rightLowerMVout);
         telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
 
 

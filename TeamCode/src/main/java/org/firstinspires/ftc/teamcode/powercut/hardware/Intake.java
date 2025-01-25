@@ -119,7 +119,7 @@ public class Intake {
 
     public class TravelArm implements Action {
         private long startTime;
-        private static final long DURATION = 1200;
+        private static final long DURATION = 1100;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -243,20 +243,28 @@ public class Intake {
     // TRANSFER
     public class TransferAction implements Action {
 
+        private long lastDetectedTime = System.currentTimeMillis(); // Tracks the last time a sample was detected
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            sampleColour sample = getSampleColour();
             boolean inTray = trayTouchSensor.isPressed();
 
-            if (inTray) {
-                intakeWheels.setPosition(0.5);
-                return false;
+            if (sample == sampleColour.NONE) {
+                // Check if 500 ms have passed since the last detection
+                if ((System.currentTimeMillis() - lastDetectedTime > 600) || inTray) {
+                    intakeWheels.setPosition(0.5);
+                    return false; // Stop returning true
+                } else {
+                    return true; // Continue returning true until timeout expires
+                }
             } else {
                 intakeWheels.setPosition(1);
+
+                // Update the last detected time when a sample is found
+                lastDetectedTime = System.currentTimeMillis();
                 return true;
             }
-
-
         }
     }
 

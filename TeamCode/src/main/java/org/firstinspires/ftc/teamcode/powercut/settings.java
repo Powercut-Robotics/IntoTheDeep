@@ -5,8 +5,8 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class settings {
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.003,0.0000,0.00001, 500, 5, 0.05);
-    public static double liftEqCoef = 0.0005;
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.003,0.0000,0.00005, 0, 0, 0);
+    public static double liftEqCoef = 0.00025;
     public static double liftHoldPower = 0.05;
 
     public static int liftTopBasket = 2950;
@@ -21,7 +21,7 @@ public class settings {
 
     public static double intakeArmSafe = 0.98;
     public static double intakeArmTransfer = 1.00;
-    public static double intakeArmIntake = 0.32;
+    public static double intakeArmIntake = 0.34;
 
     public static double extendoIntake = 0.23;
     public static double extendoTransfer = 0.51;
@@ -35,7 +35,11 @@ public class settings {
 
     public static double basketAlignDistance = 15;
     public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
-    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(-0.1,0,0,0,0,0);
+    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
+
+    public static double rungAlignDistance = 15;
+    public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
+    public static PIDCoefficientsEx rungYawCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
 
     public static double colourThreshMultiplier = 1.5;
 

@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -19,6 +20,8 @@ import java.util.List;
 
 public class Lift {
     public DcMotorEx leftLift, rightLift;
+
+    public DigitalChannel liftStop;
 
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
@@ -34,6 +37,7 @@ public class Lift {
 
         leftLift = hardwareMap.get(DcMotorEx.class, "leftLift");
         rightLift = hardwareMap.get(DcMotorEx.class, "rightLift");
+        liftStop = hardwareMap.get(DigitalChannel.class, "liftStop");
 
         leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -42,7 +46,7 @@ public class Lift {
         leftLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        leftLift.setDirection(DcMotor.Direction.REVERSE);
+        rightLift.setDirection(DcMotor.Direction.REVERSE);
     }
 
     public double getLeftLiftCurrent() {
@@ -56,6 +60,12 @@ public class Lift {
     public void setLiftPower(double power) {
             if (power > 1.0) {
                 power = 1.0;
+            }
+            if (!liftStop.getState()) {
+                leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                leftLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
@@ -80,6 +90,8 @@ public class Lift {
 
             leftLift.setPower(leftPower);
             rightLift.setPower(rightPower);
+
+
     }
 
     public void kill() {

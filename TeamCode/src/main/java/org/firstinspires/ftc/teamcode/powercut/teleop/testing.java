@@ -33,6 +33,7 @@ public class testing extends OpMode {
     private final LightSystem light = new LightSystem();
 
     private boolean isActionRunning = false;
+    boolean isDriveAction = false;
 
     private Gamepad gamepad1last;
 
@@ -60,19 +61,18 @@ public class testing extends OpMode {
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
+
         double yaw = drive.getYaw();
         double yawRad = Math.toRadians(yaw);
         double x = gamepad1.left_stick_x;
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
-        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
-        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
-        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
+//        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+//        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+//        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
 
         telemetry.addData("X:", x);
         telemetry.addData("Y:", y);
-        telemetry.addData("XRot:", x_rotated);
-        telemetry.addData("YRot:", y_rotated);
         telemetry.addData("Theta", theta);
         telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
@@ -82,13 +82,21 @@ public class testing extends OpMode {
         telemetry.addData("Colour Sensor Values (RGBA), Range", "%d, %d, %d, %d", intake.colourSensor.red(), intake.colourSensor.green(), intake.colourSensor.blue(), intake.colourSensor.alpha());
         telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
 
-        telemetry.addData("Action running", isActionRunning);
+        double leftLowerMVout = drive.leftLowerUS.getVoltage() * 1000;
+        double rightLowerMVout = drive.rightLowerUS.getVoltage() * 1000;
+
+
+//        telemetry.addData("Analog", "%5.2f, %5.2f", leftLowerMVout , rightLowerMVout);
+        telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
         telemetry.addData("gamepad 2 y", -gamepad2.right_stick_y);
+        telemetry.addData("Yaw from US", drive.getYawFromUS());
+        telemetry.addData("Lift Stop", !lift.liftStop.getState());
+
         if (Math.abs(-gamepad2.right_stick_y) > 0.05) {
             isActionRunning = false;
             double liftPower = -gamepad2.right_stick_y;
             lift.setLiftPower(liftPower);
-        } else if (!isActionRunning) {
+        } else if (!isActionRunning && lift.liftStop.getState()) {
             double liftPower = settings.liftHoldPower;
             lift.setLiftPower(liftPower);
         }
@@ -96,7 +104,9 @@ public class testing extends OpMode {
 //        if (!isActionRunning) {
 //            runningActions.clear();
 //        }
-        if (gamepad1.triangle && ! gamepad1last.triangle) {
+        if (gamepad1.triangle) {
+            runningActions.clear();
+            isActionRunning = true;
             runningActions.add(new SequentialAction(
                     new ParallelAction(
                             intake.intakeExtendo(),
@@ -104,46 +114,76 @@ public class testing extends OpMode {
                             intake.intakeAction(),
                             outtake.transferArm(),
                             outtake.openGrip()
-                    )
-
-            ));
-        } else if (gamepad1last.triangle && !gamepad1last.triangle) {
-            runningActions.add(new SequentialAction(
+                    ),
                     new ParallelAction(
                             intake.travelArm(),
                             new SequentialAction(new SleepAction(0.7), intake.transferExtendo())
                     ),
                     intake.transferArm(),
                     intake.transferAction(),
-                    outtake.closeGrip()
+                    outtake.closeGrip(),
+            new InstantAction(() -> isActionRunning = false)
             ));
         }
 
-        if (gamepad1.circle && !gamepad1last.circle) {
+        if (gamepad1.circle) {
+            runningActions.clear();
+            isActionRunning = true;
             runningActions.add(new SequentialAction(
-
                     lift.liftTopBasket(),
+                    new InstantAction(() -> isActionRunning = false),
                     outtake.depositArm(),
-                    outtake.openGrip()
-            ));
-        } else if (!gamepad1.circle && gamepad1last.circle) {
-            runningActions.add(new SequentialAction(
                     outtake.openGrip(),
                     new ParallelAction(
+                            outtake.closeGrip(),
                             outtake.transferArm(),
-                            outtake.openGrip(),
+                            new InstantAction(() -> isActionRunning = true),
                             lift.liftRetract()
-                    )
+                    ),
+                    new InstantAction(() -> isActionRunning = false)
+            ));
+        }
+
+        if (gamepad1.cross) {
+            runningActions.clear();
+            isActionRunning = true;
+            runningActions.add(new SequentialAction(
+                    new ParallelAction(
+                            intake.intakeExtendo(),
+                            intake.lowerArm(),
+                            intake.intakeAction(),
+                            outtake.transferArm(),
+                            outtake.openGrip()
+                    ),
+                    new ParallelAction(
+                            intake.travelArm(),
+                            new SequentialAction(new SleepAction(0.7), intake.transferExtendo())
+                    ),
+                    intake.transferArm(),
+                    intake.transferAction(),
+                    outtake.closeGrip(),
+                    lift.liftTopBasket(),
+                    new InstantAction(() -> isActionRunning = false),
+                    outtake.depositArm(),
+                    outtake.openGrip(),
+                    new ParallelAction(
+                            outtake.closeGrip(),
+                            outtake.transferArm(),
+                            new InstantAction(() -> isActionRunning = true),
+                            lift.liftRetract()
+                    ),
+                    new InstantAction(() -> isActionRunning = false)
             ));
         }
 
 
         if (gamepad1.dpad_up) {
-            runningActions.add(intake.intakeExtendo());
+            isDriveAction = true;
+            runningActions.add(new SequentialAction(drive.alignRung(), new InstantAction(() -> isDriveAction = false)));
         }
 
         if (gamepad1.dpad_down) {
-            runningActions.add(intake.transferExtendo());
+            runningActions.add(new SequentialAction(drive.alignBasket(), new InstantAction(() -> isDriveAction = false)));
         }
 
 
@@ -200,9 +240,14 @@ public class testing extends OpMode {
         }
         runningActions = newActions;
 
-        gamepad1last = gamepad1;
-        telemetry.addData("running acgtions", runningActions.size());
-        telemetry.addData("new acgtions", newActions.size());
+        telemetry.addData("running actions", runningActions.size());
+
+
+        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+        if (!isDriveAction) {
+            drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+        }
         telemetry.update();
     }
 }

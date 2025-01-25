@@ -28,7 +28,7 @@ public class Outtake {
     // ARM
     public class DepositArm implements Action {
         private long startTime;
-        private static final long DURATION = 300;
+        private static final long DURATION = 1000;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -50,7 +50,7 @@ public class Outtake {
 
     public class SpecIntakeArm implements Action {
         private long startTime;
-        private static final long DURATION = 300;
+        private static final long DURATION = 100;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -72,7 +72,7 @@ public class Outtake {
 
     public class TransferArm implements Action {
         private long startTime;
-        private static final long DURATION = 300;
+        private static final long DURATION = 1000;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -95,7 +95,7 @@ public class Outtake {
     // GRIP
     public class CloseGrip implements Action {
         private long startTime;
-        private static final long DURATION = 300;
+        private static final long DURATION = 500;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
