@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
+import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.AngleController;
+import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -8,10 +10,11 @@ import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
@@ -35,10 +38,25 @@ public class testing extends OpMode {
     private boolean isActionRunning = false;
     boolean isDriveAction = false;
 
-    private Gamepad gamepad1last;
+    boolean yawLock = false;
+    boolean firstLock = false;
+    double setYaw = 0;
 
+
+
+    List<LynxModule> allHubs;
+    private ElapsedTime loopTime = new ElapsedTime();
     private FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
+
+
+    private double lastX = 0;
+    private double lastY = 0;
+    private double lastTheta = 0;
+
+    private PIDEx yawLockPID = new PIDEx(settings.yawLockCoefficients);
+    AngleController yawController = new AngleController(yawLockPID);
+
     @Override
     public void init() {
         outtake.init(hardwareMap);
@@ -46,6 +64,7 @@ public class testing extends OpMode {
         lift.init(hardwareMap);
         drive.init(hardwareMap);
         light.init(hardwareMap);
+        allHubs = hardwareMap.getAll(LynxModule.class);
 
         drive.imu.resetYaw();
 
@@ -53,28 +72,22 @@ public class testing extends OpMode {
 
         light.setPattern(RevBlinkinLedDriver.BlinkinPattern.CP1_2_COLOR_WAVES);
 
-        gamepad1last = gamepad1;
+        setYaw = drive.getYaw();
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
         telemetry.addLine("Initialised");
         telemetry.update();
     }
 
     @Override
     public void loop() {
+        loopTime.reset();
         TelemetryPacket packet = new TelemetryPacket();
+        drive();
 
-        double yaw = drive.getYaw();
-        double yawRad = Math.toRadians(yaw);
-        double x = gamepad1.left_stick_x;
-        double y = -gamepad1.left_stick_y;
-        double theta = gamepad1.right_stick_x;
-//        double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
-//        double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
-//        drive.setDrivetrainPowers(x_rotated, y_rotated, theta,1);
-
-        telemetry.addData("X:", x);
-        telemetry.addData("Y:", y);
-        telemetry.addData("Theta", theta);
-        telemetry.addData("Yaw:", yaw);
         telemetry.addData("Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
         telemetry.addData("US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
 
@@ -99,6 +112,8 @@ public class testing extends OpMode {
         } else if (!isActionRunning && lift.liftStop.getState()) {
             double liftPower = settings.liftHoldPower;
             lift.setLiftPower(liftPower);
+        } else if (!lift.liftStop.getState()) {
+            lift.kill();
         }
 
 //        if (!isActionRunning) {
@@ -148,29 +163,21 @@ public class testing extends OpMode {
             runningActions.clear();
             isActionRunning = true;
             runningActions.add(new SequentialAction(
-                    new ParallelAction(
-                            intake.intakeExtendo(),
-                            intake.lowerArm(),
-                            intake.intakeAction(),
-                            outtake.transferArm(),
-                            outtake.openGrip()
-                    ),
-                    new ParallelAction(
-                            intake.travelArm(),
-                            new SequentialAction(new SleepAction(0.7), intake.transferExtendo())
-                    ),
-                    intake.transferArm(),
-                    intake.transferAction(),
-                    outtake.closeGrip(),
-                    lift.liftTopBasket(),
+                   lift.liftTopRung(),
                     new InstantAction(() -> isActionRunning = false),
                     outtake.depositArm(),
+                    new InstantAction(() -> isActionRunning = true),
+                    lift.liftTopRungAttached(),
                     outtake.openGrip(),
                     new ParallelAction(
-                            outtake.closeGrip(),
-                            outtake.transferArm(),
-                            new InstantAction(() -> isActionRunning = true),
-                            lift.liftRetract()
+                            lift.liftRetract(),
+                            new SequentialAction(
+                                    new SleepAction(0.3),
+                                    new ParallelAction(
+                                            outtake.closeGrip(),
+                                            outtake.transferArm()
+                                    )
+                            )
                     ),
                     new InstantAction(() -> isActionRunning = false)
             ));
@@ -202,12 +209,13 @@ public class testing extends OpMode {
         if (gamepad2.cross) {
             runningActions.clear();
             isActionRunning = true;
-            runningActions.add(new SequentialAction(lift.liftRetract(),new InstantAction(() -> isActionRunning = false)));
+            runningActions.add(new SequentialAction(lift.liftHang()));
         }
 
 
 
         if (gamepad1.square || gamepad2.square) {
+            isActionRunning = false;
             runningActions.clear();
         }
 
@@ -224,7 +232,7 @@ public class testing extends OpMode {
             light.blue();
             colour = "Blue";
         } else {
-            light.greyLarson();
+            light.confetti();
             colour = "None";
         }
 
@@ -242,12 +250,56 @@ public class testing extends OpMode {
 
         telemetry.addData("running actions", runningActions.size());
 
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
+        telemetry.addData("radial velocity", drive.getRadialVelocity());
+
+        telemetry.addData("Loop Time", loopTime);
+        telemetry.update();
+    }
+
+    public void drive() {
+        double yaw = drive.getYaw();
+        double yawRad = Math.toRadians(yaw);
+        double x = gamepad1.left_stick_x;
+        double y = -gamepad1.left_stick_y;
+        double theta = gamepad1.right_stick_x;
+
+        telemetry.addData("X:", x);
+        telemetry.addData("Y:", y);
+        telemetry.addData("Theta", theta);
+        telemetry.addData("Yaw:", yaw);
+
+        yawLock = (Math.abs(theta) < 0.01);
+        if (!yawLock) {
+            firstLock = true;
+            setYaw = yawRad;
+        } else {
+            if (firstLock && drive.getRadialVelocity() < 5) {
+                setYaw = yawRad;
+                firstLock = false;
+            }
+            if (!firstLock) {
+                theta = yawController.calculate(setYaw, yawRad);
+
+                if (theta < 0.05) {
+                    theta = 0;
+                }
+            }
+        }
 
         double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
         double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+
         if (!isDriveAction) {
-            drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+            if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
+                drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+                lastX = x_rotated;
+                lastY = y_rotated;
+                lastTheta = theta;
+            }
         }
-        telemetry.update();
     }
 }

@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
@@ -13,8 +12,6 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.powercut.settings;
-
-import java.util.List;
 
 public class Intake {
     public ServoImplEx intakeLeftArm, intakeRightArm, extendoLeft, extendoRight, intakeWheels;
@@ -29,12 +26,6 @@ public class Intake {
     }
 
     public void init(HardwareMap hardwareMap) {
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-
-        for (LynxModule hub : allHubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
         intakeLeftArm = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
         intakeRightArm = hardwareMap.get(ServoImplEx.class, "intakeRightArm");
         extendoLeft = hardwareMap.get(ServoImplEx.class, "extendoLeft");

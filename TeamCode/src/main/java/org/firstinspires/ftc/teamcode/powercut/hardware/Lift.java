@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode.powercut.hardware;
 
 import static org.firstinspires.ftc.teamcode.powercut.settings.liftCoefficients;
+import static org.firstinspires.ftc.teamcode.powercut.settings.liftHangCoefficients;
+import static org.firstinspires.ftc.teamcode.powercut.settings.liftHangPower;
 
 import androidx.annotation.NonNull;
 
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -16,25 +17,20 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 
-import java.util.List;
-
 public class Lift {
     public DcMotorEx leftLift, rightLift;
 
     public DigitalChannel liftStop;
 
     private PIDEx liftPID = new PIDEx(liftCoefficients);
+    private PIDEx liftHangPID = new PIDEx(liftHangCoefficients);
 
     public boolean isLiftAvailable = true;
 
+    private double lastLiftPower = 0;
+
     // resets and inits
     public void init(HardwareMap hardwareMap) {
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-
-        for (LynxModule hub : allHubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
         leftLift = hardwareMap.get(DcMotorEx.class, "leftLift");
         rightLift = hardwareMap.get(DcMotorEx.class, "rightLift");
         liftStop = hardwareMap.get(DigitalChannel.class, "liftStop");
@@ -61,42 +57,53 @@ public class Lift {
             if (power > 1.0) {
                 power = 1.0;
             }
-            if (!liftStop.getState()) {
-                leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                leftLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            }
-            int leftLiftPos = leftLift.getCurrentPosition();
-            int rightLiftPos = rightLift.getCurrentPosition();
-            double error = leftLiftPos - rightLiftPos;
+            if (Math.abs(power - lastLiftPower) < 0.04) {
 
-            double equaliser = error * settings.liftEqCoef;
-
-            double leftPowerRaw = power;
-            double rightPowerRaw = power + equaliser;
-
-            double leftPower = 0.0;
-            double rightPower = 0.0;
-
-            if (rightPowerRaw > 1.0) {
-                double multiplier = 1.0 / rightPowerRaw;
-               leftPower = leftPowerRaw * multiplier;
-               rightPower = rightPowerRaw * multiplier;
             } else {
-                leftPower = leftPowerRaw;
-                rightPower = rightPowerRaw;
+                if (!liftStop.getState()) {
+                    leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    leftLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+                int leftLiftPos = leftLift.getCurrentPosition();
+                int rightLiftPos = rightLift.getCurrentPosition();
+                double error = leftLiftPos - rightLiftPos;
+
+                double equaliser = error * settings.liftEqCoef;
+
+                double leftPowerRaw = power;
+                double rightPowerRaw = power + equaliser;
+
+                double leftPower = 0.0;
+                double rightPower = 0.0;
+
+                if (rightPowerRaw > 1.0) {
+                    double multiplier = 1.0 / rightPowerRaw;
+                    leftPower = leftPowerRaw * multiplier;
+                    rightPower = rightPowerRaw * multiplier;
+                } else {
+                    leftPower = leftPowerRaw;
+                    rightPower = rightPowerRaw;
+                }
+
+                leftLift.setPower(leftPower);
+                rightLift.setPower(rightPower);
             }
-
-            leftLift.setPower(leftPower);
-            rightLift.setPower(rightPower);
-
 
     }
 
     public void kill() {
         leftLift.setPower(0);
         rightLift.setPower(0);
+
+        if (!liftStop.getState()) {
+            leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
         isLiftAvailable = true;
     }
 
@@ -281,5 +288,32 @@ public class Lift {
 
     public Action liftRetract() {
         return new liftRetract();
+    }
+
+    public class liftHang implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+
+            if (Math.abs(leftLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit) {
+                setLiftPower(liftHangPower);
+                return false;
+            } else {
+
+                double power = liftHangPID.calculate(settings.liftRetraction, averagePos);
+
+                setLiftPower(power);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftHang() {
+        return new liftHang();
     }
 }

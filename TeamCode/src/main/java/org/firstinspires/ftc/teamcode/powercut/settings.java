@@ -6,8 +6,10 @@ import com.acmerobotics.dashboard.config.Config;
 @Config
 public class settings {
     public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.003,0.0000,0.00005, 0, 0, 0);
+    public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(0.008,0.0000,0.00000, 0, 0, 0);
     public static double liftEqCoef = 0.00025;
     public static double liftHoldPower = 0.05;
+    public static double liftHangPower = -0.2;
 
     public static int liftTopBasket = 2950;
     public static int liftBottomBasket = 1250;
@@ -33,13 +35,13 @@ public class settings {
     public static double gripClosed = 0.7;
     public static double gripOpen = 0.5;
 
-    public static double basketAlignDistance = 15;
-    public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
-    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
+    public static double basketAlignDistance = 25;
+    public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.05,0,0.005,0,0,0.25);
+    public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.025,0,0.02,0,0,0);
+    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(-0.02,0,0.005,0,0,0);
+    public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(-1.25,0,0.5,0,0,0);
 
-    public static double rungAlignDistance = 15;
-    public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
-    public static PIDCoefficientsEx rungYawCoefficients = new PIDCoefficientsEx(0.1,0,0,0,0,0);
+    public static double rungAlignDistance = 25;
 
     public static double colourThreshMultiplier = 1.5;
 

@@ -2,13 +2,13 @@ package org.firstinspires.ftc.teamcode.powercut.hardware;
 
 import androidx.annotation.NonNull;
 
+import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.AngleController;
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -23,8 +24,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
-
-import java.util.List;
 
 @Config
 public class Drivetrain {
@@ -35,21 +34,22 @@ public class Drivetrain {
 
 
     public IMU imu = null;
-    private PIDEx XYAlignPID = new PIDEx(settings.basketXYCoefficients);
+    private PIDEx XAlignPID = new PIDEx(settings.basketXYCoefficients);
+    private PIDEx YAlignPID = new PIDEx(settings.basketXYCoefficients);
+    private PIDEx RungAlignPID = new PIDEx(settings.rungYCoefficients);
     private PIDEx yawAlignPID = new PIDEx(settings.basketYawCoefficients);
+    AngleController yawController = new AngleController(yawAlignPID);
 
-    public static double yawAlignDeadzone = 5;
+    private ElapsedTime radialTime = new ElapsedTime();
+    private double lastYaw, radialVelocity;
+
+    public static double yawAlignDeadzone = 2.5;
     public static double xyAlignDeadzone = 5;
+    public static double rungAlignDeadzone = 2.5;
     public static double ToFCentreDistance = 180;
     public static double USCentreDistance = 33;
 
     public void init(@NonNull HardwareMap hardwareMap) {
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-
-        for (LynxModule hub : allHubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
@@ -60,9 +60,6 @@ public class Drivetrain {
         rightLowerUS = hardwareMap.get(AnalogInput.class, "rightLowerUS");
         frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftToF");
         frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightToF");
-
-
-
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -85,6 +82,9 @@ public class Drivetrain {
 
         rightFront.setDirection(DcMotor.Direction.REVERSE);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
+
+        radialTime.reset();
+        lastYaw = getYaw();
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
@@ -97,12 +97,15 @@ public class Drivetrain {
         rightFront.setPower(rightFrontPower);
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
+
+        updateRadialVelocity();
     }
 
     public double getYaw() {
         YawPitchRollAngles robotOrientation;
         robotOrientation = imu.getRobotYawPitchRollAngles();
 
+        updateRadialVelocity();
         return robotOrientation.getYaw(AngleUnit.DEGREES);
     }
 
@@ -119,12 +122,34 @@ public class Drivetrain {
         double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
         double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
 
-        double leftDistance = (leftLowerMVout*520)/3300;
-        double rightDistance = (rightLowerMVout*520)/3300;
+        double leftDistance = (leftLowerMVout * 520) / 3300;
+        double rightDistance = (rightLowerMVout * 520) / 3300;
 
         double difference = rightDistance - leftDistance;
 
-        return Math.toDegrees(Math.asin(difference/USCentreDistance));
+        return Math.toDegrees(Math.asin(difference / USCentreDistance));
+    }
+
+    public double getRadialVelocity() {
+        YawPitchRollAngles robotOrientation;
+        robotOrientation = imu.getRobotYawPitchRollAngles();
+        double yaw = robotOrientation.getYaw(AngleUnit.DEGREES);
+
+        radialVelocity = Math.abs(lastYaw - yaw) / radialTime.seconds();
+        lastYaw = yaw;
+        radialTime.reset();
+
+        return radialVelocity;
+    }
+
+    public void updateRadialVelocity() {
+        YawPitchRollAngles robotOrientation;
+        robotOrientation = imu.getRobotYawPitchRollAngles();
+        double yaw = robotOrientation.getYaw(AngleUnit.DEGREES);
+
+        radialVelocity = Math.abs(lastYaw - yaw) / radialTime.seconds();
+        lastYaw = yaw;
+        radialTime.reset();
     }
 
     public class alignBasket implements Action {
@@ -141,9 +166,9 @@ public class Drivetrain {
             double leftDistance = Math.cos(yawErrorRad) * leftDistanceRaw;
             double rightDistance = Math.cos(yawErrorRad) * rightDistanceRaw;
 
-            double x = XYAlignPID.calculate(settings.basketAlignDistance, leftDistance);
-            double y = XYAlignPID.calculate(settings.basketAlignDistance, rightDistance);
-            double theta = yawAlignPID.calculate(-45, yaw);
+            double x = XAlignPID.calculate(settings.basketAlignDistance, leftDistance);
+            double y = YAlignPID.calculate(settings.basketAlignDistance, rightDistance);
+            double theta = yawController.calculate(Math.toRadians(-45), yawRad);
             double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
             double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
             setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
@@ -167,6 +192,7 @@ public class Drivetrain {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             double yaw = getYaw();
+            double yawRad = Math.toRadians(yaw);
             double yawError = (0 - yaw);
 
             packet.addLine("Yaw Error " + yawError);
@@ -177,12 +203,12 @@ public class Drivetrain {
             double leftDistance = (leftLowerMVout*520)/3300;
             double rightDistance = (rightLowerMVout*520)/3300;
 
-            double y = XYAlignPID.calculate(settings.rungAlignDistance, (rightDistance+leftDistance)/2);
-            double theta = yawAlignPID.calculate(0, yaw);
+            double y = RungAlignPID.calculate(settings.rungAlignDistance, (rightDistance+leftDistance)/2);
+            double theta = yawController.calculate(Math.toRadians(0), yawRad);
             packet.addLine("Theta " + theta);
-            setDrivetrainPowers(0, y, 0, 1);;
+            setDrivetrainPowers(0, y, theta, 1);;
 
-            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < xyAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < xyAlignDeadzone)) {
+            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone)) {
                 setDrivetrainPowers(0,0,0,1);
                 return false;
             } else {
