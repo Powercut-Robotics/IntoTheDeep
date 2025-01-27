@@ -173,7 +173,7 @@ public class Drivetrain {
             double theta = yawController.calculate(Math.toRadians(-45), yawRad);
             double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
             double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
-            setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+
 
             Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
 
@@ -182,6 +182,7 @@ public class Drivetrain {
                 isDriveAction = false;
                 return false;
             } else {
+                setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
                 return true;
             }
         }
@@ -209,13 +210,14 @@ public class Drivetrain {
             double y = RungAlignPID.calculate(settings.rungAlignDistance, (rightDistance+leftDistance)/2);
             double theta = yawController.calculate(Math.toRadians(0), yawRad);
             packet.addLine("Theta " + theta);
-            setDrivetrainPowers(0, y, theta, 1);;
+
 
             if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone)) {
                 setDrivetrainPowers(0,0,0,1);
                 isDriveAction = false;
                 return false;
             } else {
+                setDrivetrainPowers(0, y, theta, 1);;
                 return true;
             }
         }

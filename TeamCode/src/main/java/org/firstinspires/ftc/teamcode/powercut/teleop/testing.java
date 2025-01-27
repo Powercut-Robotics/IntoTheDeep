@@ -263,7 +263,7 @@ public class testing extends OpMode {
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
 
-        if (Maths.abs(x) > 0.05 || Math.abs(y) > 0.05 || Maths.abs(theta) > 0.05) {
+        if (Math.abs(x) > 0.05 || Math.abs(y) > 0.05 || Math.abs(theta) > 0.05) {
             drive.isDriveAction = false;
         }
 
