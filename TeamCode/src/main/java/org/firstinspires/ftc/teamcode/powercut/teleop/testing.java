@@ -281,6 +281,7 @@ public class testing extends OpMode {
                 setYaw = yawRad;
                 firstLock = false;
             }
+            
             if (!firstLock) {
                 theta = yawController.calculate(setYaw, yawRad);
 
