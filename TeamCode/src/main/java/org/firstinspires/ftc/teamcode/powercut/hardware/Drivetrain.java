@@ -49,6 +49,8 @@ public class Drivetrain {
     public static double ToFCentreDistance = 180;
     public static double USCentreDistance = 33;
 
+    public boolean isDriveAction = false;
+
     public void init(@NonNull HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
@@ -175,8 +177,9 @@ public class Drivetrain {
 
             Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
 
-            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(settings.basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone)) {
+            if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(settings.basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone)) {
                 setDrivetrainPowers(0,0,0,1);
+                isDriveAction = false;
                 return false;
             } else {
                 return true;
@@ -208,8 +211,9 @@ public class Drivetrain {
             packet.addLine("Theta " + theta);
             setDrivetrainPowers(0, y, theta, 1);;
 
-            if ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone)) {
+            if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone)) {
                 setDrivetrainPowers(0,0,0,1);
+                isDriveAction = false;
                 return false;
             } else {
                 return true;
