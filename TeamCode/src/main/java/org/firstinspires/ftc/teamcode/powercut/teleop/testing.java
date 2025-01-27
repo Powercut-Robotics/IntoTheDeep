@@ -36,13 +36,6 @@ public class testing extends OpMode {
     private final LightSystem light = new LightSystem();
 
     private boolean isActionRunning = false;
-    boolean isDriveAction = false;
-
-    boolean yawLock = false;
-    boolean firstLock = false;
-    double setYaw = 0;
-
-
 
     List<LynxModule> allHubs;
     private ElapsedTime loopTime = new ElapsedTime();
@@ -56,7 +49,10 @@ public class testing extends OpMode {
 
     private PIDEx yawLockPID = new PIDEx(settings.yawLockCoefficients);
     AngleController yawController = new AngleController(yawLockPID);
-
+    boolean yawLock = false;
+    boolean firstLock = false;
+    double setYaw = 0;
+    
     @Override
     public void init() {
         outtake.init(hardwareMap);
@@ -98,8 +94,6 @@ public class testing extends OpMode {
         double leftLowerMVout = drive.leftLowerUS.getVoltage() * 1000;
         double rightLowerMVout = drive.rightLowerUS.getVoltage() * 1000;
 
-
-//        telemetry.addData("Analog", "%5.2f, %5.2f", leftLowerMVout , rightLowerMVout);
         telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
         telemetry.addData("gamepad 2 y", -gamepad2.right_stick_y);
         telemetry.addData("Yaw from US", drive.getYawFromUS());
@@ -119,6 +113,7 @@ public class testing extends OpMode {
 //        if (!isActionRunning) {
 //            runningActions.clear();
 //        }
+        
         if (gamepad1.triangle) {
             runningActions.clear();
             isActionRunning = true;
@@ -185,12 +180,13 @@ public class testing extends OpMode {
 
 
         if (gamepad1.dpad_up) {
-            isDriveAction = true;
-            runningActions.add(new SequentialAction(drive.alignRung(), new InstantAction(() -> isDriveAction = false)));
+            drive.isDriveAction = true;
+            runningActions.add(new SequentialAction(drive.alignRung(), new InstantAction(() -> drive.isDriveAction = false)));
         }
 
         if (gamepad1.dpad_down) {
-            runningActions.add(new SequentialAction(drive.alignBasket(), new InstantAction(() -> isDriveAction = false)));
+            drive.isDriveAction = true;
+            runningActions.add(new SequentialAction(drive.alignBasket(), new InstantAction(() -> drive.isDriveAction = false)));
         }
 
 
@@ -267,6 +263,10 @@ public class testing extends OpMode {
         double y = -gamepad1.left_stick_y;
         double theta = gamepad1.right_stick_x;
 
+        if (Maths.abs(x) > 0.05 || Math.abs(y) > 0.05 || Maths.abs(theta) > 0.05) {
+            drive.isDriveAction = false;
+        }
+
         telemetry.addData("X:", x);
         telemetry.addData("Y:", y);
         telemetry.addData("Theta", theta);
@@ -294,7 +294,7 @@ public class testing extends OpMode {
         double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
         double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
 
-        if (!isDriveAction) {
+        if (!drive.isDriveAction) {
             if ((Math.abs(x_rotated-lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated-lastY) > settings.driveCacheAmount) || (Math.abs(theta-lastTheta) > settings.driveCacheAmount)){
                 drive.setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
                 lastX = x_rotated;
