@@ -97,6 +97,7 @@ public class testing extends OpMode {
         telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
         telemetry.addData("gamepad 2 y", -gamepad2.right_stick_y);
         telemetry.addData("Yaw from US", drive.getYawFromUS());
+        telemetry.addData("Yaw from ToF", drive.getYawFromToF());
         telemetry.addData("Lift Stop", !lift.liftStop.getState());
 
         if (Math.abs(-gamepad2.right_stick_y) > 0.05) {
@@ -127,9 +128,10 @@ public class testing extends OpMode {
                     ),
                     new ParallelAction(
                             intake.travelArm(),
-                            new SequentialAction(new SleepAction(0.7), intake.transferExtendo())
+                            intake.transfer1Extendo()
                     ),
                     intake.transferArm(),
+                    intake.transfer2Extendo(),
                     intake.transferAction(),
                     outtake.closeGrip(),
             new InstantAction(() -> isActionRunning = false)
@@ -158,21 +160,21 @@ public class testing extends OpMode {
             runningActions.clear();
             isActionRunning = true;
             runningActions.add(new SequentialAction(
-                   lift.liftTopRung(),
+                    lift.liftTopRung(),
                     new InstantAction(() -> isActionRunning = false),
                     outtake.depositArm(),
+                    outtake.relaxGrip(),
                     new InstantAction(() -> isActionRunning = true),
                     lift.liftTopRungAttached(),
                     outtake.openGrip(),
                     new ParallelAction(
-                            lift.liftRetract(),
+                            outtake.transferArm(),
                             new SequentialAction(
-                                    new SleepAction(0.3),
-                                    new ParallelAction(
-                                            outtake.closeGrip(),
-                                            outtake.transferArm()
-                                    )
-                            )
+                                    new SleepAction(0.5),
+                                    lift.liftRetract()
+                            ),
+                            outtake.closeGrip()
+
                     ),
                     new InstantAction(() -> isActionRunning = false)
             ));
@@ -182,6 +184,10 @@ public class testing extends OpMode {
         if (gamepad1.dpad_up) {
             drive.isDriveAction = true;
             runningActions.add(new SequentialAction(drive.alignRung(), new InstantAction(() -> drive.isDriveAction = false)));
+        }
+        if (gamepad1.dpad_left) {
+            drive.isDriveAction = true;
+            runningActions.add(new SequentialAction(drive.alignSubmersible(), new InstantAction(() -> drive.isDriveAction = false)));
         }
 
         if (gamepad1.dpad_down) {
@@ -212,6 +218,7 @@ public class testing extends OpMode {
 
         if (gamepad1.square || gamepad2.square) {
             isActionRunning = false;
+            drive.isDriveAction = false;
             runningActions.clear();
         }
 
@@ -273,7 +280,7 @@ public class testing extends OpMode {
         telemetry.addData("Yaw:", yaw);
 
         yawLock = (Math.abs(theta) < 0.01);
-        if (!yawLock) {
+        if (!yawLock || drive.isDriveAction) {
             firstLock = true;
             setYaw = yawRad;
         } else {
@@ -285,7 +292,7 @@ public class testing extends OpMode {
             if (!firstLock) {
                 theta = yawController.calculate(setYaw, yawRad);
 
-                if (theta < 0.05) {
+                if (Math.abs(theta) < 0.05) {
                     theta = 0;
                 }
             }

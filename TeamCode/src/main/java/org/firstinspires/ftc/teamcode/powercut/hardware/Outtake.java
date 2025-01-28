@@ -27,7 +27,7 @@ public class Outtake {
 
     // ARM
     public class DepositArm implements Action {
-        private long startTime;
+        private long startTime = 0;
         private static final long DURATION = 1000;
 
         @Override
@@ -49,8 +49,8 @@ public class Outtake {
     }
 
     public class SpecIntakeArm implements Action {
-        private long startTime;
-        private static final long DURATION = 100;
+        private long startTime = 0;
+        private static final long DURATION = 1000;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -71,7 +71,7 @@ public class Outtake {
     }
 
     public class TransferArm implements Action {
-        private long startTime;
+        private long startTime = 0;
         private static final long DURATION = 1000;
 
         @Override
@@ -94,7 +94,7 @@ public class Outtake {
 
     // GRIP
     public class CloseGrip implements Action {
-        private long startTime;
+        private long startTime = 0;
         private static final long DURATION = 500;
 
         @Override
@@ -115,7 +115,7 @@ public class Outtake {
     }
 
     public class OpenGrip implements Action {
-        private long startTime;
+        private long startTime = 0;
         private static final long DURATION = 300;
 
         @Override
@@ -133,5 +133,19 @@ public class Outtake {
 
     public Action openGrip() {
         return new OpenGrip();
+    }
+
+    public class RelaxGrip implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            grip.setPwmDisable();
+
+            return false;
+        }
+    }
+
+    public Action relaxGrip() {
+        return new RelaxGrip();
     }
 }

@@ -63,6 +63,13 @@ public class Intake {
         }
     }
 
+    public void setExtendo(double pos) {
+        double limit = settings.extendoTransfer - settings.extendoIntake;
+
+        extendoLeft.setPosition(settings.extendoTransfer - (limit * pos));
+        extendoRight.setPosition(settings.extendoTransfer - (limit * pos));
+    }
+
     // ARM
     public class IntakeExtendo implements Action {
         private long startTime;
@@ -86,7 +93,29 @@ public class Intake {
         return new IntakeExtendo();
     }
 
-    public class TransferExtendo implements Action {
+    public class Transfer1Extendo implements Action {
+        private long startTime;
+        private static final long DURATION = 300;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            extendoLeft.setPosition(settings.extendoTravel);
+            extendoRight.setPosition(settings.extendoTravel);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action transfer1Extendo() {
+        return new Transfer1Extendo();
+    }
+
+    public class Transfer2Extendo implements Action {
         private long startTime;
         private static final long DURATION = 100;
 
@@ -104,8 +133,8 @@ public class Intake {
         }
     }
 
-    public Action transferExtendo() {
-        return new TransferExtendo();
+    public Action transfer2Extendo() {
+        return new Transfer2Extendo();
     }
 
     public class TravelArm implements Action {
@@ -243,7 +272,7 @@ public class Intake {
 
             if (sample == sampleColour.NONE) {
                 // Check if 500 ms have passed since the last detection
-                if ((System.currentTimeMillis() - lastDetectedTime > 600) || inTray) {
+                if ((System.currentTimeMillis() - lastDetectedTime > 700) || inTray) {
                     intakeWheels.setPosition(0.5);
                     return false; // Stop returning true
                 } else {

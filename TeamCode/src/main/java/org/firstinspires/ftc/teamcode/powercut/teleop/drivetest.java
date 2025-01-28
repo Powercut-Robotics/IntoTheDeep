@@ -43,7 +43,7 @@ intake.init(hardwareMap);
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
-        runningActions.add(intake.transferExtendo());
+        runningActions.add(intake.transfer1Extendo());
         double yaw = drive.getYaw();
         double yawRad = Math.toRadians(yaw);
         double x = gamepad1.left_stick_x;

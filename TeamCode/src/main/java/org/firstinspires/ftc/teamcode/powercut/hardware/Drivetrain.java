@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.AngleController;
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
+import com.ThermalEquilibrium.homeostasis.Filters.FilterAlgorithms.LowPassFilter;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -37,6 +38,7 @@ public class Drivetrain {
     private PIDEx XAlignPID = new PIDEx(settings.basketXYCoefficients);
     private PIDEx YAlignPID = new PIDEx(settings.basketXYCoefficients);
     private PIDEx RungAlignPID = new PIDEx(settings.rungYCoefficients);
+    private PIDEx SubAlignPID = new PIDEx(settings.subYCoefficients);
     private PIDEx yawAlignPID = new PIDEx(settings.basketYawCoefficients);
     AngleController yawController = new AngleController(yawAlignPID);
 
@@ -49,6 +51,11 @@ public class Drivetrain {
     public static double ToFCentreDistance = 180;
     public static double USCentreDistance = 33;
 
+    public static double USYawFilterGain = 0.5;
+    LowPassFilter USYawFilter = new LowPassFilter(USYawFilterGain);
+
+    public static double ToFYawFilterGain = 0.5;
+    LowPassFilter ToFYawFilter = new LowPassFilter(ToFYawFilterGain);
     public boolean isDriveAction = false;
 
     public void init(@NonNull HardwareMap hardwareMap) {
@@ -117,7 +124,7 @@ public class Drivetrain {
 
         double difference = rightDistance - leftDistance;
 
-        return Math.toDegrees(Math.asin(difference/ToFCentreDistance));
+        return ToFYawFilter.estimate(Math.toDegrees(Math.asin(difference/ToFCentreDistance)));
     }
 
     public double getYawFromUS() {
@@ -129,7 +136,7 @@ public class Drivetrain {
 
         double difference = rightDistance - leftDistance;
 
-        return Math.toDegrees(Math.asin(difference / USCentreDistance));
+        return USYawFilter.estimate(Math.toDegrees(Math.asin(difference / USCentreDistance)));
     }
 
     public double getRadialVelocity() {
@@ -199,8 +206,6 @@ public class Drivetrain {
             double yawRad = Math.toRadians(yaw);
             double yawError = (0 - yaw);
 
-            packet.addLine("Yaw Error " + yawError);
-
             double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
             double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
 
@@ -225,5 +230,35 @@ public class Drivetrain {
 
     public Action alignRung() {
         return new alignRung();
+    }
+
+    public class alignSubmersible implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            double yaw = getYaw();
+            double yawRad = Math.toRadians(yaw);
+            double yawError = (0 - yaw);
+
+            double leftDistance = frontLeftToF.getDistance(DistanceUnit.MM)/10;
+            double rightDistance = frontRightToF.getDistance(DistanceUnit.MM)/10;
+
+            double y = SubAlignPID.calculate(settings.subAlignDistance, (rightDistance+leftDistance)/2);
+            double theta = yawController.calculate(Math.toRadians(0), yawRad);
+            packet.addLine("Theta " + theta);
+
+
+            if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.subAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.subAlignDistance - rightDistance) < rungAlignDeadzone)) {
+                setDrivetrainPowers(0,0,0,1);
+                isDriveAction = false;
+                return false;
+            } else {
+                setDrivetrainPowers(0, y, theta, 1);;
+                return true;
+            }
+        }
+    }
+
+    public Action alignSubmersible() {
+        return new alignSubmersible();
     }
 }

@@ -21,12 +21,13 @@ public class settings {
 
     public static int allowableExtensionDeficit= 50;
 
-    public static double intakeArmSafe = 0.98;
+    public static double intakeArmSafe = 0.97;
     public static double intakeArmTransfer = 1.00;
-    public static double intakeArmIntake = 0.34;
+    public static double intakeArmIntake = 0.325;
 
     public static double extendoIntake = 0.23;
-    public static double extendoTransfer = 0.51;
+    public static double extendoTravel = 0.475;
+    public static double extendoTransfer = 0.505;
 
     public static double upperArmDeposit = 0.85;
     public static double upperArmIntake = 1.0;
@@ -36,12 +37,15 @@ public class settings {
     public static double gripOpen = 0.5;
 
     public static double basketAlignDistance = 25;
+    public static double rungAlignDistance = 25;
+    public static double subAlignDistance = 25;
     public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.05,0,0.005,0,0,0.25);
     public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.025,0,0.02,0,0,0);
-    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(-0.02,0,0.005,0,0,0);
+    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(-1.5,0,0.005,0,0,0);
     public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(-1.25,0,0.5,0,0,0);
+    public static PIDCoefficientsEx subYCoefficients = new PIDCoefficientsEx(-0.025,0,0.02,0,0,0);
 
-    public static double rungAlignDistance = 25;
+
 
     public static double colourThreshMultiplier = 1.5;
 
