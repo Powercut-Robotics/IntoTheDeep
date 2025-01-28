@@ -184,7 +184,7 @@ public class Drivetrain {
 
             Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
 
-            if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(settings.basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone)) {
+            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(settings.basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone))) {
                 setDrivetrainPowers(0,0,0,1);
                 isDriveAction = false;
                 return false;
@@ -214,10 +214,9 @@ public class Drivetrain {
 
             double y = RungAlignPID.calculate(settings.rungAlignDistance, (rightDistance+leftDistance)/2);
             double theta = yawController.calculate(Math.toRadians(0), yawRad);
-            packet.addLine("Theta " + theta);
 
 
-            if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone)) {
+            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone))) {
                 setDrivetrainPowers(0,0,0,1);
                 isDriveAction = false;
                 return false;
@@ -230,6 +229,37 @@ public class Drivetrain {
 
     public Action alignRung() {
         return new alignRung();
+    }
+
+    public class alignWall implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            double yaw = getYaw();
+            double yawRad = Math.toRadians(yaw);
+            double yawError = (0 - yaw);
+
+            double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
+            double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
+
+            double leftDistance = (leftLowerMVout*520)/3300;
+            double rightDistance = (rightLowerMVout*520)/3300;
+
+            double y = RungAlignPID.calculate(settings.wallAlignDistance, (rightDistance+leftDistance)/2);
+            double theta = yawController.calculate(Math.toRadians(0), yawRad);
+
+            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.wallAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.wallAlignDistance - rightDistance) < rungAlignDeadzone))) {
+                setDrivetrainPowers(0,0,0,1);
+                isDriveAction = false;
+                return false;
+            } else {
+                setDrivetrainPowers(0, y, theta, 1);;
+                return true;
+            }
+        }
+    }
+
+    public Action alignWall() {
+        return new alignWall();
     }
 
     public class alignSubmersible implements Action {
