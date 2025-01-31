@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 
+@Disabled
 @Config
 @TeleOp
 public class ArmTest extends OpMode {
@@ -20,6 +22,7 @@ public class ArmTest extends OpMode {
     private final Drivetrain drive = new Drivetrain();
 
     public static double upperPos =0.50;
+    public static double extendo = 0.5;
     public static double clawPos =0.50;
     public static double lowerPos =0.50;
     public static double wheelSpeed =0.50;
@@ -43,6 +46,7 @@ public class ArmTest extends OpMode {
 
         outtake.leftArm.setPosition(upperPos);
         outtake.rightArm.setPosition(upperPos);
+        intake.setExtendo((gamepad1.left_stick_y /2) + 0.5);
 
         outtake.grip.setPosition(clawPos);
 

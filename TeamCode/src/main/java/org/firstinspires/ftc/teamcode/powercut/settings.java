@@ -5,18 +5,19 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class settings {
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.003,0.0000,0.00005, 0, 0, 0);
-    public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(0.008,0.0000,0.00000, 0, 0, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.001,0.00005, 500, 150, 0);
+    public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(0.008,0.001,0.00000, 1000, 0, 0);
     public static double liftEqCoef = 0.00025;
     public static double liftHoldPower = 0.05;
     public static double liftHangPower = -0.2;
 
-    public static int liftTopBasket = 2950;
+    public static int liftTopBasket = 2900;
     public static int liftBottomBasket = 1250;
     public static int liftTopRung = 1500;
-    public static int liftTopRungAttached = 1400;
+    public static int liftTopRungAttached = 1300;
     public static int liftBottomRung = 1250;
-    public static int liftBottomRungAttached = 1150;
+    public static int liftBottomRungAttached = 1050;
+    public static int liftPreHang = 500;
     public static int liftRetraction = 0;
 
     public static int allowableExtensionDeficit= 50;
@@ -28,8 +29,10 @@ public class settings {
     public static double extendoIntake = 0.23;
     public static double extendoTravel = 0.475;
     public static double extendoTransfer = 0.505;
+    public static double extendoClearance = 0.4;
 
     public static double upperArmDeposit = 0.85;
+    public static double upperArmTravel = 0.5;
     public static double upperArmIntake = 1.0;
     public static double upperArmTransfer = 0.0;
 

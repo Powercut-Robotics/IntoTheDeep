@@ -27,7 +27,9 @@ public class Lift {
 
     public boolean isLiftAvailable = true;
 
+
     private double lastLiftPower = 0;
+    public boolean isDescending = false;
 
     // resets and inits
     public void init(HardwareMap hardwareMap) {
@@ -54,6 +56,8 @@ public class Lift {
     }
 
     public void setLiftPower(double power) {
+            isDescending = power < 0;
+
             if (power > 1.0) {
                 power = 1.0;
             }
@@ -117,7 +121,8 @@ public class Lift {
 
 
             if (Math.abs(leftLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit) {
-                kill();
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
                 return false;
             } else {
 
@@ -143,7 +148,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit) {
-                kill();
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
                 return false;
             } else {
 
@@ -169,7 +175,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit) {
-                kill();
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
                 return false;
             } else {
 
@@ -195,7 +202,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit) {
-                kill();
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
                 return false;
             } else {
 
@@ -221,7 +229,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit) {
-                kill();
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
                 return false;
             } else {
 
@@ -247,7 +256,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit) {
-                kill();
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
                 return false;
             } else {
 
@@ -288,6 +298,33 @@ public class Lift {
 
     public Action liftRetract() {
         return new liftRetract();
+    }
+
+    public class liftPreHang implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+            if (Math.abs(leftLiftPos - settings.liftPreHang) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftPreHang) < settings.allowableExtensionDeficit) {
+                setLiftPower(settings.liftHoldPower);
+                isLiftAvailable = true;
+                return false;
+            } else {
+
+                double power = liftPID.calculate(settings.liftPreHang, averagePos);
+
+                setLiftPower(power);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftPreHang() {
+        return new liftPreHang();
     }
 
     public class liftHang implements Action {

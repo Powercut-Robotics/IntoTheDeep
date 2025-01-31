@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -14,6 +15,8 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Disabled
 @TeleOp
 public class drivetest extends OpMode {
    private final Intake intake = new Intake();

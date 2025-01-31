@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 
+@Disabled
 @Config
 @TeleOp
 public class USTest extends OpMode {

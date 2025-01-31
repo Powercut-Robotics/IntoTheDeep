@@ -49,10 +49,9 @@ public class mainTeleOp extends OpMode {
     boolean yawLock = false;
     boolean firstLock = false;
     double setYaw = 0;
+    boolean isHang = false;
 
-    private boolean isLiftActionRunning = false;
-    private double yawModifier = 0.2;
-
+    private double yawModifier = 1;
 
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private Telemetry dashTelemetry = null;
@@ -99,6 +98,16 @@ public class mainTeleOp extends OpMode {
         light.greyLarson();
         loopTimer.reset();
         gametimer.reset();
+
+        telemetry.clear();
+
+        ancillaryActions.add(new ParallelAction(
+                intake.travelArm(),
+                intake.transfer2Extendo(),
+                outtake.transferArm(),
+                outtake.closeGrip()
+                )
+        );
     }
 
     @Override
@@ -161,7 +170,7 @@ public class mainTeleOp extends OpMode {
         if (!yawLock || drive.isDriveAction) {
             firstLock = true;
             setYaw = yawRad;
-        } else {
+        } else if (!isHang) {
             if (firstLock && drive.getRadialVelocity() < 5) {
                 setYaw = yawRad;
                 firstLock = false;
@@ -190,17 +199,24 @@ public class mainTeleOp extends OpMode {
     }
 
     public void ancillary() {
-        if (lift.isLiftAvailable && lift.liftStop.getState()) {
+        if (lift.isLiftAvailable && lift.liftStop.getState() && !isHang) {
           lift.setLiftPower(settings.liftHoldPower);
         }
 
-        if (lift.liftStop.getState()) {
+        if (!lift.liftStop.getState() && lift.isDescending && !isHang) {
             lift.kill();
         }
+
+        dashTelemetry.addData("Left Lift Pos", lift.leftLift.getCurrentPosition());
+        dashTelemetry.addData("Left Lift Power", lift.leftLift.getPower());
+        dashTelemetry.addData("Right Lift Pos", lift.rightLift.getCurrentPosition());
+        dashTelemetry.addData("Right Lift Power", lift.rightLift.getPower());
 
         if (currentGamepad2.dpad_up && !previousGamepad2.dpad_up) {
             ancillaryActions.clear();
             yawModifier = 0.2;
+            telemetry.clear();
+            telemetry.addLine("Intaking...");
             ancillaryActions.add(new SequentialAction(
                     new ParallelAction(
                             intake.intakeExtendo(),
@@ -218,19 +234,27 @@ public class mainTeleOp extends OpMode {
                     intake.transfer2Extendo(),
                     intake.transferAction(),
                     outtake.closeGrip(),
-                    new InstantAction(() -> yawModifier = 1)
+                    new InstantAction(() -> yawModifier = 1),
+                    new InstantAction(() -> telemetry.clear()),
+                    new InstantAction(() -> telemetry.addLine("Intake complete"))
                     ));
         }
 
         if (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) {
             ancillaryActions.clear();
             yawModifier = 0.2;
+            telemetry.clear();
+            telemetry.addLine("Intaking spec...");
             //driveActions.add(drive.alignWall());
+            ancillaryActions.add(intake.travelArm());
             ancillaryActions.add(new SequentialAction(
+                        intake.clearanceExtendo(),
+
                         new ParallelAction(
                                 lift.liftRetract(),
                                 outtake.specIntakeArm()
                         ),
+                        intake.transfer1Extendo(),
                         outtake.openGrip()
                     ));
 
@@ -240,13 +264,18 @@ public class mainTeleOp extends OpMode {
             ancillaryActions.clear();
             yawModifier = 1;
             ancillaryActions.add(new SequentialAction(
+
                     outtake.closeGrip(),
-                    outtake.depositArm()
+                    outtake.travelArm(),
+                    new InstantAction(() -> telemetry.clear()),
+                    new InstantAction(() -> telemetry.addLine("Intake spec complete"))
             ));
         }
 
         if (currentGamepad2.square && !previousGamepad2.square) {
             ancillaryActions.clear();
+            telemetry.clear();
+            telemetry.addLine("Depositing sample...");
             //driveActions.add(drive.alignBasket());
             ancillaryActions.add(
                     new SequentialAction(
@@ -257,13 +286,17 @@ public class mainTeleOp extends OpMode {
                                     outtake.closeGrip(),
                                     outtake.transferArm(),
                                     lift.liftRetract()
-                            )
+                            ),
+                            new InstantAction(() -> telemetry.clear()),
+                            new InstantAction(() -> telemetry.addLine("Depositing sample complete"))
                     )
             );
         }
 
         if (currentGamepad2.circle && !previousGamepad2.circle) {
             ancillaryActions.clear();
+            telemetry.clear();
+            telemetry.addLine("Depositing spec...");
             //driveActions.add(drive.alignRung());
             ancillaryActions.add(new SequentialAction(
                             lift.liftTopRung(),
@@ -279,12 +312,21 @@ public class mainTeleOp extends OpMode {
                                     ),
                                     outtake.closeGrip()
 
-                            )
+                            ),
+                    new InstantAction(() -> telemetry.clear()),
+                    new InstantAction(() -> telemetry.addLine("Depositing spec complete"))
                     )
             );
         }
 
-        if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up) {
+        if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
+            driveActions.clear();
+            ancillaryActions.clear();
+            isHang = true;
+            ancillaryActions.add(lift.liftPreHang());
+            telemetry.clear();
+        } else if (!currentGamepad1.left_bumper && previousGamepad1.left_bumper) {
+            telemetry.addLine("Hanging...");
             driveActions.clear();
             ancillaryActions.clear();
             ancillaryActions.add(lift.liftHang());
@@ -294,6 +336,7 @@ public class mainTeleOp extends OpMode {
             ancillaryActions.clear();
             driveActions.clear();
             lift.kill();
+            isHang = false;
         }
     }
 

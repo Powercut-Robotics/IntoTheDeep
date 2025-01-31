@@ -66,8 +66,8 @@ public class Intake {
     public void setExtendo(double pos) {
         double limit = settings.extendoTransfer - settings.extendoIntake;
 
-        extendoLeft.setPosition(settings.extendoTransfer - (limit * pos));
-        extendoRight.setPosition(settings.extendoTransfer - (limit * pos));
+        extendoLeft.setPosition(settings.extendoIntake + (limit * pos));
+        extendoRight.setPosition(settings.extendoIntake + (limit * pos));
     }
 
     // ARM
@@ -135,6 +135,28 @@ public class Intake {
 
     public Action transfer2Extendo() {
         return new Transfer2Extendo();
+    }
+
+    public class ClearanceExtendo implements Action {
+        private long startTime;
+        private static final long DURATION = 100;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            extendoLeft.setPosition(settings.extendoClearance);
+            extendoRight.setPosition(settings.extendoClearance);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action clearanceExtendo() {
+        return new ClearanceExtendo();
     }
 
     public class TravelArm implements Action {

@@ -70,6 +70,28 @@ public class Outtake {
         return new SpecIntakeArm();
     }
 
+    public class TravelArm implements Action {
+        private long startTime = 0;
+        private static final long DURATION = 500;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            leftArm.setPosition(settings.upperArmTravel);
+            rightArm.setPosition(settings.upperArmTravel);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action travelArm() {
+        return new TravelArm();
+    }
+
     public class TransferArm implements Action {
         private long startTime = 0;
         private static final long DURATION = 1000;
