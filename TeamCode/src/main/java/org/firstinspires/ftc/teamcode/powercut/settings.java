@@ -22,7 +22,7 @@ public class settings {
 
     public static int allowableExtensionDeficit= 50;
 
-    public static double intakeArmSafe = 0.97;
+    public static double intakeArmSafe = 0.95;
     public static double intakeArmTransfer = 1.00;
     public static double intakeArmIntake = 0.325;
 

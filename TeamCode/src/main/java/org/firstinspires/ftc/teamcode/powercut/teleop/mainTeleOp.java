@@ -254,7 +254,7 @@ public class mainTeleOp extends OpMode {
                                 lift.liftRetract(),
                                 outtake.specIntakeArm()
                         ),
-                        intake.transfer1Extendo(),
+                        intake.transfer2Extendo(),
                         outtake.openGrip()
                     ));
 

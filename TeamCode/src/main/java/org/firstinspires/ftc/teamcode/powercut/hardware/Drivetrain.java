@@ -49,7 +49,7 @@ public class Drivetrain {
     public static double xyAlignDeadzone = 5;
     public static double rungAlignDeadzone = 2.5;
     public static double ToFCentreDistance = 180;
-    public static double USCentreDistance = 33;
+    public static double USCentreDistance = 32.8;
 
     public static double USYawFilterGain = 0.5;
     LowPassFilter USYawFilter = new LowPassFilter(USYawFilterGain);
