@@ -225,6 +225,28 @@ public class Intake {
         return new LowerArm();
     }
 
+    public class LowerArmSafe implements Action {
+        private long startTime;
+        private static final long DURATION = 1200;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            intakeLeftArm.setPosition(settings.intakeArmIntakeSafe);
+            intakeRightArm.setPosition(settings.intakeArmIntakeSafe);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action lowerArmSafe() {
+        return new LowerArmSafe();
+    }
+
     // INTAKE
     public class IntakeAction implements Action {
 
@@ -246,6 +268,21 @@ public class Intake {
 
     public Action intakeAction() {
         return new IntakeAction();
+    }
+
+
+    public class SpinUpAction implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            intakeWheels.setPosition(0.);
+            return false;
+
+        }
+    }
+
+    public Action spinUpAction() {
+        return new SpinUpAction();
     }
 
     // EXPEL

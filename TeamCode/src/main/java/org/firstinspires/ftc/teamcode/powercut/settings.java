@@ -24,7 +24,8 @@ public class settings {
 
     public static double intakeArmSafe = 0.95;
     public static double intakeArmTransfer = 1.00;
-    public static double intakeArmIntake = 0.325;
+    public static double intakeArmIntakeSafe = 0.34;
+    public static double intakeArmIntake = 0.335;
 
     public static double extendoIntake = 0.23;
     public static double extendoTravel = 0.475;

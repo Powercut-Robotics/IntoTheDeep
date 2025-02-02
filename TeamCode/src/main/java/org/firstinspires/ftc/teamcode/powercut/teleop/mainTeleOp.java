@@ -8,8 +8,11 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.RaceAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -24,6 +27,8 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 import org.firstinspires.ftc.teamcode.powercut.settings;
+import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
+import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +39,8 @@ public class mainTeleOp extends OpMode {
     private final Intake intake = new Intake();
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
+
+    private MecanumDrive driveLoc = null;
     private final LightSystem light = new LightSystem();
 
     private final ElapsedTime loopTimer = new ElapsedTime();
@@ -74,6 +81,7 @@ public class mainTeleOp extends OpMode {
         lift.init(hardwareMap);
         drive.init(hardwareMap);
         light.init(hardwareMap);
+        driveLoc = new MecanumDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
         allHubs = hardwareMap.getAll(LynxModule.class);
 
         drive.imu.resetYaw();
@@ -144,6 +152,14 @@ public class mainTeleOp extends OpMode {
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
+
+        driveLoc.updatePoseEstimate();
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), driveLoc.pose);
+        telemetry.addData("x", driveLoc.pose.position.x);
+        telemetry.addData("y", driveLoc.pose.position.y);
+        telemetry.addData("heading (deg)", Math.toDegrees(driveLoc.pose.heading.toDouble()));
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         telemetry.update();
         loopTimer.reset();
@@ -246,8 +262,11 @@ public class mainTeleOp extends OpMode {
             telemetry.clear();
             telemetry.addLine("Intaking spec...");
             //driveActions.add(drive.alignWall());
-            ancillaryActions.add(intake.travelArm());
             ancillaryActions.add(new SequentialAction(
+                    new RaceAction(
+                            intake.travelArm(),
+                            new SleepAction(0.2)
+                    ),
                         intake.clearanceExtendo(),
 
                         new ParallelAction(
