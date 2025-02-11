@@ -25,8 +25,24 @@ public class Outtake {
         leftArm.setDirection(ServoImplEx.Direction.REVERSE);
     }
 
+    public class RelaxSystem implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            leftArm.setPwmDisable();
+            rightArm.setPwmDisable();
+            grip.setPwmDisable();
+            return false;
+
+        }
+    }
+
+    public Action relaxSystem() {
+        return new RelaxSystem();
+    }
+
     // ARM
-    public class DepositArm implements Action {
+    public class DepositSampArm implements Action {
         private long startTime = 0;
         private static final long DURATION = 1000;
 
@@ -36,16 +52,38 @@ public class Outtake {
                 startTime = System.currentTimeMillis();
             }
 
-            leftArm.setPosition(settings.upperArmDeposit);
-            rightArm.setPosition(settings.upperArmDeposit);
+            leftArm.setPosition(settings.upperArmSampDeposit);
+            rightArm.setPosition(settings.upperArmSampDeposit);
 
             long elapsedTime = System.currentTimeMillis() - startTime;
             return elapsedTime < DURATION;
         }
     }
 
-    public Action depositArm() {
-        return new DepositArm();
+    public Action depositSampArm() {
+        return new DepositSampArm();
+    }
+
+    public class DepositSpecArm implements Action {
+        private long startTime = 0;
+        private static final long DURATION = 1000;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
+            }
+
+            leftArm.setPosition(settings.upperArmSpecDeposit);
+            rightArm.setPosition(settings.upperArmSpecDeposit);
+
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            return elapsedTime < DURATION;
+        }
+    }
+
+    public Action depositSpecArm() {
+        return new DepositSpecArm();
     }
 
     public class SpecIntakeArm implements Action {

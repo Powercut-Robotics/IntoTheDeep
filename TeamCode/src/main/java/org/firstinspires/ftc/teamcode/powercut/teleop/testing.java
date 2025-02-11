@@ -119,21 +119,9 @@ public class testing extends OpMode {
             runningActions.clear();
             isActionRunning = true;
             runningActions.add(new SequentialAction(
-                    new ParallelAction(
-                            intake.intakeExtendo(),
+
                             intake.lowerArm(),
-                            intake.intakeAction(),
-                            outtake.transferArm(),
-                            outtake.openGrip()
-                    ),
-                    new ParallelAction(
-                            intake.travelArm(),
-                            intake.transfer1Extendo()
-                    ),
-                    intake.transferArm(),
-                    intake.transfer2Extendo(),
-                    intake.transferAction(),
-                    outtake.closeGrip(),
+
             new InstantAction(() -> isActionRunning = false)
             ));
         }
@@ -144,7 +132,7 @@ public class testing extends OpMode {
             runningActions.add(new SequentialAction(
                     lift.liftTopBasket(),
                     new InstantAction(() -> isActionRunning = false),
-                    outtake.depositArm(),
+                    outtake.depositSampArm(),
                     outtake.openGrip(),
                     new ParallelAction(
                             outtake.closeGrip(),
@@ -162,7 +150,7 @@ public class testing extends OpMode {
             runningActions.add(new SequentialAction(
                     lift.liftTopRung(),
                     new InstantAction(() -> isActionRunning = false),
-                    outtake.depositArm(),
+                    outtake.depositSampArm(),
                     outtake.relaxGrip(),
                     new InstantAction(() -> isActionRunning = true),
                     lift.liftTopRungAttached(),
@@ -183,7 +171,7 @@ public class testing extends OpMode {
 
         if (gamepad1.dpad_up) {
             drive.isDriveAction = true;
-            runningActions.add(new SequentialAction(drive.alignRung(), new InstantAction(() -> drive.isDriveAction = false)));
+            runningActions.add(new SequentialAction(drive.alignWall(), new InstantAction(() -> drive.isDriveAction = false)));
         }
         if (gamepad1.dpad_left) {
             drive.isDriveAction = true;

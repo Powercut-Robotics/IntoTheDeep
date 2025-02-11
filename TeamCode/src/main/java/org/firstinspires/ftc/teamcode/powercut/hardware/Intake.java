@@ -70,6 +70,25 @@ public class Intake {
         extendoRight.setPosition(settings.extendoIntake + (limit * pos));
     }
 
+    public class RelaxSystem implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            intakeWheels.setPosition(0.5);
+            intakeLeftArm.setPwmDisable();
+            intakeRightArm.setPwmDisable();
+            intakeWheels.setPwmDisable();
+            extendoLeft.setPwmDisable();
+            extendoRight.setPwmDisable();
+            return false;
+
+        }
+    }
+
+    public Action relaxSystem() {
+        return new RelaxSystem();
+    }
+
     // ARM
     public class IntakeExtendo implements Action {
         private long startTime;
@@ -213,6 +232,8 @@ public class Intake {
                 startTime = System.currentTimeMillis();
             }
 
+            intakeLeftArm.setPwmEnable();
+            intakeRightArm.setPwmEnable();
             intakeLeftArm.setPosition(settings.intakeArmIntake);
             intakeRightArm.setPosition(settings.intakeArmIntake);
 
@@ -275,7 +296,7 @@ public class Intake {
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            intakeWheels.setPosition(0.);
+            intakeWheels.setPosition(0);
             return false;
 
         }
@@ -283,6 +304,20 @@ public class Intake {
 
     public Action spinUpAction() {
         return new SpinUpAction();
+    }
+
+    public class WheelHaltAction implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            intakeWheels.setPosition(0.5);
+            return false;
+
+        }
+    }
+
+    public Action wheelHaltAction() {
+        return new WheelHaltAction();
     }
 
     // EXPEL

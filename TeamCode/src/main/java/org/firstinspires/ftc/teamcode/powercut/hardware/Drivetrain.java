@@ -110,6 +110,10 @@ public class Drivetrain {
         updateRadialVelocity();
     }
 
+    public void kill() {
+        setDrivetrainPowers(0,0,0,1);
+    }
+
     public double getYaw() {
         YawPitchRollAngles robotOrientation;
         robotOrientation = imu.getRobotYawPitchRollAngles();
@@ -161,7 +165,7 @@ public class Drivetrain {
         radialTime.reset();
     }
 
-    public class alignBasket implements Action {
+    public class AlignBasket implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             double yaw = getYaw();
@@ -196,10 +200,10 @@ public class Drivetrain {
     }
 
     public Action alignBasket() {
-        return new alignBasket();
+        return new AlignBasket();
     }
 
-    public class alignRung implements Action {
+    public class AlignRung implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             double yaw = getYaw();
@@ -213,7 +217,7 @@ public class Drivetrain {
             double rightDistance = (rightLowerMVout*520)/3300;
 
             double y = RungAlignPID.calculate(settings.rungAlignDistance, (rightDistance+leftDistance)/2);
-            double theta = yawController.calculate(Math.toRadians(0), yawRad);
+            double theta = yawController.calculate(Math.toRadians(180), yawRad);
 
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(settings.rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.rungAlignDistance - rightDistance) < rungAlignDeadzone))) {
@@ -228,10 +232,10 @@ public class Drivetrain {
     }
 
     public Action alignRung() {
-        return new alignRung();
+        return new AlignRung();
     }
 
-    public class alignWall implements Action {
+    public class AlignWall implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             double yaw = getYaw();
@@ -259,10 +263,10 @@ public class Drivetrain {
     }
 
     public Action alignWall() {
-        return new alignWall();
+        return new AlignWall();
     }
 
-    public class alignSubmersible implements Action {
+    public class AlignSubmersible implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             double yaw = getYaw();
@@ -273,7 +277,15 @@ public class Drivetrain {
             double rightDistance = frontRightToF.getDistance(DistanceUnit.MM)/10;
 
             double y = SubAlignPID.calculate(settings.subAlignDistance, (rightDistance+leftDistance)/2);
-            double theta = yawController.calculate(Math.toRadians(0), yawRad);
+            double theta = 0;
+            if (yaw < -45) {
+                theta = yawController.calculate(Math.toRadians(-90), yawRad);
+            } else if (yaw > -45 && yaw < 45) {
+                theta = yawController.calculate(Math.toRadians(0), yawRad);
+            } else {
+                theta = yawController.calculate(Math.toRadians(90), yawRad);
+            }
+
             packet.addLine("Theta " + theta);
 
 
@@ -289,6 +301,6 @@ public class Drivetrain {
     }
 
     public Action alignSubmersible() {
-        return new alignSubmersible();
+        return new AlignSubmersible();
     }
 }

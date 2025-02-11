@@ -300,6 +300,29 @@ public class Lift {
         return new liftRetract();
     }
 
+    public class LiftRetractSensor implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            boolean liftSensor = !liftStop.getState();
+
+            if (!liftStop.getState()) {
+                kill();
+                return false;
+            } else {
+
+
+                setLiftPower(-0.5);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftRetractSensor() {
+        return new LiftRetractSensor();
+    }
+
     public class liftPreHang implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -336,12 +359,12 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit) {
+            if (Math.abs(leftLiftPos - settings.liftHang) < settings.allowableHangDeficit || Math.abs(rightLiftPos - settings.liftHang) < settings.allowableHangDeficit) {
                 setLiftPower(liftHangPower);
                 return false;
             } else {
 
-                double power = liftHangPID.calculate(settings.liftRetraction, averagePos);
+                double power = liftHangPID.calculate(settings.liftHang, averagePos);
 
                 setLiftPower(power);
 

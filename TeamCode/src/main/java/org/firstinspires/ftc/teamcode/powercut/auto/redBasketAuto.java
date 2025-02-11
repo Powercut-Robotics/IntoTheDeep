@@ -135,7 +135,7 @@ public class redBasketAuto extends OpMode {
         );
 
         topBasketDeposit1 = new SequentialAction(
-                outtake.depositArm(),
+                outtake.depositSampArm(),
                 outtake.openGrip()
         );
 
@@ -181,7 +181,7 @@ public class redBasketAuto extends OpMode {
         );
 
         topBasketDeposit2 = new SequentialAction(
-                outtake.depositArm(),
+                outtake.depositSampArm(),
                 outtake.openGrip()
         );
 
@@ -227,7 +227,7 @@ public class redBasketAuto extends OpMode {
         );
 
         topBasketDeposit3 = new SequentialAction(
-                outtake.depositArm(),
+                outtake.depositSampArm(),
                 outtake.openGrip(),
                 new ParallelAction(
                         outtake.closeGrip(),
