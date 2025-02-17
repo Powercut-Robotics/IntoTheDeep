@@ -97,10 +97,28 @@ public class Drivetrain {
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
+
         double leftFrontPower = (y+x+theta) * modifier;
         double leftBackPower = (y-x+theta) * modifier;
         double rightFrontPower = (y-x-theta) * modifier;
         double rightBackPower = (y+x-theta) * modifier;
+
+        leftFront.setPower(leftFrontPower);
+        rightFront.setPower(rightFrontPower);
+        leftBack.setPower(leftBackPower);
+        rightBack.setPower(rightBackPower);
+
+        updateRadialVelocity();
+    }
+
+    public void setDrivetrainPowers(double x, double y, double theta, double modifier, double rotateBy) {
+        double x_rotated = x * Math.cos(-rotateBy) - y * Math.sin(-rotateBy);
+        double y_rotated = x * Math.sin(-rotateBy) + y * Math.cos(-rotateBy);
+
+        double leftFrontPower = (y_rotated+x_rotated+theta) * modifier;
+        double leftBackPower = (y_rotated-x_rotated+theta) * modifier;
+        double rightFrontPower = (y_rotated-x_rotated-theta) * modifier;
+        double rightBackPower = (y_rotated+x_rotated-theta) * modifier;
 
         leftFront.setPower(leftFrontPower);
         rightFront.setPower(rightFrontPower);
