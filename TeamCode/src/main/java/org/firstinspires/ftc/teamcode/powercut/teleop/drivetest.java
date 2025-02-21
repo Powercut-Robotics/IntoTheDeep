@@ -85,7 +85,7 @@ intake.init(hardwareMap);
 //            runningActions.add(outtake.specIntakeArm());
 //        }
 //        if (gamepad1.dpad_down) {
-//            runningActions.add(outtake.transferArm());
+//            runningActions.add(outtake.intakeTransferArm());
 //        }
 //
 //

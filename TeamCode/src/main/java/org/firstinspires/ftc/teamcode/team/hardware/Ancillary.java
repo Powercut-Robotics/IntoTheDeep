@@ -18,16 +18,33 @@ import org.firstinspires.ftc.teamcode.team.hardware.drivers.TCS34725;
 
 @Config
 public class Ancillary {
-    private ServoImplEx intakeLeftArmRaw, intakeRightArmRaw, extendoLeftRaw, extendoRightRaw, intakeWheels, upperLeftArmRaw, upperRightArmRaw, grip;
+    private ServoImplEx intakeLeftArmRaw, intakeRightArmRaw, extendoLeftRaw, extendoRightRaw,  upperLeftArmRaw, upperRightArmRaw;
+    public ServoImplEx intakeWheels, grip;
     public GBTorqueServo intakeLeftArm = new GBTorqueServo(), intakeRightArm = new GBTorqueServo();
     public RevServo extendoLeft = new RevServo(), extendoRight = new RevServo(), upperLeftArm = new RevServo(), upperRightArm = new RevServo();
     public TCS34725 colourSensor = null;
     public TouchSensor trayTouchSensor;
 
-    public boolean EndActions = false;
+    public boolean intakeActive = false;
 
+    private enum extendoPos {
+        FULL,
+        HALF,
+        CLEARANCE,
+        TRAVEL,
+        TRANSFER
+    }
 
+    private extendoPos currentExtendoPos;
 
+    private enum intakeArmPos {
+        LOWER,
+        LOWER_SAFE,
+        TRAVEL,
+        TRANSFER
+    }
+
+    private intakeArmPos currentIntakeArm;
     public enum sampleColour {
         BLUE,
         RED,
@@ -56,12 +73,14 @@ public class Ancillary {
     public static double intakeArmIntake = 0.335;
 
     public static double extendoIntake = 0.23;
+    public static double extendoHalf = 0.3675;
+    public static double extendoClearance = 0.4;
     public static double extendoTravel = 0.49;
     public static double extendoTransfer = 0.505;
-    public static double extendoClearance = 0.4;
+
 
     public static double upperArmSampDeposit = 0.85;
-    public static double upperArmSpecDeposit = 1.0;
+    public static double upperArmSpecDeposit = 0.98;
 
     public static double upperArmTravel = 0.5;
     public static double upperArmIntake = 1.0;
@@ -69,6 +88,8 @@ public class Ancillary {
 
     public static double gripClosed = 0.7;
     public static double gripOpen = 0.5;
+
+
 
     public void init(HardwareMap hardwareMap) {
         intakeLeftArmRaw = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
@@ -126,14 +147,15 @@ public class Ancillary {
 
     //main system control
 
-        public void setExtendo(double pos) {
-            double limit = extendoTransfer - extendoIntake;
-
-            extendoLeft.setPosition(extendoIntake + (limit * pos));
-            extendoRight.setPosition(extendoIntake + (limit * pos));
-        }
+//        public void setExtendo(double pos) {
+//            double limit = extendoTransfer - extendoIntake;
+//
+//            extendoLeft.setPosition(extendoIntake + (limit * pos));
+//            extendoRight.setPosition(extendoIntake + (limit * pos));
+//        }
 
         public void relaxSystem() {
+            intakeActive = false;
             intakeWheels.setPosition(0.5);
             intakeLeftArm.servo.setPwmDisable();
             intakeRightArm.servo.setPwmDisable();
@@ -168,21 +190,24 @@ public class Ancillary {
 
     //Main Actions
     public class IntakeAction implements Action {
+        boolean first = true;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-
+            if (first) {
+                intakeActive = true;
+                first = false;
+            }
             sampleColour sample = getSampleColour();
 
-            if (sample != sampleColour.NONE || EndActions) {
+            if (sample != sampleColour.NONE || !intakeActive) {
                 intakeWheels.setPosition(0.5);
+                intakeActive = false;
                 return false;
             } else {
                 intakeWheels.setPosition(0);
                 return true;
             }
-
-
         }
     }
 
@@ -193,15 +218,23 @@ public class Ancillary {
     public class ExpelAction implements Action {
         private long lastDetectedTime = System.currentTimeMillis(); // Tracks the last time a sample was detected
 
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                intakeActive = true;
+                first = false;
+            }
+
             sampleColour sample = getSampleColour();
 
-            if (sample == sampleColour.NONE || EndActions) {
-                if (EndActions) {
+            if (sample == sampleColour.NONE || !intakeActive) {
+                if (!intakeActive) {
                     intakeWheels.setPosition(0.5);
                     return false; // Stop returning true
                 } else if ((System.currentTimeMillis() - lastDetectedTime) > 1000) {
+                    intakeActive = false;
                     intakeWheels.setPosition(0.5);
                     return false; // Stop returning true
                 } else {
@@ -225,15 +258,23 @@ public class Ancillary {
 
         private long lastDetectedTime = System.currentTimeMillis(); // Tracks the last time a sample was detected
 
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            sampleColour sample = getSampleColour();
+            if (first) {
+                intakeActive = true;
+                first = false;
+            }
+
+                    sampleColour sample = getSampleColour();
             boolean inTray = trayTouchSensor.isPressed();
 
-            if (sample == sampleColour.NONE || EndActions) {
+            if (sample == sampleColour.NONE || !intakeActive) {
                 // Check if 500 ms have passed since the last detection
-                if ((System.currentTimeMillis() - lastDetectedTime > 700) || inTray || EndActions) {
-                    intakeWheels.setPosition(0.5);
+                if ((System.currentTimeMillis() - lastDetectedTime > 700) || inTray || !intakeActive) {
+                    intakeActive = false;
+                            intakeWheels.setPosition(0.5);
                     return false; // Stop returning true
                 } else {
                     return true; // Continue returning true until timeout expires
@@ -252,16 +293,22 @@ public class Ancillary {
         return new TransferAction();
     }
 
-    //Intake Arms
+    //Intake Extendo
     public class IntakeExtendo implements Action {
+
+        boolean first = true;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentExtendoPos = extendoPos.FULL;
+                first = false;
+            }
 
             extendoLeft.setPosition(extendoIntake);
             extendoRight.setPosition(extendoIntake);
 
-            return !extendoLeft.isMoving();
+            return extendoLeft.isMoving() && currentExtendoPos == extendoPos.FULL;
         }
     }
 
@@ -269,43 +316,41 @@ public class Ancillary {
         return new IntakeExtendo();
     }
 
-    public class Transfer1Extendo implements Action {
+    public class HalfExtendo implements Action {
+
+        boolean first = true;
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            extendoLeft.setPosition(extendoTravel);
-            extendoRight.setPosition(extendoTravel);
+            if (first) {
+                currentExtendoPos = extendoPos.HALF;
+                first = false;
+            }
 
-            return !extendoLeft.isMoving();
+            extendoLeft.setPosition(extendoHalf);
+            extendoRight.setPosition(extendoHalf);
+
+            return extendoLeft.isMoving() && currentExtendoPos == extendoPos.HALF;
         }
     }
 
-    public Action transfer1Extendo() {
-        return new Transfer1Extendo();
-    }
-
-    public class Transfer2Extendo implements Action {
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            extendoLeft.setPosition(extendoTransfer);
-            extendoRight.setPosition(extendoTransfer);
-
-            return !extendoLeft.isMoving();
-        }
-    }
-
-    public Action transfer2Extendo() {
-        return new Transfer2Extendo();
+    public Action halfExtendo() {
+        return new HalfExtendo();
     }
 
     public class ClearanceExtendo implements Action {
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentExtendoPos = extendoPos.CLEARANCE;
+                first = false;
+            }
             extendoLeft.setPosition(extendoClearance);
             extendoRight.setPosition(extendoClearance);
 
-            return !extendoLeft.isMoving();
+            return extendoLeft.isMoving() && currentExtendoPos == extendoPos.CLEARANCE;
         }
     }
 
@@ -313,67 +358,142 @@ public class Ancillary {
         return new ClearanceExtendo();
     }
 
-    public class TravelArm implements Action {
+    public class TravelExtendo implements Action {
+
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            intakeLeftArm.setPosition(intakeArmSafe);
-            intakeRightArm.setPosition(intakeArmSafe);
+            if (first) {
+                currentExtendoPos = extendoPos.TRAVEL;
+                first = false;
+            }
+            extendoLeft.setPosition(extendoTravel);
+            extendoRight.setPosition(extendoTravel);
 
-            return !intakeLeftArm.isMoving();
+            return extendoLeft.isMoving() && currentExtendoPos == extendoPos.TRAVEL;
         }
     }
 
-    public Action travelArm() {
-        return new TravelArm();
+    public Action travelExtendo() {
+        return new TravelExtendo();
     }
 
-    public class TransferArm implements Action {
+    public class TransferExtendo implements Action {
+
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            intakeLeftArm.setPosition(intakeArmTransfer);
-            intakeRightArm.setPosition(intakeArmTransfer);
+            if (first) {
+                currentExtendoPos = extendoPos.TRANSFER;
+                first = false;
+            }
 
-            return !intakeLeftArm.isMoving();
+            extendoLeft.setPosition(extendoTransfer);
+            extendoRight.setPosition(extendoTransfer);
+
+            return extendoLeft.isMoving() && currentExtendoPos == extendoPos.TRANSFER;
         }
     }
 
-    public Action transferArm() {
-        return new TransferArm();
+    public Action transferExtendo() {
+        return new TransferExtendo();
     }
 
-    public class LowerArm implements Action {
+//Intake arm
+
+    public class IntakeLowerArm implements Action {
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentIntakeArm = intakeArmPos.LOWER;
+                first = false;
+            }
+
             intakeLeftArm.setPosition(intakeArmIntake);
             intakeRightArm.setPosition(intakeArmIntake);
 
-            return !intakeLeftArm.isMoving();
+            return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.LOWER;
         }
     }
 
-    public Action lowerArm() {
-        return new LowerArm();
+    public Action intakeLowerArm() {
+        return new IntakeLowerArm();
     }
 
-    public class LowerArmSafe implements Action {
+    public class IntakeLowerArmSafe implements Action {
+        boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentIntakeArm = intakeArmPos.LOWER_SAFE;
+                first = false;
+            }
+
             intakeLeftArm.setPosition(intakeArmIntakeSafe);
             intakeRightArm.setPosition(intakeArmIntakeSafe);
 
-            return !intakeLeftArm.isMoving();
+            return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.LOWER_SAFE;
         }
     }
 
-    public Action lowerArmSafe() {
-        return new LowerArmSafe();
+    public Action intakeLowerArmSafe() {
+        return new IntakeLowerArmSafe();
     }
 
+    public class IntakeTravelArm implements Action {
+        boolean first = true;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentIntakeArm = intakeArmPos.TRAVEL;
+                first = false;
+            }
+
+            intakeLeftArm.setPosition(intakeArmSafe);
+            intakeRightArm.setPosition(intakeArmSafe);
+
+            return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.TRAVEL;
+        }
+    }
+
+    public Action intakeTravelArm() {
+        return new IntakeTravelArm();
+    }
+
+    public class IntakeTransferArm implements Action {
+        boolean first = true;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentIntakeArm = intakeArmPos.TRANSFER;
+                first = false;
+            }
+
+            intakeLeftArm.setPosition(intakeArmTransfer);
+            intakeRightArm.setPosition(intakeArmTransfer);
+
+            return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.TRANSFER;
+        }
+    }
+
+    public Action intakeTransferArm() {
+        return new IntakeTransferArm();
+    }
+
+    //Intake Wheel
     public class SpinUpAction implements Action {
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            intakeWheels.setPosition(0);
+            intakeActive = true;
+                    intakeWheels.setPosition(0);
             return false;
 
         }
@@ -387,7 +507,8 @@ public class Ancillary {
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            intakeWheels.setPosition(0.5);
+            intakeActive = false;
+                    intakeWheels.setPosition(0.5);
             return false;
 
         }

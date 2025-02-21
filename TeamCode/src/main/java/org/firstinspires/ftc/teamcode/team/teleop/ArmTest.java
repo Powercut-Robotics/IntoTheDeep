@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.powercut.teleop;
+package org.firstinspires.ftc.teamcode.team.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -6,18 +6,17 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
 
 @Disabled
 @Config
 @TeleOp
 public class ArmTest extends OpMode {
 
-    private final Intake intake = new Intake();
-    private final Outtake outtake = new Outtake();
+    private final Ancillary ancillary = new Ancillary();
+
     private final LightSystem light = new LightSystem();
     private final Drivetrain drive = new Drivetrain();
 
@@ -29,8 +28,8 @@ public class ArmTest extends OpMode {
 
     @Override
     public void init() {
-        intake.init(hardwareMap);
-        outtake.init(hardwareMap);
+        ancillary.init(hardwareMap);
+
         light.init(hardwareMap);
         drive.init(hardwareMap);
 
@@ -41,19 +40,16 @@ public class ArmTest extends OpMode {
 
     @Override
     public void loop() {
-        intake.intakeLeftArm.setPosition(lowerPos);
-        intake.intakeRightArm.setPosition(lowerPos);
+        ancillary.intakeLeftArm.setPosition(lowerPos);
+        ancillary.intakeRightArm.setPosition(lowerPos);
 
-        outtake.leftArm.setPosition(upperPos);
-        outtake.rightArm.setPosition(upperPos);
-        intake.setExtendo((gamepad1.left_stick_y /2) + 0.5);
+        ancillary.upperLeftArm.setPosition(upperPos);
+        ancillary.upperRightArm.setPosition(upperPos);
+        ancillary.setExtendo((gamepad1.left_stick_y /2) + 0.5);
 
-        outtake.grip.setPosition(clawPos);
-
-        intake.intakeWheels.setPosition(wheelSpeed);
         light.greyLarson();
 
-        telemetry.addData("Colour", "%d,%d,%d", intake.colourSensor.red(), intake.colourSensor.green(), intake.colourSensor.blue());
+        telemetry.addData("Colour", "%d,%d,%d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
         telemetry.addData("US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
         telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
         double leftLowerMVout = drive.leftLowerUS.getVoltage() * 1000;

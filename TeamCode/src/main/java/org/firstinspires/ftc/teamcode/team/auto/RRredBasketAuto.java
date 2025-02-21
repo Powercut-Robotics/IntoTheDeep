@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.powercut.auto;
+package org.firstinspires.ftc.teamcode.team.auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -13,10 +13,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.powercut.hardware.Intake;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
-import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Outtake;
+import org.firstinspires.ftc.teamcode.team.hardware.Ancillary;
+import org.firstinspires.ftc.teamcode.team.hardware.Lift;
+import org.firstinspires.ftc.teamcode.team.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
@@ -24,12 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Autonomous
-public class redBasketAuto extends OpMode {
+public class RRredBasketAuto extends OpMode {
     private MecanumDrive drive;
-    private final Outtake outtake = new Outtake();
+    private final Ancillary ancillary = new Ancillary();
     private final Lift lift = new Lift();
     private final LightSystem light = new LightSystem();
-    private final Intake intake = new Intake();
 
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
@@ -61,10 +59,9 @@ public class redBasketAuto extends OpMode {
     @Override
     public void init() {
         drive = new MecanumDrive(hardwareMap, new Pose2d(0 , 0, Math.toRadians(0)));
-        outtake.init(hardwareMap);
+        ancillary.init(hardwareMap);
         lift.init(hardwareMap);
         light.init(hardwareMap);
-        intake.init(hardwareMap);
 
 
 
@@ -99,8 +96,8 @@ public class redBasketAuto extends OpMode {
 
 
         toSpike1 = new ParallelAction(
-            intake.lowerArmSafe(),
-                intake.spinUpAction(),
+            ancillary.intakeLowerArmSafe(),
+                ancillary.spinUpAction(),
             drive.actionBuilder(drive.pose)
                     .strafeTo(new Vector2d(20, 20))
                     .build()
@@ -108,14 +105,14 @@ public class redBasketAuto extends OpMode {
 
         intakeAction1 = new RaceAction(
                 new ParallelAction(
-                        intake.lowerArm(),
-                        intake.intakeExtendo(),
-                        outtake.transferArm(),
-                        outtake.openGrip(),
+                        ancillary.intakeLowerArm(),
+                        ancillary.intakeExtendo(),
+                        ancillary.intakeTransferArm(),
+                        ancillary.openGrip(),
                         lift.liftRetract(),
                         new SleepAction(10)
                 ),
-                intake.intakeAction()
+                ancillary.intakeAction()
         );
 
         toBasket1 = drive.actionBuilder(new Pose2d(20,20, Math.toRadians(0)))
@@ -124,27 +121,27 @@ public class redBasketAuto extends OpMode {
 
         transferAction1 = new SequentialAction(
                 new ParallelAction(
-                        intake.travelArm(),
-                        intake.transfer1Extendo()
+                        ancillary.intakeTravelArm(),
+                        ancillary.travelExtendo()
                 ),
-                intake.transferArm(),
-                intake.transfer2Extendo(),
-                intake.transferAction(),
-                outtake.closeGrip(),
+                ancillary.intakeTransferArm(),
+                ancillary.transferExtendo(),
+                ancillary.transferAction(),
+                ancillary.closeGrip(),
                 lift.liftTopBasket()
         );
 
         topBasketDeposit1 = new SequentialAction(
-                outtake.depositSampArm(),
-                outtake.openGrip()
+                ancillary.depositSampArm(),
+                ancillary.openGrip()
         );
 
         toSpike2 = new ParallelAction(
-                outtake.closeGrip(),
-                outtake.transferArm(),
+                ancillary.closeGrip(),
+                ancillary.intakeTransferArm(),
                 lift.liftRetract(),
-                intake.lowerArmSafe(),
-                intake.spinUpAction(),
+                ancillary.intakeLowerArmSafe(),
+                ancillary.spinUpAction(),
                 drive.actionBuilder(new Pose2d(-10, 20, Math.toRadians(-45)))
                 .strafeToLinearHeading(new Vector2d(20, 10), Math.toRadians(0.00))
                 .build()
@@ -153,14 +150,14 @@ public class redBasketAuto extends OpMode {
         intakeAction2 = new SequentialAction(
                 new RaceAction(
                         new ParallelAction(
-                                intake.lowerArm(),
-                                intake.intakeExtendo(),
-                                outtake.transferArm(),
-                                outtake.openGrip(),
+                                ancillary.intakeLowerArm(),
+                                ancillary.intakeExtendo(),
+                                ancillary.intakeTransferArm(),
+                                ancillary.openGrip(),
                                 lift.liftRetract(),
                                 new SleepAction(10)
                         ),
-                        intake.intakeAction()
+                        ancillary.intakeAction()
                 )
         );
 
@@ -170,27 +167,27 @@ public class redBasketAuto extends OpMode {
 
         transferAction2 = new SequentialAction(
                 new ParallelAction(
-                        intake.travelArm(),
-                        intake.transfer1Extendo()
+                        ancillary.intakeTravelArm(),
+                        ancillary.travelExtendo()
                 ),
-                intake.transferArm(),
-                intake.transfer2Extendo(),
-                intake.transferAction(),
-                outtake.closeGrip(),
+                ancillary.intakeTransferArm(),
+                ancillary.transferExtendo(),
+                ancillary.transferAction(),
+                ancillary.closeGrip(),
                 lift.liftTopBasket()
         );
 
         topBasketDeposit2 = new SequentialAction(
-                outtake.depositSampArm(),
-                outtake.openGrip()
+                ancillary.depositSampArm(),
+                ancillary.openGrip()
         );
 
         toSpike3 = new ParallelAction(
-                outtake.closeGrip(),
-                outtake.transferArm(),
+                ancillary.closeGrip(),
+                ancillary.intakeTransferArm(),
                 lift.liftRetract(),
-                intake.lowerArmSafe(),
-                intake.spinUpAction(),
+                ancillary.intakeLowerArmSafe(),
+                ancillary.spinUpAction(),
                 drive.actionBuilder(new Pose2d(-10, 20, Math.toRadians(-45)))
                 .strafeToLinearHeading(new Vector2d(20, 0), Math.toRadians(0.00))
                 .build()
@@ -199,14 +196,14 @@ public class redBasketAuto extends OpMode {
         intakeAction3 = new SequentialAction(
                 new RaceAction(
                         new ParallelAction(
-                                intake.lowerArm(),
-                                intake.intakeExtendo(),
-                                outtake.transferArm(),
-                                outtake.openGrip(),
+                                ancillary.intakeLowerArm(),
+                                ancillary.intakeExtendo(),
+                                ancillary.intakeTransferArm(),
+                                ancillary.openGrip(),
                                 lift.liftRetract(),
                                 new SleepAction(10)
                         ),
-                        intake.intakeAction()
+                        ancillary.intakeAction()
                 )
         );
 
@@ -216,22 +213,22 @@ public class redBasketAuto extends OpMode {
 
         transferAction3 = new SequentialAction(
                 new ParallelAction(
-                        intake.travelArm(),
-                        intake.transfer1Extendo()
+                        ancillary.intakeTravelArm(),
+                        ancillary.travelExtendo()
                 ),
-                intake.transferArm(),
-                intake.transfer2Extendo(),
-                intake.transferAction(),
-                outtake.closeGrip(),
+                ancillary.intakeTransferArm(),
+                ancillary.transferExtendo(),
+                ancillary.transferAction(),
+                ancillary.closeGrip(),
                 lift.liftTopBasket()
         );
 
         topBasketDeposit3 = new SequentialAction(
-                outtake.depositSampArm(),
-                outtake.openGrip(),
+                ancillary.depositSampArm(),
+                ancillary.openGrip(),
                 new ParallelAction(
-                        outtake.closeGrip(),
-                        outtake.transferArm(),
+                        ancillary.closeGrip(),
+                        ancillary.intakeTransferArm(),
                         lift.liftRetract()
                 )
         );

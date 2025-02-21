@@ -6,6 +6,7 @@ import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.AngleController;
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.ThermalEquilibrium.homeostasis.Filters.FilterAlgorithms.LowPassFilter;
 import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficientsEx;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -26,6 +27,7 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
 import org.firstinspires.ftc.teamcode.powercut.settings;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 
+@Config
 public class Drivetrain {
     public DcMotorEx leftFront, leftBack, rightFront, rightBack;
     public URM09Sensor leftUpperUS, rightUpperUS;
@@ -192,7 +194,7 @@ public class Drivetrain {
         }
     }
 
-    public void setDrivetrainPowers(double x, double y, double theta, double modifier, double rotateBy) {
+    public void setDrivetrainPowers(double x, double y, double theta, double modifier, boolean rotate) {
         if (Math.abs(x) > 0.05 || Math.abs(y) > 0.05 || Math.abs(theta) > 0.05) {
             isDriveAction = false;
         }
@@ -215,8 +217,10 @@ public class Drivetrain {
                 yawLockActive = false;
             }
 
-            double x_rotated = x * Math.cos(-rotateBy) - y * Math.sin(-rotateBy);
-            double y_rotated = x * Math.sin(-rotateBy) + y * Math.cos(-rotateBy);
+            yawRad = rotate ? yawRad : 0;
+
+            double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
+            double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
 
             if ((Math.abs(x_rotated - lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated - lastY) > settings.driveCacheAmount) || (Math.abs(theta - lastTheta) > settings.driveCacheAmount)) {
                 rawXYThetaMod(x_rotated, y_rotated, theta, modifier);
@@ -279,11 +283,11 @@ public class Drivetrain {
             Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone))) {
-                setDrivetrainPowers(0,0,0,1);
+                rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
             } else {
-                setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+                rawXYThetaMod(x_rotated, y_rotated, theta, 1);
                 return true;
             }
         }
@@ -317,11 +321,11 @@ public class Drivetrain {
             Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(basketDisengageDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(basketDisengageDistance - rightDistanceRaw) < xyAlignDeadzone))) {
-                setDrivetrainPowers(0,0,0,1);
+                rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
             } else {
-                setDrivetrainPowers(x_rotated, y_rotated, theta, 1);
+                rawXYThetaMod(x_rotated, y_rotated, theta, 1);
                 return true;
             }
         }
@@ -336,7 +340,7 @@ public class Drivetrain {
         public boolean run(@NonNull TelemetryPacket packet) {
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
-            double yawError = (0 - yaw);
+            double yawError = (180 - yaw);
 
             double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
             double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
@@ -349,11 +353,11 @@ public class Drivetrain {
 
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(rungAlignDistance - rightDistance) < rungAlignDeadzone))) {
-                setDrivetrainPowers(0,0,0,1);
+                rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
             } else {
-                setDrivetrainPowers(0, y, theta, 1);;
+                rawXYThetaMod(0, y, theta, 1);;
                 return true;
             }
         }
@@ -380,11 +384,11 @@ public class Drivetrain {
             double theta = yawController.calculate(Math.toRadians(0), yawRad);
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(wallAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.wallAlignDistance - rightDistance) < rungAlignDeadzone))) {
-                setDrivetrainPowers(0,0,0,1);
+                rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
             } else {
-                setDrivetrainPowers(0, y, theta, 1);;
+                rawXYThetaMod(0, y, theta, 1);;
                 return true;
             }
         }
@@ -418,11 +422,11 @@ public class Drivetrain {
 
 
             if (!isDriveAction || (Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(subAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(subAlignDistance - rightDistance) < rungAlignDeadzone)) {
-                setDrivetrainPowers(0,0,0,1);
+                rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
             } else {
-                setDrivetrainPowers(0, y, theta, 1);;
+                rawXYThetaMod(0, y, theta, 1);;
                 return true;
             }
         }
