@@ -53,6 +53,11 @@ public class LightSystem {
         driver.setPattern(pattern);
     }
 
+    public void partyWaves() {
+        pattern = RevBlinkinLedDriver.BlinkinPattern.COLOR_WAVES_PARTY_PALETTE;
+        driver.setPattern(pattern);
+    }
+
     public void setPattern(RevBlinkinLedDriver.BlinkinPattern pattern) {
         this.pattern = pattern;
         driver.setPattern(pattern);

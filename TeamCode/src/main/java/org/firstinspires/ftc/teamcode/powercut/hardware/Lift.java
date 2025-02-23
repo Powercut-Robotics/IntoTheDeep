@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.powercut.hardware;
 
-import static org.firstinspires.ftc.teamcode.powercut.settings.liftCoefficients;
-import static org.firstinspires.ftc.teamcode.powercut.settings.liftHangCoefficients;
-import static org.firstinspires.ftc.teamcode.powercut.settings.liftHangPower;
 
 import androidx.annotation.NonNull;
 
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
+import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficientsEx;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,21 +14,44 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.powercut.settings;
 
+@Config
 public class Lift {
     public DcMotorEx leftLift, rightLift;
 
     public DigitalChannel liftStop;
 
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.001,0.0000, 500, 150, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
-    private PIDEx liftHangPID = new PIDEx(liftHangCoefficients);
 
-    public boolean isLiftAvailable = true;
+    //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
+    public static double liftEqCoef = 0.025;
+    public static int allowableExtensionDeficit= 50;
+    public static int allowableHangDeficit= 10;
+
+    public static double liftHoldPower = 0.05;
+    public static double liftHangHoldPower = -0.2;
+    public static double liftHangPullPower = -0.5;
+    public static double liftRetractPower = -0.25;
+
+    public static int liftTopBasket = 2800;
+//    public static int liftBottomBasket = 1250;
+    public static int liftTopRung = 1000;
+    public static int liftTopRungAttached = 800;
+//    public static int liftBottomRung = 1250;
+//    public static int liftBottomRungAttached = 1050;
+    public static int liftClearance = 500;
+
+    public static int liftPreHang = 500;
+    public static int liftHang = 200;
+
+    public static int liftRetraction = 0;
 
 
     private double lastLiftPower = 0;
+    public boolean isLiftAvailable = true;
     public boolean isDescending = false;
+
 
     // resets and inits
     public void init(HardwareMap hardwareMap) {
@@ -61,6 +83,11 @@ public class Lift {
             if (power > 1.0) {
                 power = 1.0;
             }
+
+            if (isDescending && !liftStop.getState()) {
+                power = 0;
+            }
+
             if (Math.abs(power - lastLiftPower) < 0.04) {
 
             } else {
@@ -70,11 +97,12 @@ public class Lift {
                     leftLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
+
                 int leftLiftPos = leftLift.getCurrentPosition();
                 int rightLiftPos = rightLift.getCurrentPosition();
                 double error = leftLiftPos - rightLiftPos;
 
-                double equaliser = error * settings.liftEqCoef;
+                double equaliser = error * liftEqCoef;
 
                 double leftPowerRaw = power;
                 double rightPowerRaw = power + equaliser;
@@ -120,13 +148,13 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopBasket) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
+            if (Math.abs(leftLiftPos - liftTopBasket) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftTopBasket) < allowableExtensionDeficit) {
+                setLiftPower(liftHoldPower);
                 isLiftAvailable = true;
                 return false;
             } else {
 
-                double power = liftPID.calculate(settings.liftTopBasket, averagePos);
+                double power = liftPID.calculate(liftTopBasket, averagePos);
 
                 setLiftPower(power);
 
@@ -139,32 +167,32 @@ public class Lift {
         return new liftTopBasket();
     }
 
-    public class liftBottomBasket implements Action {
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            isLiftAvailable = false;
-            int leftLiftPos = leftLift.getCurrentPosition();
-            int rightLiftPos = rightLift.getCurrentPosition();
-            int averagePos = (leftLiftPos + rightLiftPos)/2;
-
-            if (Math.abs(leftLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomBasket) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
-                isLiftAvailable = true;
-                return false;
-            } else {
-
-                double power = liftPID.calculate(settings.liftBottomBasket, averagePos);
-
-                setLiftPower(power);
-
-                return true;
-            }
-        }
-    }
-
-    public Action liftBottomBasket() {
-        return new liftBottomBasket();
-    }
+//    public class liftBottomBasket implements Action {
+//        @Override
+//        public boolean run(@NonNull TelemetryPacket packet) {
+//            isLiftAvailable = false;
+//            int leftLiftPos = leftLift.getCurrentPosition();
+//            int rightLiftPos = rightLift.getCurrentPosition();
+//            int averagePos = (leftLiftPos + rightLiftPos)/2;
+//
+//            if (Math.abs(leftLiftPos - liftBottomBasket) < allowableExtensionDeficit || Math.abs(rightLiftPos - liftBottomBasket) < allowableExtensionDeficit) {
+//                setLiftPower(liftHoldPower);
+//                isLiftAvailable = true;
+//                return false;
+//            } else {
+//
+//                double power = liftPID.calculate(liftBottomBasket, averagePos);
+//
+//                setLiftPower(power);
+//
+//                return true;
+//            }
+//        }
+//    }
+//
+//    public Action liftBottomBasket() {
+//        return new liftBottomBasket();
+//    }
 
     public class liftTopRung implements Action {
         @Override
@@ -174,13 +202,13 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRung) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
+            if (Math.abs(leftLiftPos - liftTopRung) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftTopRung) < allowableExtensionDeficit) {
+                setLiftPower(liftHoldPower);
                 isLiftAvailable = true;
                 return false;
             } else {
 
-                double power = liftPID.calculate(settings.liftTopRung, averagePos);
+                double power = liftPID.calculate(liftTopRung, averagePos);
 
                 setLiftPower(power);
 
@@ -201,13 +229,13 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftTopRungAttached) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
+            if (Math.abs(leftLiftPos - liftTopRungAttached) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftTopRungAttached) < allowableExtensionDeficit) {
+                setLiftPower(liftHoldPower);
                 isLiftAvailable = true;
                 return false;
             } else {
 
-                double power = liftPID.calculate(settings.liftTopRungAttached, averagePos);
+                double power = liftPID.calculate(liftTopRungAttached, averagePos);
 
                 setLiftPower(power);
 
@@ -220,7 +248,7 @@ public class Lift {
         return new liftTopRungAttached();
     }
 
-    public class liftBottomRung implements Action {
+    public class liftClearance implements Action {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             isLiftAvailable = false;
@@ -228,13 +256,14 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRung) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
+
+            if (Math.abs(leftLiftPos - liftClearance) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftClearance) < allowableExtensionDeficit) {
+                setLiftPower(liftHoldPower);
                 isLiftAvailable = true;
                 return false;
             } else {
 
-                double power = liftPID.calculate(settings.liftBottomRung, averagePos);
+                double power = liftPID.calculate(liftClearance, averagePos);
 
                 setLiftPower(power);
 
@@ -243,52 +272,86 @@ public class Lift {
         }
     }
 
-    public Action liftBottomRung() {
-        return new liftBottomRung();
+    public Action lifClearance() {
+        return new liftClearance();
     }
 
-    public class liftBottomRungAttached implements Action {
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            isLiftAvailable = false;
-            int leftLiftPos = leftLift.getCurrentPosition();
-            int rightLiftPos = rightLift.getCurrentPosition();
-            int averagePos = (leftLiftPos + rightLiftPos)/2;
-
-            if (Math.abs(leftLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftBottomRungAttached) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
-                isLiftAvailable = true;
-                return false;
-            } else {
-
-                double power = liftPID.calculate(settings.liftBottomRungAttached, averagePos);
-
-                setLiftPower(power);
-
-                return true;
-            }
-        }
-    }
-
-    public Action liftBottomRungAttached() {
-        return new liftBottomRungAttached();
-    }
+//    public class liftBottomRung implements Action {
+//        @Override
+//        public boolean run(@NonNull TelemetryPacket packet) {
+//            isLiftAvailable = false;
+//            int leftLiftPos = leftLift.getCurrentPosition();
+//            int rightLiftPos = rightLift.getCurrentPosition();
+//            int averagePos = (leftLiftPos + rightLiftPos)/2;
+//
+//            if (Math.abs(leftLiftPos - liftBottomRung) < allowableExtensionDeficit || Math.abs(rightLiftPos - liftBottomRung) < allowableExtensionDeficit) {
+//                setLiftPower(liftHoldPower);
+//                isLiftAvailable = true;
+//                return false;
+//            } else {
+//
+//                double power = liftPID.calculate(liftBottomRung, averagePos);
+//
+//                setLiftPower(power);
+//
+//                return true;
+//            }
+//        }
+//    }
+//
+//    public Action liftBottomRung() {
+//        return new liftBottomRung();
+//    }
+//
+//    public class liftBottomRungAttached implements Action {
+//        @Override
+//        public boolean run(@NonNull TelemetryPacket packet) {
+//            isLiftAvailable = false;
+//            int leftLiftPos = leftLift.getCurrentPosition();
+//            int rightLiftPos = rightLift.getCurrentPosition();
+//            int averagePos = (leftLiftPos + rightLiftPos)/2;
+//
+//            if (Math.abs(leftLiftPos - liftBottomRungAttached) < allowableExtensionDeficit || Math.abs(rightLiftPos - liftBottomRungAttached) < allowableExtensionDeficit) {
+//                setLiftPower(liftHoldPower);
+//                isLiftAvailable = true;
+//                return false;
+//            } else {
+//
+//                double power = liftPID.calculate(liftBottomRungAttached, averagePos);
+//
+//                setLiftPower(power);
+//
+//                return true;
+//            }
+//        }
+//    }
+//
+//    public Action liftBottomRungAttached() {
+//        return new liftBottomRungAttached();
+//    }
 
     public class liftRetract implements Action {
+
+        boolean isCooked = false;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             isLiftAvailable = false;
+
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
+            double power = 0;
 
-            if (Math.abs(leftLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftRetraction) < settings.allowableExtensionDeficit) {
+            if (((Math.abs(leftLiftPos - liftRetraction) < allowableExtensionDeficit) && (Math.abs(rightLiftPos - liftRetraction) < allowableExtensionDeficit)) || !liftStop.getState()) {
                 kill();
                 return false;
             } else {
-
-                double power = liftPID.calculate(settings.liftRetraction, averagePos);
-
+                if (((Math.abs(leftLiftPos - liftRetraction) < allowableExtensionDeficit) && (Math.abs(rightLiftPos - liftRetraction) < allowableExtensionDeficit)) || isCooked) {
+                    isCooked = true;
+                    power = liftRetractPower;
+                } else {
+                    power = liftPID.calculate(liftRetraction, averagePos);
+                }
                 setLiftPower(power);
 
                 return true;
@@ -304,15 +367,12 @@ public class Lift {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             isLiftAvailable = false;
-            boolean liftSensor = !liftStop.getState();
 
             if (!liftStop.getState()) {
                 kill();
                 return false;
             } else {
-
-
-                setLiftPower(-0.5);
+                setLiftPower(liftRetractPower);
 
                 return true;
             }
@@ -331,13 +391,13 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - settings.liftPreHang) < settings.allowableExtensionDeficit || Math.abs(rightLiftPos - settings.liftPreHang) < settings.allowableExtensionDeficit) {
-                setLiftPower(settings.liftHoldPower);
+            if (Math.abs(leftLiftPos - liftPreHang) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftPreHang) < allowableExtensionDeficit) {
+                setLiftPower(liftHoldPower);
                 isLiftAvailable = true;
                 return false;
             } else {
 
-                double power = liftPID.calculate(settings.liftPreHang, averagePos);
+                double power = liftPID.calculate(liftPreHang, averagePos);
 
                 setLiftPower(power);
 
@@ -359,12 +419,12 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - settings.liftHang) < settings.allowableHangDeficit || Math.abs(rightLiftPos - settings.liftHang) < settings.allowableHangDeficit) {
-                setLiftPower(liftHangPower);
+            if (Math.abs(averagePos - liftHang) < allowableHangDeficit) {
+                setLiftPower(liftHangHoldPower);
                 return false;
             } else {
 
-                double power = liftHangPID.calculate(settings.liftHang, averagePos);
+                double power = liftHangPullPower;
 
                 setLiftPower(power);
 

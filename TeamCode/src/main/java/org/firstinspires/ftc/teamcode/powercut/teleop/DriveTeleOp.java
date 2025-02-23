@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.team.teleop;
+package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -21,10 +21,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
-import org.firstinspires.ftc.teamcode.team.hardware.Ancillary;
-import org.firstinspires.ftc.teamcode.team.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.team.hardware.Lift;
-import org.firstinspires.ftc.teamcode.team.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
+import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 
 import java.util.ArrayList;
 import java.util.List;

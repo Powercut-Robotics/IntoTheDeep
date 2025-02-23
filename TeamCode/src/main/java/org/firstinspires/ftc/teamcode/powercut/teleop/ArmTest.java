@@ -1,13 +1,13 @@
-package org.firstinspires.ftc.teamcode.team.teleop;
+package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.team.hardware.Ancillary;
-import org.firstinspires.ftc.teamcode.team.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.team.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 
 @Disabled
 @Config
