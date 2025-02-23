@@ -23,8 +23,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
-import org.firstinspires.ftc.teamcode.powercut.settings;
+import org.firstinspires.ftc.teamcode.team.hardware.drivers.URM09Sensor;
+
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 
 @Config
@@ -42,7 +42,6 @@ public class Drivetrain {
     public static double wallAlignDistance = 15;
     public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.05,0,0.005,0,100,0.25);
     public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.025,0,0.02,0,100,0);
-    public static PIDCoefficientsEx basketYawCoefficients = new PIDCoefficientsEx(-1.5,0,0.005,0,0.5,0);
     public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(-1.25,0,0.5,0,0.5,0);
     public static PIDCoefficientsEx subYCoefficients = new PIDCoefficientsEx(-0.025,0,0.02,0,100,0);
 
@@ -50,8 +49,7 @@ public class Drivetrain {
     private PIDEx YAlignPID = new PIDEx(basketXYCoefficients);
     private PIDEx RungAlignPID = new PIDEx(rungYCoefficients);
     private PIDEx SubAlignPID = new PIDEx(subYCoefficients);
-    private PIDEx basketYawAlignPID = new PIDEx(basketYawCoefficients);
-    AngleController basketYawController = new AngleController(basketYawAlignPID);
+
     private PIDEx yawAlignPID = new PIDEx(yawLockCoefficients);
     AngleController yawController = new AngleController(yawAlignPID);
 
@@ -66,6 +64,8 @@ public class Drivetrain {
     private double lastX = 0;
     private double lastY = 0;
     private double lastTheta = 0;
+
+    public static double driveCacheAmount = 0.01;
 
     public static double yawAlignDeadzone = 2.5;
     public static double xyAlignDeadzone = 5;
@@ -185,7 +185,7 @@ public class Drivetrain {
                 yawLockActive = false;
             }
 
-            if ((Math.abs(x - lastX) > settings.driveCacheAmount) || (Math.abs(y - lastY) > settings.driveCacheAmount) || (Math.abs(theta - lastTheta) > settings.driveCacheAmount)) {
+            if ((Math.abs(x - lastX) > driveCacheAmount) || (Math.abs(y - lastY) > driveCacheAmount) || (Math.abs(theta - lastTheta) > driveCacheAmount)) {
                 rawXYThetaMod(x, y, theta, modifier);
                 lastX = x;
                 lastY = y;
@@ -222,7 +222,7 @@ public class Drivetrain {
             double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
             double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
 
-            if ((Math.abs(x_rotated - lastX) > settings.driveCacheAmount) || (Math.abs(y_rotated - lastY) > settings.driveCacheAmount) || (Math.abs(theta - lastTheta) > settings.driveCacheAmount)) {
+            if ((Math.abs(x_rotated - lastX) > driveCacheAmount) || (Math.abs(y_rotated - lastY) > driveCacheAmount) || (Math.abs(theta - lastTheta) > driveCacheAmount)) {
                 rawXYThetaMod(x_rotated, y_rotated, theta, modifier);
                 lastX = x_rotated;
                 lastY = y_rotated;
@@ -260,8 +260,14 @@ public class Drivetrain {
     //Alignment Actions
 
     public class AlignBasket implements Action {
+        private boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                isDriveAction = true;
+                first = false;
+            }
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
             double yawError = (-45 - yaw);
@@ -298,8 +304,15 @@ public class Drivetrain {
     }
 
     public class DisengageBasket implements Action {
+        private boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                isDriveAction = true;
+                first = false;
+            }
+
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
             double yawError = (-45 - yaw);
@@ -336,8 +349,15 @@ public class Drivetrain {
     }
 
     public class AlignRung implements Action {
+        private boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                isDriveAction = true;
+                first = false;
+            }
+
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
             double yawError = (180 - yaw);
@@ -368,8 +388,15 @@ public class Drivetrain {
     }
 
     public class AlignWall implements Action {
+        private boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                isDriveAction = true;
+                first = false;
+            }
+
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
             double yawError = (0 - yaw);
@@ -383,7 +410,7 @@ public class Drivetrain {
             double y = RungAlignPID.calculate(wallAlignDistance, (rightDistance+leftDistance)/2);
             double theta = yawController.calculate(Math.toRadians(0), yawRad);
 
-            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(wallAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(settings.wallAlignDistance - rightDistance) < rungAlignDeadzone))) {
+            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(wallAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(wallAlignDistance - rightDistance) < rungAlignDeadzone))) {
                 rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
@@ -399,8 +426,15 @@ public class Drivetrain {
     }
 
     public class AlignSubmersible implements Action {
+        private boolean first = true;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                isDriveAction = true;
+                first = false;
+            }
+
             double yaw = getYaw();
             double yawRad = Math.toRadians(yaw);
             double yawError = (0 - yaw);

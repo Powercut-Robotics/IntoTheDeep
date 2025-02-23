@@ -6,11 +6,12 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.util.Constants;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -18,8 +19,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
+import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.team.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.team.hardware.Drivetrain;
@@ -72,14 +72,14 @@ public class DriveTeleOp extends OpMode  {
 
     //Defaults
 
-    private Action homeAncillary = new ParallelAction(
+    private final Action homeAncillary = new ParallelAction(
             ancillary.intakeTravelArm(),
             ancillary.outtakeTransferArm(),
             ancillary.travelExtendo(),
             ancillary.closeGrip()
     );
 
-    private Action transferAction = new SequentialAction(
+    private final Action transferAction = new SequentialAction(
             new ParallelAction(
                     ancillary.intakeTransferArm(),
                     ancillary.transferExtendo(),
@@ -102,16 +102,16 @@ public class DriveTeleOp extends OpMode  {
     private double modifier = 1;
     ElapsedTime gametimer = new ElapsedTime();
 
-    private enum AncillaryActions {
-        INTAKE_SAMP,
-        INTAKE_SPEC,
-        OUTTAKE_BASKET,
-        OUTTAKE_RUNG,
-        TRANSFER,
-        NONE
-    }
-
-    AncillaryActions runningAction = AncillaryActions.NONE;
+//    private enum AncillaryActions {
+//        INTAKE_SAMP,
+//        INTAKE_SPEC,
+//        OUTTAKE_BASKET,
+//        OUTTAKE_RUNG,
+//        TRANSFER,
+//        NONE
+//    }
+//
+//    AncillaryActions runningAction = AncillaryActions.NONE;
 
 
 
@@ -121,18 +121,13 @@ public class DriveTeleOp extends OpMode  {
         lift.init(hardwareMap);
         drive.init(hardwareMap);
         light.init(hardwareMap);
-        //driveLoc = new MecanumDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
+        driveLoc = new MecanumDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
         allHubs = hardwareMap.getAll(LynxModule.class);
 
         drive.imu.resetYaw();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         dashTelemetry = FtcDashboard.getInstance().getTelemetry();
-
-        Constants.setConstants(FConstants.class, LConstants.class);
-        follower = new Follower(hardwareMap);
-        follower.setStartingPose(startPose);
-
 
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -194,13 +189,13 @@ public class DriveTeleOp extends OpMode  {
 
 
 
-//        driveLoc.updatePoseEstimate();
-//        packet.fieldOverlay().setStroke("#3F51B5");
-//        Drawing.drawRobot(packet.fieldOverlay(), driveLoc.pose);
-//        telemetry.addData("x", driveLoc.pose.position.x);
-//        telemetry.addData("y", driveLoc.pose.position.y);
-//        telemetry.addData("heading (deg)", Math.toDegrees(driveLoc.pose.heading.toDouble()));
-//        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+        driveLoc.updatePoseEstimate();
+        packet.fieldOverlay().setStroke("#3F51B5");
+        Drawing.drawRobot(packet.fieldOverlay(), driveLoc.pose);
+        telemetry.addData("x", driveLoc.pose.position.x);
+        telemetry.addData("y", driveLoc.pose.position.y);
+        telemetry.addData("heading (deg)", Math.toDegrees(driveLoc.pose.heading.toDouble()));
+        FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
@@ -213,6 +208,38 @@ public class DriveTeleOp extends OpMode  {
         double x = currentGamepad1.left_stick_x;
         double y = -currentGamepad1.left_stick_y;
         double theta = currentGamepad1.right_stick_x;
+
+        if (currentGamepad2.cross && !previousGamepad2.cross) {
+            driveActions.clear();
+            driveActions.add(drive.alignBasket());
+        } else if (!currentGamepad2.cross && previousGamepad2.cross) {
+            driveActions.clear();
+            drive.kill();
+            driveActions.add(drive.disengageBasket());
+        }
+
+        if (currentGamepad2.triangle && !previousGamepad2.triangle) {
+            driveActions.clear();
+            driveActions.add(drive.alignRung());
+        } else if (!currentGamepad2.triangle && previousGamepad2.triangle) {
+            driveActions.clear();
+            drive.kill();
+        }
+
+        if (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) {
+            modifier = 0.25;
+            driveActions.clear();
+            driveActions.add(drive.alignWall());
+        } else if (!currentGamepad2.dpad_down && previousGamepad2.dpad_down) {
+            modifier = 1;
+            driveActions.clear();
+        }
+
+        if (currentGamepad1.right_bumper) {
+            modifier = 0.25;
+        } else {
+            modifier = 1;
+        }
 
         drive.setDrivetrainPowers(x, y, theta, modifier,true);
     }
@@ -233,7 +260,6 @@ public class DriveTeleOp extends OpMode  {
         } else {
             if (currentGamepad2.cross && !previousGamepad2.cross) {
                 ancillaryActions.clear();
-                driveActions.add(drive.alignBasket());
                 ancillaryActions.add(
                         new SequentialAction(
                                 lift.liftTopBasket(),
@@ -244,9 +270,6 @@ public class DriveTeleOp extends OpMode  {
                 status.position = samplePosition.NONE;
                 status.colour = Ancillary.sampleColour.NONE;
                 ancillaryActions.clear();
-                driveActions.clear();
-                drive.kill();
-                driveActions.add(drive.disengageBasket());
                 ancillaryActions.add(
                         new SequentialAction(
                                 ancillary.openGrip(),
@@ -277,14 +300,10 @@ public class DriveTeleOp extends OpMode  {
                     );
                 }
 
-                driveActions.add(drive.alignRung());
-
             } else if (!currentGamepad2.triangle && previousGamepad2.triangle) {
                 status.position = samplePosition.NONE;
                 status.colour = Ancillary.sampleColour.NONE;
                 ancillaryActions.clear();
-                driveActions.clear();
-                drive.kill();
                 ancillaryActions.add(new SequentialAction(
                                 ancillary.relaxGrip(),
                                 lift.liftTopRungAttached(),
@@ -304,10 +323,7 @@ public class DriveTeleOp extends OpMode  {
         }
 
         if (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) {
-            modifier = 0.25;
             completedAction = false;
-            driveActions.clear();
-            driveActions.add(drive.alignWall());
             ancillaryActions.clear();
             ancillaryActions.add(new SequentialAction(
                     new ParallelAction(
@@ -324,7 +340,6 @@ public class DriveTeleOp extends OpMode  {
         } else if (!currentGamepad2.dpad_down && previousGamepad2.dpad_down) {
             status.position = samplePosition.OUTTAKE;
 
-            driveActions.clear();
             if (completedAction) {
                 completedAction = false;
                 ancillaryActions.add(

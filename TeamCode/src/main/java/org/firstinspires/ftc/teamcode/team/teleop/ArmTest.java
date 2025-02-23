@@ -5,10 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
-import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.team.hardware.Ancillary;
+import org.firstinspires.ftc.teamcode.team.hardware.Drivetrain;
+import org.firstinspires.ftc.teamcode.team.hardware.LightSystem;
 
 @Disabled
 @Config
@@ -42,20 +41,30 @@ public class ArmTest extends OpMode {
     public void loop() {
         ancillary.intakeLeftArm.setPosition(lowerPos);
         ancillary.intakeRightArm.setPosition(lowerPos);
+        telemetry.addData("intakeLeftArm isMoving", ancillary.intakeLeftArm.isMoving());
+        telemetry.addData("intakeRightArm isMoving", ancillary.intakeRightArm.isMoving());
 
         ancillary.upperLeftArm.setPosition(upperPos);
         ancillary.upperRightArm.setPosition(upperPos);
-        ancillary.setExtendo((gamepad1.left_stick_y /2) + 0.5);
+        telemetry.addData("upperLeftArm isMoving", ancillary.upperLeftArm.isMoving());
+        telemetry.addData("upperRightArm isMoving", ancillary.upperRightArm.isMoving());
 
-        light.greyLarson();
+        ancillary.extendoLeft.setPosition(extendo);
+        ancillary.extendoRight.setPosition(extendo);
+        telemetry.addData("extendoLeft isMoving", ancillary.extendoLeft.isMoving());
+        telemetry.addData("extendoRight isMoving", ancillary.extendoRight.isMoving());
 
-        telemetry.addData("Colour", "%d,%d,%d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
-        telemetry.addData("US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
-        telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
-        double leftLowerMVout = drive.leftLowerUS.getVoltage() * 1000;
-        double rightLowerMVout = drive.rightLowerUS.getVoltage() * 1000;
+        ancillary.grip.setPosition(clawPos);
 
-        telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
+        light.partyWaves();
+
+//        telemetry.addData("Colour", "%d,%d,%d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
+//        telemetry.addData("US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
+//        telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
+//        double leftLowerMVout = drive.leftLowerUS.getVoltage() * 1000;
+//        double rightLowerMVout = drive.rightLowerUS.getVoltage() * 1000;
+//
+//        telemetry.addData("Analog", "%5.2f, %5.2f", (leftLowerMVout*520)/3300, (rightLowerMVout*520)/3300);
         telemetry.update();
     }
 }

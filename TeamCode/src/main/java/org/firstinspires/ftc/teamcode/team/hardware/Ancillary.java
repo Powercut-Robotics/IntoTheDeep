@@ -18,10 +18,9 @@ import org.firstinspires.ftc.teamcode.team.hardware.drivers.TCS34725;
 
 @Config
 public class Ancillary {
-    private ServoImplEx intakeLeftArmRaw, intakeRightArmRaw, extendoLeftRaw, extendoRightRaw,  upperLeftArmRaw, upperRightArmRaw;
-    public ServoImplEx intakeWheels, grip;
+    public ServoImplEx intakeWheels;
     public GBTorqueServo intakeLeftArm = new GBTorqueServo(), intakeRightArm = new GBTorqueServo();
-    public RevServo extendoLeft = new RevServo(), extendoRight = new RevServo(), upperLeftArm = new RevServo(), upperRightArm = new RevServo();
+    public RevServo extendoLeft = new RevServo(), extendoRight = new RevServo(), upperLeftArm = new RevServo(), upperRightArm = new RevServo(), grip = new RevServo();
     public TCS34725 colourSensor = null;
     public TouchSensor trayTouchSensor;
 
@@ -52,16 +51,10 @@ public class Ancillary {
         NONE
     }
 
-    public enum samplePosition {
-        INTAKE,
-        TRAY,
-        OUTTAKE,
-        NONE
-    }
 
     public class sampleStatus {
         sampleColour colour;
-        samplePosition position;
+
     }
 
     public sampleStatus status;
@@ -92,25 +85,26 @@ public class Ancillary {
 
 
     public void init(HardwareMap hardwareMap) {
-        intakeLeftArmRaw = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
-        intakeRightArmRaw = hardwareMap.get(ServoImplEx.class, "intakeRightArm");
-        extendoLeftRaw = hardwareMap.get(ServoImplEx.class, "extendoLeft");
-        extendoRightRaw = hardwareMap.get(ServoImplEx.class, "extendoRight");
+        ServoImplEx intakeLeftArmRaw = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
+        ServoImplEx intakeRightArmRaw = hardwareMap.get(ServoImplEx.class, "intakeRightArm");
+        ServoImplEx extendoLeftRaw = hardwareMap.get(ServoImplEx.class, "extendoLeft");
+        ServoImplEx extendoRightRaw = hardwareMap.get(ServoImplEx.class, "extendoRight");
+        ServoImplEx upperLeftArmRaw = hardwareMap.get(ServoImplEx.class, "leftArm");
+        ServoImplEx upperRightArmRaw = hardwareMap.get(ServoImplEx.class, "rightArm");
+        ServoImplEx gripRaw = hardwareMap.get(ServoImplEx.class, "grip");
+
         intakeWheels = hardwareMap.get(ServoImplEx.class, "intakeWheels");
-        upperLeftArmRaw = hardwareMap.get(ServoImplEx.class, "leftArm");
-        upperRightArmRaw = hardwareMap.get(ServoImplEx.class, "rightArm");
-        grip = hardwareMap.get(ServoImplEx.class, "grip");
         colourSensor = hardwareMap.get(TCS34725.class, "intakeColour");
         trayTouchSensor = hardwareMap.get(TouchSensor.class, "trayTouch");
 
         intakeLeftArmRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
         intakeRightArmRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        intakeWheels.setPwmRange(new PwmControl.PwmRange(500, 2500));
         extendoLeftRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
         extendoRightRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
         upperLeftArmRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
         upperRightArmRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
-        grip.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        gripRaw.setPwmRange(new PwmControl.PwmRange(500, 2500));
+        intakeWheels.setPwmRange(new PwmControl.PwmRange(500, 2500));
 
         upperLeftArmRaw.setDirection(ServoImplEx.Direction.REVERSE);
         intakeLeftArmRaw.setDirection(ServoImplEx.Direction.REVERSE);
@@ -123,6 +117,8 @@ public class Ancillary {
         extendoRight.init(extendoRightRaw);
         upperLeftArm.init(upperLeftArmRaw);
         upperRightArm.init(upperRightArmRaw);
+
+        grip.init(gripRaw);
     }
 
     public sampleColour getSampleColour() {
@@ -146,42 +142,38 @@ public class Ancillary {
     }
 
     //main system control
+    //  public void setExtendo(double pos) {
+    //      double limit = extendoTransfer - extendoIntake;
+    //
+    //      extendoLeft.setPosition(extendoIntake + (limit * pos));
+    //      extendoRight.setPosition(extendoIntake + (limit * pos));
+    //   }
 
-//        public void setExtendo(double pos) {
-//            double limit = extendoTransfer - extendoIntake;
-//
-//            extendoLeft.setPosition(extendoIntake + (limit * pos));
-//            extendoRight.setPosition(extendoIntake + (limit * pos));
-//        }
+    public void relaxSystem() {
+        intakeActive = false;
+        intakeWheels.setPosition(0.5);
+        intakeLeftArm.servo.setPwmDisable();
+        intakeRightArm.servo.setPwmDisable();
+        intakeWheels.setPwmDisable();
+        extendoLeft.servo.setPwmDisable();
+        extendoRight.servo.setPwmDisable();
+        grip.servo.setPwmDisable();
+        upperLeftArm.servo.setPwmDisable();
+        upperRightArm.servo.setPwmDisable();
 
-        public void relaxSystem() {
-            intakeActive = false;
-            intakeWheels.setPosition(0.5);
-            intakeLeftArm.servo.setPwmDisable();
-            intakeRightArm.servo.setPwmDisable();
-            intakeWheels.setPwmDisable();
-            extendoLeft.servo.setPwmDisable();
-            extendoRight.servo.setPwmDisable();
-            grip.setPwmDisable();
-            upperLeftArm.servo.setPwmDisable();
-            upperRightArm.servo.setPwmDisable();
-
-        }
-
-        public Action relaxSystemAction() {
+    }
+    public Action relaxSystemAction() {
             return new InstantAction(() -> relaxSystem());
-        }
-
+    }
     public void engageSystem() {
         intakeLeftArm.servo.setPwmEnable();
         intakeRightArm.servo.setPwmEnable();
         intakeWheels.setPwmEnable();
         extendoLeft.servo.setPwmEnable();
         extendoRight.servo.setPwmEnable();
-        grip.setPwmEnable();
+        grip.servo.setPwmEnable();
         upperLeftArm.servo.setPwmEnable();
         upperRightArm.servo.setPwmEnable();
-
     }
 
     public Action engageAction() {
@@ -198,6 +190,7 @@ public class Ancillary {
                 intakeActive = true;
                 first = false;
             }
+
             sampleColour sample = getSampleColour();
 
             if (sample != sampleColour.NONE || !intakeActive) {
@@ -217,7 +210,6 @@ public class Ancillary {
 
     public class ExpelAction implements Action {
         private long lastDetectedTime = System.currentTimeMillis(); // Tracks the last time a sample was detected
-
         boolean first = true;
 
         @Override
@@ -267,7 +259,7 @@ public class Ancillary {
                 first = false;
             }
 
-                    sampleColour sample = getSampleColour();
+            sampleColour sample = getSampleColour();
             boolean inTray = trayTouchSensor.isPressed();
 
             if (sample == sampleColour.NONE || !intakeActive) {
@@ -295,7 +287,6 @@ public class Ancillary {
 
     //Intake Extendo
     public class IntakeExtendo implements Action {
-
         boolean first = true;
 
         @Override
@@ -303,10 +294,10 @@ public class Ancillary {
             if (first) {
                 currentExtendoPos = extendoPos.FULL;
                 first = false;
-            }
 
-            extendoLeft.setPosition(extendoIntake);
-            extendoRight.setPosition(extendoIntake);
+                extendoLeft.setPosition(extendoIntake);
+                extendoRight.setPosition(extendoIntake);
+            }
 
             return extendoLeft.isMoving() && currentExtendoPos == extendoPos.FULL;
         }
@@ -317,7 +308,6 @@ public class Ancillary {
     }
 
     public class HalfExtendo implements Action {
-
         boolean first = true;
 
         @Override
@@ -325,10 +315,10 @@ public class Ancillary {
             if (first) {
                 currentExtendoPos = extendoPos.HALF;
                 first = false;
-            }
 
-            extendoLeft.setPosition(extendoHalf);
-            extendoRight.setPosition(extendoHalf);
+                extendoLeft.setPosition(extendoHalf);
+                extendoRight.setPosition(extendoHalf);
+            }
 
             return extendoLeft.isMoving() && currentExtendoPos == extendoPos.HALF;
         }
@@ -346,9 +336,10 @@ public class Ancillary {
             if (first) {
                 currentExtendoPos = extendoPos.CLEARANCE;
                 first = false;
+
+                extendoLeft.setPosition(extendoClearance);
+                extendoRight.setPosition(extendoClearance);
             }
-            extendoLeft.setPosition(extendoClearance);
-            extendoRight.setPosition(extendoClearance);
 
             return extendoLeft.isMoving() && currentExtendoPos == extendoPos.CLEARANCE;
         }
@@ -359,7 +350,6 @@ public class Ancillary {
     }
 
     public class TravelExtendo implements Action {
-
         boolean first = true;
 
         @Override
@@ -367,9 +357,10 @@ public class Ancillary {
             if (first) {
                 currentExtendoPos = extendoPos.TRAVEL;
                 first = false;
+
+                extendoLeft.setPosition(extendoTravel);
+                extendoRight.setPosition(extendoTravel);
             }
-            extendoLeft.setPosition(extendoTravel);
-            extendoRight.setPosition(extendoTravel);
 
             return extendoLeft.isMoving() && currentExtendoPos == extendoPos.TRAVEL;
         }
@@ -380,7 +371,6 @@ public class Ancillary {
     }
 
     public class TransferExtendo implements Action {
-
         boolean first = true;
 
         @Override
@@ -388,10 +378,10 @@ public class Ancillary {
             if (first) {
                 currentExtendoPos = extendoPos.TRANSFER;
                 first = false;
-            }
 
-            extendoLeft.setPosition(extendoTransfer);
-            extendoRight.setPosition(extendoTransfer);
+                extendoLeft.setPosition(extendoTransfer);
+                extendoRight.setPosition(extendoTransfer);
+            }
 
             return extendoLeft.isMoving() && currentExtendoPos == extendoPos.TRANSFER;
         }
@@ -411,11 +401,10 @@ public class Ancillary {
             if (first) {
                 currentIntakeArm = intakeArmPos.LOWER;
                 first = false;
+
+                intakeLeftArm.setPosition(intakeArmIntake);
+                intakeRightArm.setPosition(intakeArmIntake);
             }
-
-            intakeLeftArm.setPosition(intakeArmIntake);
-            intakeRightArm.setPosition(intakeArmIntake);
-
             return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.LOWER;
         }
     }
@@ -432,11 +421,10 @@ public class Ancillary {
             if (first) {
                 currentIntakeArm = intakeArmPos.LOWER_SAFE;
                 first = false;
+
+                intakeLeftArm.setPosition(intakeArmIntakeSafe);
+                intakeRightArm.setPosition(intakeArmIntakeSafe);
             }
-
-            intakeLeftArm.setPosition(intakeArmIntakeSafe);
-            intakeRightArm.setPosition(intakeArmIntakeSafe);
-
             return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.LOWER_SAFE;
         }
     }
@@ -453,10 +441,10 @@ public class Ancillary {
             if (first) {
                 currentIntakeArm = intakeArmPos.TRAVEL;
                 first = false;
-            }
 
-            intakeLeftArm.setPosition(intakeArmSafe);
-            intakeRightArm.setPosition(intakeArmSafe);
+                intakeLeftArm.setPosition(intakeArmSafe);
+                intakeRightArm.setPosition(intakeArmSafe);
+            }
 
             return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.TRAVEL;
         }
@@ -474,10 +462,10 @@ public class Ancillary {
             if (first) {
                 currentIntakeArm = intakeArmPos.TRANSFER;
                 first = false;
-            }
 
-            intakeLeftArm.setPosition(intakeArmTransfer);
-            intakeRightArm.setPosition(intakeArmTransfer);
+                intakeLeftArm.setPosition(intakeArmTransfer);
+                intakeRightArm.setPosition(intakeArmTransfer);
+            }
 
             return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.TRANSFER;
         }
@@ -493,7 +481,7 @@ public class Ancillary {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             intakeActive = true;
-                    intakeWheels.setPosition(0);
+            intakeWheels.setPosition(0);
             return false;
 
         }
@@ -508,7 +496,7 @@ public class Ancillary {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             intakeActive = false;
-                    intakeWheels.setPosition(0.5);
+            intakeWheels.setPosition(0.5);
             return false;
 
         }
@@ -521,12 +509,15 @@ public class Ancillary {
     // Outtake Arm
 
     public class DepositSampArm implements Action {
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                first = false;
 
-            upperLeftArm.setPosition(upperArmSampDeposit);
-            upperRightArm.setPosition(upperArmSampDeposit);
-
+                upperLeftArm.setPosition(upperArmSampDeposit);
+                upperRightArm.setPosition(upperArmSampDeposit);
+            }
             return !upperLeftArm.isMoving();
         }
     }
@@ -536,12 +527,15 @@ public class Ancillary {
     }
 
     public class DepositSpecArm implements Action {
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                first = false;
 
-            upperLeftArm.setPosition(upperArmSpecDeposit);
-            upperRightArm.setPosition(upperArmSpecDeposit);
-
+                upperLeftArm.setPosition(upperArmSpecDeposit);
+                upperRightArm.setPosition(upperArmSpecDeposit);
+            }
             return !upperLeftArm.isMoving();
         }
     }
@@ -551,18 +545,16 @@ public class Ancillary {
     }
 
     public class SpecIntakeArm implements Action {
-        private long startTime = 0;
-        private static final long DURATION = 1000;
 
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            if (startTime == 0) {
-                startTime = System.currentTimeMillis();
+            if (first) {
+                first = false;
+
+                upperLeftArm.setPosition(upperArmIntake);
+                upperRightArm.setPosition(upperArmIntake);
             }
-
-            upperLeftArm.setPosition(upperArmIntake);
-            upperRightArm.setPosition(upperArmIntake);
-
             return !upperLeftArm.isMoving();
         }
     }
@@ -572,11 +564,15 @@ public class Ancillary {
     }
 
     public class OuttakeTravelArm implements Action {
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            upperLeftArm.setPosition(upperArmTravel);
-            upperRightArm.setPosition(upperArmTravel);
+            if (first) {
+                first = false;
 
+                upperLeftArm.setPosition(upperArmTravel);
+                upperRightArm.setPosition(upperArmTravel);
+            }
             return !upperLeftArm.isMoving();
         }
     }
@@ -586,11 +582,15 @@ public class Ancillary {
     }
 
     public class OuttakeTransferArm implements Action {
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                first = false;
 
-            upperLeftArm.setPosition(upperArmTransfer);
-            upperRightArm.setPosition(upperArmTransfer);
+                upperLeftArm.setPosition(upperArmTransfer);
+                upperRightArm.setPosition(upperArmTransfer);
+            }
 
             return !upperLeftArm.isMoving();
         }
@@ -603,19 +603,16 @@ public class Ancillary {
 
     // GRIP
     public class CloseGrip implements Action {
-        private long startTime = 0;
-        private static final long DURATION = 200;
 
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            if (startTime == 0) {
-                startTime = System.currentTimeMillis();
+            if (first) {
+                first = false;
+                grip.setPosition(gripClosed);
             }
 
-            grip.setPosition(gripClosed);
-
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            return elapsedTime < DURATION;
+            return grip.isMoving();
         }
     }
 
@@ -624,19 +621,17 @@ public class Ancillary {
     }
 
     public class OpenGrip implements Action {
-        private long startTime = 0;
-        private static final long DURATION = 200;
 
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
-            if (startTime == 0) {
-                startTime = System.currentTimeMillis();
+            if (first) {
+                first = false;
+
+                grip.setPosition(gripOpen);
             }
 
-            grip.setPosition(gripOpen);
-
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            return elapsedTime < DURATION;
+            return grip.isMoving();
         }
     }
 
@@ -645,10 +640,14 @@ public class Ancillary {
     }
 
     public class RelaxGrip implements Action {
+        private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                first = false;
 
-            grip.setPwmDisable();
+                grip.servo.setPwmDisable();
+            }
 
             return false;
         }

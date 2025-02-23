@@ -17,40 +17,41 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 @Config
 public class Lift {
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.001,0.0000, 500, 150, 0);
-    public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
-    public static double liftEqCoef = 0.025;
-    public static double liftHoldPower = 0.05;
-    public static double liftHangPower = -0.2;
-    public static double liftRetractPower = -0.25;
-
-    public static int liftTopBasket = 2800;
-    public static int liftBottomBasket = 1250;
-    public static int liftTopRung = 1000;
-    public static int liftTopRungAttached = 800;
-    public static int liftBottomRung = 1250;
-    public static int liftBottomRungAttached = 1050;
-    public static int liftClearance = 500;
-    public static int liftPreHang = 500;
-
-    public static int liftHang = 200;
-
-    public static int liftRetraction = 0;
-
-    public static int allowableExtensionDeficit= 50;
-    public static int allowableHangDeficit= 10;
     public DcMotorEx leftLift, rightLift;
 
     public DigitalChannel liftStop;
 
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.001,0.0000, 500, 150, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
-    private PIDEx liftHangPID = new PIDEx(liftHangCoefficients);
 
-    public boolean isLiftAvailable = true;
+    //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
+    public static double liftEqCoef = 0.025;
+    public static int allowableExtensionDeficit= 50;
+    public static int allowableHangDeficit= 10;
+
+    public static double liftHoldPower = 0.05;
+    public static double liftHangHoldPower = -0.2;
+    public static double liftHangPullPower = -0.5;
+    public static double liftRetractPower = -0.25;
+
+    public static int liftTopBasket = 2800;
+//    public static int liftBottomBasket = 1250;
+    public static int liftTopRung = 1000;
+    public static int liftTopRungAttached = 800;
+//    public static int liftBottomRung = 1250;
+//    public static int liftBottomRungAttached = 1050;
+    public static int liftClearance = 500;
+
+    public static int liftPreHang = 500;
+    public static int liftHang = 200;
+
+    public static int liftRetraction = 0;
 
 
     private double lastLiftPower = 0;
+    public boolean isLiftAvailable = true;
     public boolean isDescending = false;
+
 
     // resets and inits
     public void init(HardwareMap hardwareMap) {
@@ -335,6 +336,7 @@ public class Lift {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             isLiftAvailable = false;
+
             int leftLiftPos = leftLift.getCurrentPosition();
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
@@ -365,7 +367,6 @@ public class Lift {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             isLiftAvailable = false;
-            boolean liftSensor = !liftStop.getState();
 
             if (!liftStop.getState()) {
                 kill();
@@ -418,12 +419,12 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - liftHang) < allowableHangDeficit && Math.abs(rightLiftPos - liftHang) < allowableHangDeficit) {
-                setLiftPower(liftHangPower);
+            if (Math.abs(averagePos - liftHang) < allowableHangDeficit) {
+                setLiftPower(liftHangHoldPower);
                 return false;
             } else {
 
-                double power = liftHangPID.calculate(liftHang, averagePos);
+                double power = liftHangPullPower;
 
                 setLiftPower(power);
 
