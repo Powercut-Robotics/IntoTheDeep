@@ -43,9 +43,8 @@ import java.util.List;
 public class PedroSpecAuto extends OpMode {
 
     private Follower follower;
-    private final Ancillary ancillary = new Ancillary();
-
     private final Robot robot = new Robot();
+    private Ancillary ancillary;
     private Lift lift;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
@@ -421,7 +420,7 @@ public class PedroSpecAuto extends OpMode {
         opmodeTimer.resetTimer();
         robot.init(hardwareMap);
         lift = robot.getLift();
-        ancillary.init(hardwareMap);
+        ancillary = robot.getAncillary();
 
         runningActions.add(new ParallelAction(
                 ancillary.relaxGrip(),
