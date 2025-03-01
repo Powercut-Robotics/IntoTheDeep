@@ -51,55 +51,38 @@ public class RRredBasketAuto extends OpMode {
     private Action toBasket3;
     private Action transferAction3;
     private Action topBasketDeposit3;
+    private Action toBasket0;
+    private Action topBasketDeposit0;
+    private Action topBasketPrep0;
 
-
-//    private Action intakeSpec;
-//    private Action topRungDeposit;
 
     @Override
     public void init() {
-        drive = new MecanumDrive(hardwareMap, new Pose2d(0 , 0, Math.toRadians(0)));
+        drive = new MecanumDrive(hardwareMap, new Pose2d(-42, 64, Math.toRadians(90)));
         ancillary.init(hardwareMap);
         lift.init(hardwareMap);
         light.init(hardwareMap);
 
+        toBasket0 = drive.actionBuilder(drive.pose)
+                .strafeToLinearHeading(new Vector2d(-54, -54), Math.toRadians(45.00))
+                .build();
 
+        topBasketPrep0 = new ParallelAction(
+                lift.liftTopBasket(),
+                ancillary.outtakeTravelArm(),
+                ancillary.closeGrip()
+        );
 
-//        intakeSpec = new SequentialAction(
-//                new ParallelAction(
-//                        lift.liftRetract(),
-//                        outtake.specIntakeArm()
-//                ),
-//                outtake.openGrip(),
-//                new SleepAction(1),
-//                outtake.closeGrip(),
-//                outtake.travelArm()
-//        );
-//
-//        topRungDeposit = new SequentialAction(
-//                lift.liftTopRung(),
-//                outtake.depositArm(),
-//                outtake.relaxGrip(),
-//                lift.liftTopRungAttached(),
-//                outtake.openGrip(),
-//                new ParallelAction(
-//                        outtake.intakeTransferArm(),
-//                        new SequentialAction(
-//                                new SleepAction(0.5),
-//                                lift.liftRetract()
-//                        ),
-//                        outtake.closeGrip()
-//
-//                )
-//        );
-
-
+        topBasketDeposit0 = new SequentialAction(
+                ancillary.depositSampArm(),
+                ancillary.openGrip()
+        );
 
         toSpike1 = new ParallelAction(
             ancillary.intakeLowerArmSafe(),
                 ancillary.spinUpAction(),
-            drive.actionBuilder(drive.pose)
-                    .strafeTo(new Vector2d(20, 20))
+            drive.actionBuilder(new Pose2d(-54,-54, Math.toRadians(45)))
+                    .strafeToLinearHeading(new Vector2d(-52, -44), Math.toRadians(90))
                     .build()
         );
 
@@ -115,8 +98,8 @@ public class RRredBasketAuto extends OpMode {
                 ancillary.intakeAction()
         );
 
-        toBasket1 = drive.actionBuilder(new Pose2d(20,20, Math.toRadians(0)))
-                .strafeToLinearHeading(new Vector2d(-10, 20), Math.toRadians(-45.00))
+        toBasket1 = drive.actionBuilder(new Pose2d(-52,-44, Math.toRadians(90)))
+                .strafeToLinearHeading(new Vector2d(-54, -54), Math.toRadians(45.00))
                 .build();
 
         transferAction1 = new SequentialAction(
@@ -142,8 +125,8 @@ public class RRredBasketAuto extends OpMode {
                 lift.liftRetract(),
                 ancillary.intakeLowerArmSafe(),
                 ancillary.spinUpAction(),
-                drive.actionBuilder(new Pose2d(-10, 20, Math.toRadians(-45)))
-                .strafeToLinearHeading(new Vector2d(20, 10), Math.toRadians(0.00))
+                drive.actionBuilder(new Pose2d(-10, 20, Math.toRadians(45)))
+                .strafeToLinearHeading(new Vector2d(-60, -44), Math.toRadians(90))
                 .build()
         );
 
@@ -161,8 +144,8 @@ public class RRredBasketAuto extends OpMode {
                 )
         );
 
-        toBasket2 = drive.actionBuilder(new Pose2d(20, 10, Math.toRadians(0)))
-                .strafeToLinearHeading(new Vector2d(-10, 20), Math.toRadians(-45.00))
+        toBasket2 = drive.actionBuilder(new Pose2d(-60, -44, Math.toRadians(90)))
+                .strafeToLinearHeading(new Vector2d(-54, -54), Math.toRadians(45.00))
                 .build();
 
         transferAction2 = new SequentialAction(
@@ -188,8 +171,8 @@ public class RRredBasketAuto extends OpMode {
                 lift.liftRetract(),
                 ancillary.intakeLowerArmSafe(),
                 ancillary.spinUpAction(),
-                drive.actionBuilder(new Pose2d(-10, 20, Math.toRadians(-45)))
-                .strafeToLinearHeading(new Vector2d(20, 0), Math.toRadians(0.00))
+                drive.actionBuilder(new Pose2d(-54, -54, Math.toRadians(45)))
+                .strafeToLinearHeading(new Vector2d(-68, -44), Math.toRadians(90))
                 .build()
         );
 
@@ -207,8 +190,8 @@ public class RRredBasketAuto extends OpMode {
                 )
         );
 
-        toBasket3 = drive.actionBuilder(new Pose2d(20, 0, Math.toRadians(0)))
-                .strafeToLinearHeading(new Vector2d(-10, 20), Math.toRadians(-45.00))
+        toBasket3 = drive.actionBuilder(new Pose2d(-68, -44, Math.toRadians(90)))
+                .strafeToLinearHeading(new Vector2d(-54, -54), Math.toRadians(45.00))
                 .build();
 
         transferAction3 = new SequentialAction(
@@ -238,20 +221,14 @@ public class RRredBasketAuto extends OpMode {
     @Override
     public void start() {
         runningActions.add(new SequentialAction(
-                toSpike1,
-                intakeAction1,
                 new ParallelAction(
-                        transferAction1,
-                        toBasket1
+                        toBasket0,
+                        topBasketPrep0
                 ),
-                topBasketDeposit1,
-                new InstantAction(() -> sequence = 1),
+                topBasketDeposit0,
+                new InstantAction(() -> sequence = 0),
                 new InstantAction(() -> start = true)
         ));
-
-
-
-
 
     }
 
@@ -261,6 +238,19 @@ public class RRredBasketAuto extends OpMode {
 
         if (start) {
             switch (sequence) {
+                case 0:
+                    start = false;
+                    runningActions.add(new SequentialAction(
+                            toSpike1,
+                            intakeAction1,
+                            new ParallelAction(
+                                    transferAction1,
+                                    toBasket1
+                            ),
+                            topBasketDeposit1,
+                            new InstantAction(() -> sequence = 1),
+                            new InstantAction(() -> start = true)
+                    ));
                 case 1:
                     start = false;
                     runningActions.add(new SequentialAction(

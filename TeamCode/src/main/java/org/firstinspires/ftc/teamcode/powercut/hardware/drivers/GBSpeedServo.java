@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.powercut.hardware.drivers;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
-public class RevServo {
+public class GBSpeedServo {
     public ServoImplEx servo;
-    private final double degreesOfFreedom = 270;
-    private final double sixtyDegreeTime = 0.18;
+    private final double degreesOfFreedom = 300;
+    private final double sixtyDegreeTime = 0.11;
     private final double fullRotationPeriod = ((degreesOfFreedom/60) * (sixtyDegreeTime * 1000));
 
     public double position;

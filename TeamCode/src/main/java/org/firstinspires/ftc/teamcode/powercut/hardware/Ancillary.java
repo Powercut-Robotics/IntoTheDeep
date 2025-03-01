@@ -39,6 +39,7 @@ public class Ancillary {
     private enum intakeArmPos {
         LOWER,
         LOWER_SAFE,
+        EXPEL,
         TRAVEL,
         TRANSFER
     }
@@ -57,13 +58,15 @@ public class Ancillary {
 
     }
 
-    public sampleStatus status;
+    public sampleStatus status = new sampleStatus();
     public static double colourThreshMultiplier = 1.5;
 
     public static double intakeArmSafe = 0.95;
     public static double intakeArmTransfer = 1.0;
-    public static double intakeArmIntakeSafe = 0.34;
-    public static double intakeArmIntake = 0.335;
+    public static double intakeArmExpel = 0.4;
+
+    public static double intakeArmIntakeSafe = 0.325;
+    public static double intakeArmIntake = 0.318;
 
     public static double extendoIntake = 0.23;
     public static double extendoHalf = 0.3675;
@@ -79,12 +82,12 @@ public class Ancillary {
     public static double upperArmIntake = 1.0;
     public static double upperArmTransfer = 0.0;
 
-    public static double gripClosed = 0.7;
-    public static double gripOpen = 0.5;
+    public static double gripClosed = 0.5;
+    public static double gripOpen = 0.3;
 
 
 
-    public void init(HardwareMap hardwareMap) {
+    protected void init(HardwareMap hardwareMap) {
         ServoImplEx intakeLeftArmRaw = hardwareMap.get(ServoImplEx.class, "intakeLeftArm");
         ServoImplEx intakeRightArmRaw = hardwareMap.get(ServoImplEx.class, "intakeRightArm");
         ServoImplEx extendoLeftRaw = hardwareMap.get(ServoImplEx.class, "extendoLeft");
@@ -217,9 +220,11 @@ public class Ancillary {
             if (first) {
                 intakeActive = true;
                 first = false;
+                lastDetectedTime = System.currentTimeMillis();
             }
 
             sampleColour sample = getSampleColour();
+            intakeWheels.setPosition(1);
 
             if (sample == sampleColour.NONE || !intakeActive) {
                 if (!intakeActive) {
@@ -257,8 +262,10 @@ public class Ancillary {
             if (first) {
                 intakeActive = true;
                 first = false;
+                lastDetectedTime = System.currentTimeMillis();
             }
 
+            intakeWheels.setPosition(1);
             sampleColour sample = getSampleColour();
             boolean inTray = trayTouchSensor.isPressed();
 
@@ -433,6 +440,26 @@ public class Ancillary {
         return new IntakeLowerArmSafe();
     }
 
+    public class IntakeExpelArm implements Action {
+        boolean first = true;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                currentIntakeArm = intakeArmPos.EXPEL;
+                first = false;
+
+                intakeLeftArm.setPosition(intakeArmExpel);
+                intakeRightArm.setPosition(intakeArmExpel);
+            }
+            return intakeLeftArm.isMoving() && currentIntakeArm == intakeArmPos.EXPEL;
+        }
+    }
+
+    public Action intakeExpelArm() {
+        return new IntakeExpelArm();
+    }
+
     public class IntakeTravelArm implements Action {
         boolean first = true;
 
@@ -489,6 +516,21 @@ public class Ancillary {
 
     public Action spinUpAction() {
         return new SpinUpAction();
+    }
+
+    public class SpinOutAction implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            intakeActive = true;
+            intakeWheels.setPosition(1);
+            return false;
+
+        }
+    }
+
+    public Action spinOutAction() {
+        return new SpinOutAction();
     }
 
     public class WheelHaltAction implements Action {

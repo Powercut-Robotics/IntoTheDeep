@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.powercut.hardware.drivers;
 
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 public class GBTorqueServo {
@@ -14,18 +15,23 @@ public class GBTorqueServo {
     private double startMove = 0;
     private double duration;
 
-    public void init(ServoImplEx servoInit) {
-        servo = servoInit;
+    public void init(ServoImplEx servo) {
+        servo.setPwmRange(new PwmControl.PwmRange(500,2500));
+        this.servo = servo;
     }
 
     public void setPosition(double newPosition) {
-        double oldPosition = servo.getPosition();
+        double oldPosition = this.getPosition();
         distanceToMove = newPosition - oldPosition;
         startMove = System.currentTimeMillis();
         duration = Math.abs(distanceToMove) * fullRotationPeriod;
         eta = startMove + duration;
 
         servo.setPosition(newPosition);
+    }
+
+    public boolean isPositionIncreasing() {
+        return distanceToMove > 0;
     }
 
     public boolean isMoving() {
@@ -38,6 +44,7 @@ public class GBTorqueServo {
 
         if (amountMoved > 1) {
             position = servo.getPosition();
+            distanceToMove = 0;
         } else {
             position = servo.getPosition() - (distanceToMove - (distanceToMove * amountMoved));
         }

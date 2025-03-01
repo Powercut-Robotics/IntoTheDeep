@@ -36,7 +36,7 @@ public class Lift {
 
     public static int liftTopBasket = 2800;
 //    public static int liftBottomBasket = 1250;
-    public static int liftTopRung = 1000;
+    public static int liftTopRung = 1200;
     public static int liftTopRungAttached = 800;
 //    public static int liftBottomRung = 1250;
 //    public static int liftBottomRungAttached = 1050;
@@ -52,9 +52,19 @@ public class Lift {
     public boolean isLiftAvailable = true;
     public boolean isDescending = false;
 
+    private static int safeHeight = 400;
+
+    public boolean isClear() {
+        int leftLiftPos = leftLift.getCurrentPosition();
+        int rightLiftPos = rightLift.getCurrentPosition();
+        int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+        return ((averagePos > safeHeight) && !isDescending);
+    }
+
 
     // resets and inits
-    public void init(HardwareMap hardwareMap) {
+    protected void init(HardwareMap hardwareMap) {
         leftLift = hardwareMap.get(DcMotorEx.class, "leftLift");
         rightLift = hardwareMap.get(DcMotorEx.class, "rightLift");
         liftStop = hardwareMap.get(DigitalChannel.class, "liftStop");
@@ -202,7 +212,7 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - liftTopRung) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftTopRung) < allowableExtensionDeficit) {
+            if (Math.abs(averagePos - liftTopRung) < allowableExtensionDeficit) {
                 setLiftPower(liftHoldPower);
                 isLiftAvailable = true;
                 return false;

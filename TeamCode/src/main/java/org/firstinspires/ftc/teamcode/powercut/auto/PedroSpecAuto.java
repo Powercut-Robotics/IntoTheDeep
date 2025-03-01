@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,9 @@ public class PedroSpecAuto extends OpMode {
 
     private Follower follower;
     private final Ancillary ancillary = new Ancillary();
-    private final Lift lift = new Lift();
+
+    private final Robot robot = new Robot();
+    private Lift lift;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
     /** This is the variable where we store the state of our auto.
@@ -416,7 +419,8 @@ public class PedroSpecAuto extends OpMode {
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
-        lift.init(hardwareMap);
+        robot.init(hardwareMap);
+        lift = robot.getLift();
         ancillary.init(hardwareMap);
 
         runningActions.add(new ParallelAction(

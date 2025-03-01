@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
@@ -31,12 +32,12 @@ import java.util.List;
 
 @TeleOp
 public class DriveTeleOp extends OpMode  {
-
+    private final Robot robot = new Robot();
     //Hardware
-    private final Ancillary ancillary = new Ancillary();
-    private final Lift lift = new Lift();
-    private final Drivetrain drive = new Drivetrain();
-    private final LightSystem light = new LightSystem();
+    private Ancillary ancillary;
+    private Lift lift;
+    private Drivetrain drive;
+    private LightSystem light;
     List<LynxModule> allHubs;
     Gamepad currentGamepad1 = new Gamepad();
     Gamepad currentGamepad2 = new Gamepad();
@@ -68,30 +69,42 @@ public class DriveTeleOp extends OpMode  {
         samplePosition position;
     }
 
-    public sampleStatus status;
+    public sampleStatus status = new sampleStatus();
 
     //Defaults
 
-    private final Action homeAncillary = new ParallelAction(
-            ancillary.intakeTravelArm(),
-            ancillary.outtakeTransferArm(),
-            ancillary.travelExtendo(),
-            ancillary.closeGrip()
+    private final Action homeAncillary = new SequentialAction(
+            new InstantAction(() -> telemetry.clear()),
+            new InstantAction(() -> telemetry.addLine("Homing")),
+            ancillary.clearanceExtendo(),
+            new ParallelAction(
+                ancillary.intakeTravelArm(),
+                ancillary.outtakeTransferArm(),
+                ancillary.closeGrip()
+            )
     );
 
     private final Action transferAction = new SequentialAction(
             new ParallelAction(
-                    ancillary.intakeTransferArm(),
-                    ancillary.transferExtendo(),
                     lift.liftRetract(),
                     ancillary.outtakeTransferArm(),
                     ancillary.openGrip()
+            ),
+            new ParallelAction(
+                    ancillary.transferExtendo(),
+                    ancillary.intakeTransferArm()
             ),
             ancillary.transferAction(),
             ancillary.closeGrip(),
             new InstantAction(() ->
                 status.position = samplePosition.TRAY
             )
+    );
+
+
+    private final Action transferDisengage = new SequentialAction(
+            ancillary.clearanceExtendo(),
+            ancillary.intakeTravelArm()
     );
 
     private boolean extendoControl = false;
@@ -102,25 +115,21 @@ public class DriveTeleOp extends OpMode  {
     private double modifier = 1;
     ElapsedTime gametimer = new ElapsedTime();
 
-//    private enum AncillaryActions {
-//        INTAKE_SAMP,
-//        INTAKE_SPEC,
-//        OUTTAKE_BASKET,
-//        OUTTAKE_RUNG,
-//        TRANSFER,
-//        NONE
-//    }
-//
-//    AncillaryActions runningAction = AncillaryActions.NONE;
+
 
 
 
     @Override
     public void init() {
-        ancillary.init(hardwareMap);
-        lift.init(hardwareMap);
-        drive.init(hardwareMap);
-        light.init(hardwareMap);
+        robot.init(hardwareMap);
+        drive = robot.getDrive();
+        lift = robot.getLift();
+        light = robot.getLight();
+        ancillary = robot.getAncillary();
+
+        status.colour = Ancillary.sampleColour.NONE;
+        status.position = samplePosition.NONE;
+
         driveLoc = new MecanumDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
         allHubs = hardwareMap.getAll(LynxModule.class);
 
@@ -146,13 +155,7 @@ public class DriveTeleOp extends OpMode  {
 
         telemetry.clear();
 
-        ancillaryActions.add(new ParallelAction(
-                        ancillary.intakeTravelArm(),
-                        ancillary.travelExtendo(),
-                        ancillary.intakeTransferArm(),
-                        ancillary.closeGrip()
-                )
-        );
+        ancillaryActions.add(homeAncillary);
     }
 
     @Override
@@ -200,6 +203,8 @@ public class DriveTeleOp extends OpMode  {
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
+
+        telemetry.addData("Intake active", ancillary.intakeActive);
         telemetry.update();
         loopTimer.reset();
     }
@@ -209,28 +214,34 @@ public class DriveTeleOp extends OpMode  {
         double y = -currentGamepad1.left_stick_y;
         double theta = currentGamepad1.right_stick_x;
 
-        if (currentGamepad2.cross && !previousGamepad2.cross) {
+        if (currentGamepad1.cross && !previousGamepad1.cross) {
+            telemetry.addData("Drive", "Aligning basket");
             driveActions.clear();
             driveActions.add(drive.alignBasket());
-        } else if (!currentGamepad2.cross && previousGamepad2.cross) {
+        } else if (!currentGamepad1.cross && previousGamepad1.cross) {
+            telemetry.addData("Drive", "Disengaging basket");
             driveActions.clear();
             drive.kill();
             driveActions.add(drive.disengageBasket());
         }
 
-        if (currentGamepad2.triangle && !previousGamepad2.triangle) {
+        if (currentGamepad1.triangle && !previousGamepad1.triangle) {
+            telemetry.addData("Drive", "Aligning rung");
             driveActions.clear();
             driveActions.add(drive.alignRung());
-        } else if (!currentGamepad2.triangle && previousGamepad2.triangle) {
+        } else if (!currentGamepad1.triangle && previousGamepad1.triangle) {
+            telemetry.addData("Drive", "Aligning stopped");
             driveActions.clear();
             drive.kill();
         }
 
-        if (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) {
+        if (currentGamepad1.dpad_down && !previousGamepad1.dpad_down) {
+            telemetry.addData("Drive", "Aligning wall");
             modifier = 0.25;
             driveActions.clear();
             driveActions.add(drive.alignWall());
-        } else if (!currentGamepad2.dpad_down && previousGamepad2.dpad_down) {
+        } else if (!currentGamepad1.dpad_down && previousGamepad1.dpad_down) {
+            telemetry.addData("Drive", "Aligning stopped");
             modifier = 1;
             driveActions.clear();
         }
@@ -245,28 +256,46 @@ public class DriveTeleOp extends OpMode  {
     }
 
     public void doAncillary() {
+        telemetry.addData("Position", status.position.toString());
         if (lift.isLiftAvailable && lift.liftStop.getState() && !isHang) {
             lift.setLiftPower(0.05);
         }
 
         if (extendoControl) {
             if (currentGamepad2.triangle) {
+                telemetry.addData("Extendo", "Full");
                 ancillaryActions.add(ancillary.intakeExtendo());
             } else if (currentGamepad2.circle) {
+                telemetry.addData("Extendo", "Half");
                 ancillaryActions.add(ancillary.halfExtendo());
             } else if (currentGamepad2.cross) {
-                ancillaryActions.add(ancillary.travelExtendo());
+                telemetry.addData("Extendo", "None");
+                ancillaryActions.add(ancillary.clearanceExtendo());
             }
         } else {
             if (currentGamepad2.cross && !previousGamepad2.cross) {
+                telemetry.addData("Main", "Top Basket");
                 ancillaryActions.clear();
-                ancillaryActions.add(
-                        new SequentialAction(
-                                lift.liftTopBasket(),
-                                ancillary.depositSampArm()
-                        )
-                );
+                if (status.position == samplePosition.TRAY) {
+                    ancillaryActions.add(
+                            new SequentialAction(
+                                    lift.liftTopBasket(),
+                                    ancillary.depositSampArm()
+                            )
+                    );
+                } else {
+                    ancillaryActions.add(
+                            new SequentialAction(
+                                    transferAction,
+                                    transferDisengage,
+                                    lift.liftTopBasket(),
+                                    ancillary.depositSampArm()
+                            )
+                    );
+                }
             } else if (!currentGamepad2.cross && previousGamepad2.cross) {
+                telemetry.addData("Sample Status", "None");
+                telemetry.addData("Main", "Top Basket End");
                 status.position = samplePosition.NONE;
                 status.colour = Ancillary.sampleColour.NONE;
                 ancillaryActions.clear();
@@ -284,23 +313,16 @@ public class DriveTeleOp extends OpMode  {
             }
 
             if (currentGamepad2.triangle && !previousGamepad2.triangle) {
+                telemetry.addData("Main", "Top Rung");
                 ancillaryActions.clear();
-                if (status.position == samplePosition.INTAKE) {
-                    ancillaryActions.add(new SequentialAction(
-                                    transferAction,
-                                    lift.liftTopRung(),
-                                    ancillary.depositSpecArm()
-                            )
-                    );
-                } else {
                     ancillaryActions.add(new SequentialAction(
                                     lift.liftTopRung(),
                                     ancillary.depositSpecArm()
                             )
                     );
-                }
-
             } else if (!currentGamepad2.triangle && previousGamepad2.triangle) {
+                telemetry.addData("Main", "Top Rung End");
+                telemetry.addData("Sample Status", "None");
                 status.position = samplePosition.NONE;
                 status.colour = Ancillary.sampleColour.NONE;
                 ancillaryActions.clear();
@@ -322,7 +344,16 @@ public class DriveTeleOp extends OpMode  {
             }
         }
 
+        if (currentGamepad2.dpad_right && !previousGamepad2.dpad_right) {
+            telemetry.addData("Sample Status", "Transfering");
+            ancillaryActions.add(new SequentialAction(
+                    transferAction,
+                    transferDisengage
+            ));
+        }
+
         if (currentGamepad2.dpad_down && !previousGamepad2.dpad_down) {
+            telemetry.addData("Main", "Spec Intake");
             completedAction = false;
             ancillaryActions.clear();
             ancillaryActions.add(new SequentialAction(
@@ -338,20 +369,22 @@ public class DriveTeleOp extends OpMode  {
                     )
             ));
         } else if (!currentGamepad2.dpad_down && previousGamepad2.dpad_down) {
-            status.position = samplePosition.OUTTAKE;
 
             if (completedAction) {
+                telemetry.addData("Sample Status", "Outtake");
+                telemetry.addData("Main", "Spec Travel");
                 completedAction = false;
+                status.position = samplePosition.OUTTAKE;
                 ancillaryActions.add(
                         new SequentialAction(
                                 ancillary.closeGrip(),
                                 new ParallelAction(
-                                    ancillary.outtakeTravelArm(),
-                                        ancillary.travelExtendo()
+                                    ancillary.outtakeTravelArm()
                                 )
                         )
                 );
             } else {
+                telemetry.addData("Main", "Home");
                 ancillaryActions.add(
                         homeAncillary
                 );
@@ -359,22 +392,30 @@ public class DriveTeleOp extends OpMode  {
         }
 
         if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper) {
+            telemetry.addData("Sample Status", "Intake");
+            telemetry.addData("Main", "Extendo");
+            telemetry.addData("Extendo", "Full");
             ancillaryActions.clear();
             driveActions.clear();
             ancillaryActions.add(new SequentialAction(
                     new ParallelAction(
                         ancillary.intakeExtendo(),
-                        ancillary.intakeLowerArmSafe()
+                        ancillary.intakeExpelArm(),
+                            ancillary.spinOutAction()
                     ),
                     ancillary.expelAction()
                     )
             );
         } else if (!currentGamepad2.left_bumper && previousGamepad2.left_bumper) {
+            telemetry.addData("Sample Status", "None");
+            telemetry.addData("Main", "Home");
+            telemetry.addData("Extendo", "Home");
             ancillaryActions.clear();
             status.position = samplePosition.NONE;
             status.colour = Ancillary.sampleColour.NONE;
             ancillaryActions.add(new ParallelAction(
-                    ancillary.travelExtendo(),
+                    ancillary.wheelHaltAction(),
+                    ancillary.clearanceExtendo(),
                     ancillary.intakeTravelArm(),
                     ancillary.wheelHaltAction()
                     )
@@ -382,13 +423,15 @@ public class DriveTeleOp extends OpMode  {
         }
 
         if (currentGamepad2.dpad_up && !previousGamepad2.dpad_up) {
+            telemetry.addData("Sample Status", "None");
+            telemetry.addData("Main", "Intake");
             ancillaryActions.clear();
             driveActions.clear();
             modifier = 0.25;
             extendoControl = true;
             ancillaryActions.add(new SequentialAction(
                     new ParallelAction(
-                            ancillary.intakeAction(),
+                            ancillary.spinUpAction(),
                             ancillary.intakeLowerArm(),
                             lift.liftRetract(),
                             ancillary.outtakeTransferArm(),
@@ -396,15 +439,17 @@ public class DriveTeleOp extends OpMode  {
                     )
             ));
         } else if (previousGamepad2.dpad_up && !currentGamepad2.dpad_up) {
+            telemetry.addData("Sample Status", "Intake");
+            telemetry.addData("Main", "Home");
+            extendoControl = false;
             status.position = samplePosition.INTAKE;
             ancillaryActions.clear();
             modifier = 1;
-            extendoControl = false;
             ancillaryActions.add(
                     new ParallelAction(
                         ancillary.wheelHaltAction(),
                             ancillary.intakeTravelArm(),
-                            ancillary.travelExtendo()
+                            ancillary.clearanceExtendo()
                     )
             );
         }
@@ -444,6 +489,8 @@ public class DriveTeleOp extends OpMode  {
         }
 
         if (currentGamepad1.square || currentGamepad2.square) {
+            telemetry.addData("Extendo", "Home");
+            telemetry.addData("Main", "Home");
             ancillaryActions.clear();
             driveActions.clear();
             lift.kill();
@@ -485,6 +532,8 @@ public class DriveTeleOp extends OpMode  {
         }
 
         if (gametimer.seconds() > 120 && gametimer.seconds() < 120.2) {
+            gamepad1.setLedColor(1.0,0.0,0.0, 500);
+            gamepad2.setLedColor(1.0,0.0,0.0, 500);
             gamepad1.rumble(500);
             gamepad2.rumble(500);
         }

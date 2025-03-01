@@ -9,7 +9,7 @@ public class LightSystem {
     private RevBlinkinLedDriver driver = null;
     private RevBlinkinLedDriver.BlinkinPattern pattern = null;
 
-    public void init(@NonNull HardwareMap hardwareMap) {
+    protected void init(@NonNull HardwareMap hardwareMap) {
         driver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
     }
 

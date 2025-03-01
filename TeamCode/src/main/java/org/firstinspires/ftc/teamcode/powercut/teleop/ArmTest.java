@@ -1,23 +1,25 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
 
-@Disabled
+
 @Config
 @TeleOp
 public class ArmTest extends OpMode {
 
-    private final Ancillary ancillary = new Ancillary();
+    private final Robot robot = new Robot();
 
-    private final LightSystem light = new LightSystem();
-    private final Drivetrain drive = new Drivetrain();
+    private Ancillary ancillary;
+
+    private LightSystem light;
+    private Drivetrain drive;
 
     public static double upperPos =0.50;
     public static double extendo = 0.5;
@@ -27,11 +29,10 @@ public class ArmTest extends OpMode {
 
     @Override
     public void init() {
-        ancillary.init(hardwareMap);
-
-        light.init(hardwareMap);
-        drive.init(hardwareMap);
-
+        robot.init(hardwareMap);
+        ancillary = robot.getAncillary();
+        light = robot.getLight();
+        drive = robot.getDrive();
 
         telemetry.addLine("Initialised");
         telemetry.update();
@@ -55,6 +56,7 @@ public class ArmTest extends OpMode {
         telemetry.addData("extendoRight isMoving", ancillary.extendoRight.isMoving());
 
         ancillary.grip.setPosition(clawPos);
+        ancillary.intakeWheels.setPosition(wheelSpeed);
 
         light.partyWaves();
 

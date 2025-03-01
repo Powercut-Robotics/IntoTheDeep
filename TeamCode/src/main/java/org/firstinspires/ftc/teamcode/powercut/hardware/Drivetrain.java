@@ -57,8 +57,8 @@ public class Drivetrain {
     private double lastYaw, radialVelocity;
 
     private static double yawLockThetaDeadzone = 0.05;
-    private static double yawLockRadialDeadzone = 5;
-    private double yawLock;
+    private static double yawLockRadialDeadzone = 0.09;
+    private double yawLock = 0;
     private boolean yawLockActive;
 
     private double lastX = 0;
@@ -80,7 +80,7 @@ public class Drivetrain {
     LowPassFilter ToFYawFilter = new LowPassFilter(ToFYawFilterGain);
     public boolean isDriveAction = false;
 
-    public void init(@NonNull HardwareMap hardwareMap) {
+    protected void init(@NonNull HardwareMap hardwareMap) {
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
@@ -123,13 +123,13 @@ public class Drivetrain {
         robotOrientation = imu.getRobotYawPitchRollAngles();
 
         updateRadialVelocity();
-        return robotOrientation.getYaw(AngleUnit.DEGREES);
+        return robotOrientation.getYaw(AngleUnit.RADIANS);
     }
 
     public double getRadialVelocity() {
         YawPitchRollAngles robotOrientation;
         robotOrientation = imu.getRobotYawPitchRollAngles();
-        double yaw = robotOrientation.getYaw(AngleUnit.DEGREES);
+        double yaw = robotOrientation.getYaw(AngleUnit.RADIANS);
 
         radialVelocity = Math.abs(lastYaw - yaw) / radialTime.seconds();
         lastYaw = yaw;
@@ -141,7 +141,7 @@ public class Drivetrain {
     public void updateRadialVelocity() {
         YawPitchRollAngles robotOrientation;
         robotOrientation = imu.getRobotYawPitchRollAngles();
-        double yaw = robotOrientation.getYaw(AngleUnit.DEGREES);
+        double yaw = robotOrientation.getYaw(AngleUnit.RADIANS);
 
         radialVelocity = Math.abs(lastYaw - yaw) / radialTime.seconds();
         lastYaw = yaw;
@@ -168,15 +168,18 @@ public class Drivetrain {
             isDriveAction = false;
         }
         if (!isDriveAction) {
-            double yawRad = Math.toRadians(getYaw());
+            double yaw = getYaw();
 
-            if ((Math.abs(radialVelocity) < yawLockRadialDeadzone) && (Math.abs(theta) < yawLockThetaDeadzone)) {
+            if ((Math.abs(theta) < yawLockThetaDeadzone)) {
                 if (!yawLockActive) {
                     yawLock = getYaw();
+                }
+
+                if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
                     yawLockActive = true;
                 }
 
-                theta = yawController.calculate(yawLock, yawRad);
+                theta = yawController.calculate(yawLock, yaw);
 
                 if (Math.abs(theta) < 0.05) {
                     theta = 0;
@@ -200,15 +203,18 @@ public class Drivetrain {
         }
 
         if (!isDriveAction) {
-            double yawRad = Math.toRadians(getYaw());
+            double yaw = getYaw();
 
-            if ((Math.abs(radialVelocity) < yawLockRadialDeadzone) && (Math.abs(theta) < yawLockThetaDeadzone)) {
+            if ((Math.abs(theta) < yawLockThetaDeadzone)) {
                 if (!yawLockActive) {
                     yawLock = getYaw();
+                }
+
+                if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
                     yawLockActive = true;
                 }
 
-                theta = yawController.calculate(yawLock, yawRad);
+                theta = yawController.calculate(yawLock, yaw);
 
                 if (Math.abs(theta) < 0.05) {
                     theta = 0;
@@ -217,10 +223,10 @@ public class Drivetrain {
                 yawLockActive = false;
             }
 
-            yawRad = rotate ? yawRad : 0;
+            yaw = rotate ? yaw : 0;
 
-            double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
-            double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+            double x_rotated = x * Math.cos(-yaw) - y * Math.sin(-yaw);
+            double y_rotated = x * Math.sin(-yaw) + y * Math.cos(-yaw);
 
             if ((Math.abs(x_rotated - lastX) > driveCacheAmount) || (Math.abs(y_rotated - lastY) > driveCacheAmount) || (Math.abs(theta - lastTheta) > driveCacheAmount)) {
                 rawXYThetaMod(x_rotated, y_rotated, theta, modifier);
@@ -229,6 +235,8 @@ public class Drivetrain {
                 lastTheta = theta;
             }
 
+        } else {
+            yawLockActive = false;
         }
     }
 
