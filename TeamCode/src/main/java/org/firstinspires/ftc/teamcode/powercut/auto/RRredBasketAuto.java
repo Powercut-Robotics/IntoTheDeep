@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
@@ -25,9 +26,10 @@ import java.util.List;
 @Autonomous
 public class RRredBasketAuto extends OpMode {
     private MecanumDrive drive;
-    private final Ancillary ancillary = new Ancillary();
-    private final Lift lift = new Lift();
-    private final LightSystem light = new LightSystem();
+    private Robot robot = new Robot();
+    private Ancillary ancillary;
+    private Lift lift;
+    private LightSystem light;
 
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
@@ -59,9 +61,10 @@ public class RRredBasketAuto extends OpMode {
     @Override
     public void init() {
         drive = new MecanumDrive(hardwareMap, new Pose2d(-42, 64, Math.toRadians(90)));
-        ancillary.init(hardwareMap);
-        lift.init(hardwareMap);
-        light.init(hardwareMap);
+        robot.init(hardwareMap);
+        ancillary = robot.getAncillary();
+        lift = robot.getLift();
+        light = robot.getLight();
 
         toBasket0 = drive.actionBuilder(drive.pose)
                 .strafeToLinearHeading(new Vector2d(-54, -54), Math.toRadians(45.00))

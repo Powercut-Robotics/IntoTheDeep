@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
+import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class PedroSpecAuto extends OpMode {
     private final Robot robot = new Robot();
     private Ancillary ancillary;
     private Lift lift;
+    private LightSystem light;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
     /** This is the variable where we store the state of our auto.
@@ -421,6 +423,7 @@ public class PedroSpecAuto extends OpMode {
         robot.init(hardwareMap);
         lift = robot.getLift();
         ancillary = robot.getAncillary();
+        light = robot.getLight();
 
         runningActions.add(new ParallelAction(
                 ancillary.relaxGrip(),
@@ -434,6 +437,8 @@ public class PedroSpecAuto extends OpMode {
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
         buildPaths();
+
+        light.partyWaves();
     }
 
     /** This method is called continuously after Init while waiting for "play". **/
