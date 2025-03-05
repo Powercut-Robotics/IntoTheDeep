@@ -230,7 +230,7 @@ public class DriveTeleOp extends OpMode  {
         if (lift.isLiftAvailable && lift.liftStop.getState() && !isHang) {
             lift.setLiftPower(0.05);
             if (verbose) {
-                telemetry.addLine();
+                telemetry.addLine("Lift Hold active");
             }
         }
 

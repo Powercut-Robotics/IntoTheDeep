@@ -21,10 +21,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
+import org.firstinspires.ftc.teamcode.powercut.hardware.SafeAncillary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class PedroSpecAuto extends OpMode {
 
     private Follower follower;
     private final Robot robot = new Robot();
-    private Ancillary ancillary;
+    private SafeAncillary ancillary;
     private Lift lift;
     private LightSystem light;
     private Timer pathTimer, actionTimer, opmodeTimer;

@@ -13,10 +13,10 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.powercut.hardware.Ancillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
+import org.firstinspires.ftc.teamcode.powercut.hardware.SafeAncillary;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
@@ -27,7 +27,7 @@ import java.util.List;
 public class RRredBasketAuto extends OpMode {
     private MecanumDrive drive;
     private Robot robot = new Robot();
-    private Ancillary ancillary;
+    private SafeAncillary ancillary;
     private Lift lift;
     private LightSystem light;
 
