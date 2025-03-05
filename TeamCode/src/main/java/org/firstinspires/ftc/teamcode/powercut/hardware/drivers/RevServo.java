@@ -21,13 +21,13 @@ public class RevServo {
     }
 
     public void setPosition(double newPosition) {
+        servo.setPosition(newPosition);
+
         double oldPosition = this.getPosition();
         distanceToMove = newPosition - oldPosition;
         startMove = System.currentTimeMillis();
         duration = Math.abs(distanceToMove) * fullRotationPeriod;
         eta = startMove + duration;
-
-        servo.setPosition(newPosition);
     }
 
     public boolean isPositionIncreasing() {

@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.powercut.hardware;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Robot {
-    private final Ancillary ancillary = new Ancillary();
+    private final SafeAncillary ancillary = new SafeAncillary();
     private final Lift lift = new Lift();
     private final Drivetrain drive = new Drivetrain();
     private final LightSystem light = new LightSystem();
@@ -19,7 +19,7 @@ public class Robot {
         isInitialised = true;
     }
 
-    public Ancillary getAncillary() {
+    public SafeAncillary getAncillary() {
         if (!isInitialised) {
             throw new RuntimeException("Not initalised");
         }

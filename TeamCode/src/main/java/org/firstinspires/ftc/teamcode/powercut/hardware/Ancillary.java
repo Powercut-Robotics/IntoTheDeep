@@ -70,7 +70,7 @@ public class Ancillary {
 
     public static double extendoIntake = 0.23;
     public static double extendoHalf = 0.3675;
-    public static double extendoClearance = 0.4;
+    public static double extendoClearance = 0.43;
     public static double extendoTravel = 0.49;
     public static double extendoTransfer = 0.505;
 
@@ -219,8 +219,9 @@ public class Ancillary {
         public boolean run(@NonNull TelemetryPacket packet) {
             if (first) {
                 intakeActive = true;
-                first = false;
                 lastDetectedTime = System.currentTimeMillis();
+
+                first = false;
             }
 
             sampleColour sample = getSampleColour();
@@ -384,10 +385,11 @@ public class Ancillary {
         public boolean run(@NonNull TelemetryPacket packet) {
             if (first) {
                 currentExtendoPos = extendoPos.TRANSFER;
-                first = false;
 
                 extendoLeft.setPosition(extendoTransfer);
                 extendoRight.setPosition(extendoTransfer);
+
+                first = false;
             }
 
             return extendoLeft.isMoving() && currentExtendoPos == extendoPos.TRANSFER;
@@ -610,10 +612,10 @@ public class Ancillary {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (first) {
-                first = false;
-
                 upperLeftArm.setPosition(upperArmTravel);
                 upperRightArm.setPosition(upperArmTravel);
+
+                first = false;
             }
             return !upperLeftArm.isMoving();
         }
@@ -628,13 +630,13 @@ public class Ancillary {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (first) {
-                first = false;
-
                 upperLeftArm.setPosition(upperArmTransfer);
                 upperRightArm.setPosition(upperArmTransfer);
+
+                first = false;
             }
 
-            return !upperLeftArm.isMoving();
+            return !upperLeftArm.isMoving() || !upperLeftArm.isMoving();
         }
     }
 
@@ -654,7 +656,7 @@ public class Ancillary {
                 grip.setPosition(gripClosed);
             }
 
-            return grip.isMoving();
+            return !grip.isMoving();
         }
     }
 
@@ -673,7 +675,7 @@ public class Ancillary {
                 grip.setPosition(gripOpen);
             }
 
-            return grip.isMoving();
+            return !grip.isMoving();
         }
     }
 

@@ -25,13 +25,13 @@ public class Lift {
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
     //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
-    public static double liftEqCoef = 0.025;
+    public static double liftEqCoef = 0.001;
     public static int allowableExtensionDeficit= 50;
     public static int allowableHangDeficit= 10;
 
     public static double liftHoldPower = 0.05;
     public static double liftHangHoldPower = -0.2;
-    public static double liftHangPullPower = -0.5;
+    public static double liftHangPullPower = -1;
     public static double liftRetractPower = -0.25;
 
     public static int liftTopBasket = 2800;
@@ -42,8 +42,8 @@ public class Lift {
 //    public static int liftBottomRungAttached = 1050;
     public static int liftClearance = 500;
 
-    public static int liftPreHang = 500;
-    public static int liftHang = 200;
+    public static int liftPreHang = 650;
+    public static int liftHang = 0;
 
     public static int liftRetraction = 0;
 
@@ -52,15 +52,9 @@ public class Lift {
     public boolean isLiftAvailable = true;
     public boolean isDescending = false;
 
-    private static int safeHeight = 400;
 
-    public boolean isClear() {
-        int leftLiftPos = leftLift.getCurrentPosition();
-        int rightLiftPos = rightLift.getCurrentPosition();
-        int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-        return ((averagePos > safeHeight) && !isDescending);
-    }
+
 
 
     // resets and inits
@@ -158,8 +152,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - liftTopBasket) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftTopBasket) < allowableExtensionDeficit) {
-                setLiftPower(liftHoldPower);
+            if (Math.abs(averagePos - liftTopBasket) < allowableExtensionDeficit) {
+                kill();
                 isLiftAvailable = true;
                 return false;
             } else {
@@ -213,7 +207,7 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(averagePos - liftTopRung) < allowableExtensionDeficit) {
-                setLiftPower(liftHoldPower);
+                kill();
                 isLiftAvailable = true;
                 return false;
             } else {
@@ -239,8 +233,8 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - liftTopRungAttached) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftTopRungAttached) < allowableExtensionDeficit) {
-                setLiftPower(liftHoldPower);
+            if (Math.abs(averagePos - liftTopRungAttached) < allowableExtensionDeficit) {
+                kill();
                 isLiftAvailable = true;
                 return false;
             } else {
@@ -267,8 +261,8 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
 
-            if (Math.abs(leftLiftPos - liftClearance) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftClearance) < allowableExtensionDeficit) {
-                setLiftPower(liftHoldPower);
+            if (Math.abs(averagePos - liftClearance) < allowableExtensionDeficit) {
+                kill();
                 isLiftAvailable = true;
                 return false;
             } else {
@@ -282,7 +276,7 @@ public class Lift {
         }
     }
 
-    public Action lifClearance() {
+    public Action liftClearance() {
         return new liftClearance();
     }
 
@@ -352,11 +346,11 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
             double power = 0;
 
-            if (((Math.abs(leftLiftPos - liftRetraction) < allowableExtensionDeficit) && (Math.abs(rightLiftPos - liftRetraction) < allowableExtensionDeficit)) || !liftStop.getState()) {
+            if ((Math.abs(averagePos - liftRetraction) < allowableExtensionDeficit) || !liftStop.getState()) {
                 kill();
                 return false;
             } else {
-                if (((Math.abs(leftLiftPos - liftRetraction) < allowableExtensionDeficit) && (Math.abs(rightLiftPos - liftRetraction) < allowableExtensionDeficit)) || isCooked) {
+                if ((Math.abs(averagePos - liftRetraction) < allowableExtensionDeficit) || isCooked) {
                     isCooked = true;
                     power = liftRetractPower;
                 } else {
@@ -402,7 +396,7 @@ public class Lift {
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
             if (Math.abs(leftLiftPos - liftPreHang) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftPreHang) < allowableExtensionDeficit) {
-                setLiftPower(liftHoldPower);
+                kill();
                 isLiftAvailable = true;
                 return false;
             } else {
