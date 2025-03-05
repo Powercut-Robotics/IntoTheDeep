@@ -166,6 +166,7 @@ public class DriveTeleOp extends OpMode  {
         Drawing.drawRobot(packet.fieldOverlay(), driveLoc.pose);
         telemetry.addData("x", driveLoc.pose.position.x);
         telemetry.addData("y", driveLoc.pose.position.y);
+        telemetry.addData("heading (rad)", driveLoc.pose.heading.toDouble());
         telemetry.addData("heading (deg)", Math.toDegrees(driveLoc.pose.heading.toDouble()));
         FtcDashboard.getInstance().sendTelemetryPacket(packet);
 

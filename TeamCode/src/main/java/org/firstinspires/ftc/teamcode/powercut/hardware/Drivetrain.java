@@ -277,24 +277,22 @@ public class Drivetrain {
                 first = false;
             }
             double yaw = getYaw();
-            double yawRad = Math.toRadians(yaw);
-            double yawError = (-45 - yaw);
-            double yawErrorRad = Math.toRadians(yawError);
+            double yawError = ((-0.25 * Math.PI) - yaw);
 
             double leftDistanceRaw = leftUpperUS.getDistance();
             double rightDistanceRaw = rightUpperUS.getDistance();
 
-            double leftDistance = Math.cos(yawErrorRad) * leftDistanceRaw;
-            double rightDistance = Math.cos(yawErrorRad) * rightDistanceRaw;
+            double leftDistance = Math.cos(yawError) * leftDistanceRaw;
+            double rightDistance = Math.cos(yawError) * rightDistanceRaw;
 
             double x = XAlignPID.calculate(basketAlignDistance, leftDistance);
             double y = YAlignPID.calculate(basketAlignDistance, rightDistance);
-            double theta = yawController.calculate(Math.toRadians(-45), yawRad);
-            double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
-            double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+            double theta = yawController.calculate((-0.25 * Math.PI), yaw);
+            double x_rotated = x * Math.cos(-yaw) - y * Math.sin(-yaw);
+            double y_rotated = x * Math.sin(-yaw) + y * Math.cos(-yaw);
 
 
-            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
+            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yaw));
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(basketAlignDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(basketAlignDistance - rightDistanceRaw) < xyAlignDeadzone))) {
                 rawXYThetaMod(0,0,0,1);
@@ -322,24 +320,22 @@ public class Drivetrain {
             }
 
             double yaw = getYaw();
-            double yawRad = Math.toRadians(yaw);
-            double yawError = (-45 - yaw);
-            double yawErrorRad = Math.toRadians(yawError);
+            double yawError = ((-0.25 * Math.PI) - yaw);
 
             double leftDistanceRaw = leftUpperUS.getDistance();
             double rightDistanceRaw = rightUpperUS.getDistance();
 
-            double leftDistance = Math.cos(yawErrorRad) * leftDistanceRaw;
-            double rightDistance = Math.cos(yawErrorRad) * rightDistanceRaw;
+            double leftDistance = Math.cos(yawError) * leftDistanceRaw;
+            double rightDistance = Math.cos(yawError) * rightDistanceRaw;
 
             double x = XAlignPID.calculate(basketDisengageDistance, leftDistance);
             double y = YAlignPID.calculate(basketDisengageDistance, rightDistance);
-            double theta = yawController.calculate(Math.toRadians(-45), yawRad);
-            double x_rotated = x * Math.cos(-yawRad) - y * Math.sin(-yawRad);
-            double y_rotated = x * Math.sin(-yawRad) + y * Math.cos(-yawRad);
+            double theta = yawController.calculate(Math.toRadians((-0.25 * Math.PI)), yaw);
+            double x_rotated = x * Math.cos(-yaw) - y * Math.sin(-yaw);
+            double y_rotated = x * Math.sin(-yaw) + y * Math.cos(-yaw);
 
 
-            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yawRad));
+            Drawing.drawRobot(packet.fieldOverlay(), new Pose2d(new Vector2d((-70.5 + (x / 2.54) + 8.34), (-70.5 + (y / 2.54)) + 8.34), yaw));
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(basketDisengageDistance - leftDistanceRaw) < xyAlignDeadzone) && (Math.abs(basketDisengageDistance - rightDistanceRaw) < xyAlignDeadzone))) {
                 rawXYThetaMod(0,0,0,1);
@@ -367,8 +363,7 @@ public class Drivetrain {
             }
 
             double yaw = getYaw();
-            double yawRad = Math.toRadians(yaw);
-            double yawError = (180 - yaw);
+            double yawError = (Math.PI - yaw);
 
             double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
             double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
@@ -377,7 +372,7 @@ public class Drivetrain {
             double rightDistance = (rightLowerMVout*520)/3300;
 
             double y = RungAlignPID.calculate(rungAlignDistance, (rightDistance+leftDistance)/2);
-            double theta = yawController.calculate(Math.toRadians(180), yawRad);
+            double theta = yawController.calculate(Math.toRadians(180), yaw);
 
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(rungAlignDistance - rightDistance) < rungAlignDeadzone))) {
@@ -406,7 +401,6 @@ public class Drivetrain {
             }
 
             double yaw = getYaw();
-            double yawRad = Math.toRadians(yaw);
             double yawError = (0 - yaw);
 
             double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
@@ -416,7 +410,7 @@ public class Drivetrain {
             double rightDistance = (rightLowerMVout*520)/3300;
 
             double y = RungAlignPID.calculate(wallAlignDistance, (rightDistance+leftDistance)/2);
-            double theta = yawController.calculate(Math.toRadians(0), yawRad);
+            double theta = yawController.calculate(Math.toRadians(0), yaw);
 
             if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(wallAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(wallAlignDistance - rightDistance) < rungAlignDeadzone))) {
                 rawXYThetaMod(0,0,0,1);
@@ -444,7 +438,6 @@ public class Drivetrain {
             }
 
             double yaw = getYaw();
-            double yawRad = Math.toRadians(yaw);
             double yawError = (0 - yaw);
 
             double leftDistance = frontLeftToF.getDistance(DistanceUnit.MM)/10;
@@ -452,12 +445,12 @@ public class Drivetrain {
 
             double y = SubAlignPID.calculate(subAlignDistance, (rightDistance+leftDistance)/2);
             double theta = 0;
-            if (yaw < -45) {
-                theta = yawController.calculate(Math.toRadians(-90), yawRad);
-            } else if (yaw > -45 && yaw < 45) {
-                theta = yawController.calculate(Math.toRadians(0), yawRad);
+            if (yaw < (-0.25 * Math.PI)) {
+                theta = yawController.calculate(Math.toRadians((-0.5 * Math.PI)), yaw);
+            } else if (yaw > (-0.25 * Math.PI) && yaw < (0.25 * Math.PI)) {
+                theta = yawController.calculate(Math.toRadians(0), yaw);
             } else {
-                theta = yawController.calculate(Math.toRadians(90), yawRad);
+                theta = yawController.calculate(Math.toRadians(0.5 * Math.PI), yaw);
             }
 
             packet.addLine("Theta " + theta);
