@@ -41,7 +41,8 @@ public class SafeAncillary {
 
     public static double extendoIntake = 0.23;
     public static double extendoHalf = 0.3675;
-    public static double extendoClearance = 0.4;
+    public static double extendoSpecClearance = 0.4;
+    public static double extendoClearance = 0.43;
     public static double extendoTravel = 0.49;
     public static double extendoTransfer = 0.505;
 
@@ -315,6 +316,26 @@ public class SafeAncillary {
     public Action halfExtendo() {
         return new HalfExtendo();
     }
+
+    public class ClearanceSpecExtendo implements Action {
+        boolean first = true;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                extendoLeft.setPosition(extendoSpecClearance);
+                extendoRight.setPosition(extendoSpecClearance);
+                first = false;
+            }
+
+            return extendoLeft.isMoving();
+        }
+    }
+
+    public Action clearanceSpecExtendo() {
+        return new ClearanceSpecExtendo();
+    }
+
 
     public class ClearanceExtendo implements Action {
         boolean first = true;

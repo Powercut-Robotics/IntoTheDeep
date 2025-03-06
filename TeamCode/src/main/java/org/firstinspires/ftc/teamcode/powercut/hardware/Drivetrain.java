@@ -148,6 +148,18 @@ public class Drivetrain {
         radialTime.reset();
     }
 
+    public double getLowerLeftUS() {
+        double MVout = leftLowerUS.getVoltage() * 1000;
+
+        return (MVout * 520) / 3300;
+    }
+
+    public double getLowerRightUS() {
+        double MVout = rightLowerUS.getVoltage() * 1000;
+
+        return (MVout * 520) / 3300;
+    }
+
     private void rawXYThetaMod(double x, double y, double theta, double modifier) {
 
         double leftFrontPower = (y+x+theta) * modifier;
@@ -254,11 +266,8 @@ public class Drivetrain {
     }
 
     public double getYawFromUS() {
-        double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
-        double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
-
-        double leftDistance = (leftLowerMVout * 520) / 3300;
-        double rightDistance = (rightLowerMVout * 520) / 3300;
+        double leftDistance = getLowerLeftUS();
+        double rightDistance = getLowerRightUS();
 
         double difference = rightDistance - leftDistance;
 
@@ -365,11 +374,8 @@ public class Drivetrain {
             double yaw = getYaw();
             double yawError = (Math.PI - yaw);
 
-            double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
-            double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
-
-            double leftDistance = (leftLowerMVout*520)/3300;
-            double rightDistance = (rightLowerMVout*520)/3300;
+            double leftDistance = getLowerLeftUS();
+            double rightDistance = getLowerRightUS();
 
             double y = RungAlignPID.calculate(rungAlignDistance, (rightDistance+leftDistance)/2);
             double theta = yawController.calculate(Math.toRadians(180), yaw);
@@ -403,11 +409,8 @@ public class Drivetrain {
             double yaw = getYaw();
             double yawError = (0 - yaw);
 
-            double leftLowerMVout = leftLowerUS.getVoltage() * 1000;
-            double rightLowerMVout = rightLowerUS.getVoltage() * 1000;
-
-            double leftDistance = (leftLowerMVout*520)/3300;
-            double rightDistance = (rightLowerMVout*520)/3300;
+            double leftDistance = getLowerLeftUS();
+            double rightDistance = getLowerRightUS();
 
             double y = RungAlignPID.calculate(wallAlignDistance, (rightDistance+leftDistance)/2);
             double theta = yawController.calculate(Math.toRadians(0), yaw);

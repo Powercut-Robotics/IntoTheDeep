@@ -19,6 +19,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
@@ -184,6 +185,13 @@ public class DriveTeleOp extends OpMode  {
         double y = -currentGamepad1.left_stick_y;
         double theta = currentGamepad1.right_stick_x;
 
+         if (verbose) {
+             telemetry.addData("Colour", "%d,%d,%d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
+             telemetry.addData("Upper US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
+             telemetry.addData("Lower Reads LR", "%d, %d", drive.getLowerLeftUS(), drive.getLowerRightUS());
+             telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
+         }
+
         if (currentGamepad1.cross && !previousGamepad1.cross) {
             telemetry.addData("Drive", "Aligning basket");
             driveActions.clear();
@@ -290,6 +298,7 @@ public class DriveTeleOp extends OpMode  {
                 ancillaryActions.add(
                         new SequentialAction(
                                 ancillary.openGrip(),
+                                new SleepAction(0.5),
                                 ancillary.outtakeTransferArm(),
                                 new SleepAction(0.5),
                                 new ParallelAction(
@@ -348,7 +357,7 @@ public class DriveTeleOp extends OpMode  {
             ancillaryActions.add(new SequentialAction(
                     new ParallelAction(
                             lift.liftRetract(),
-                            ancillary.clearanceExtendo(),
+                            ancillary.clearanceSpecExtendo(),
                             ancillary.intakeTravelArm()
                     ),
                     new ParallelAction(
@@ -364,6 +373,7 @@ public class DriveTeleOp extends OpMode  {
                 ancillaryActions.add(
                         new SequentialAction(
                                 ancillary.closeGrip(),
+                                new SleepAction(0.3),
                                 new ParallelAction(
                                     ancillary.outtakeTravelArm()
                                 )

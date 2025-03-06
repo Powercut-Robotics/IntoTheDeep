@@ -158,7 +158,7 @@ public class DriveOnlyTeleOp extends OpMode  {
             modifier = fullSpeedModifier;
         }
 
-        if (!gamepad2.cross && !gamepad2.triangle && !gamepad2.circle && !gamepad2.square && !gamepad2.dpad_left && !gamepad2.dpad_up && !gamepad2.dpad_right && !gamepad2.dpad_down) {
+        if (gamepad2.cross) {
             drive.setDrivetrainPowers(x, y, theta, modifier, true);
         } else {
             drive.kill();
