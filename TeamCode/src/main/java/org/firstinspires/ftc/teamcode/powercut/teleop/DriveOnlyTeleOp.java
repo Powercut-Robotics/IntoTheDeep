@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -11,6 +12,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -29,6 +31,8 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import java.util.ArrayList;
 import java.util.List;
 
+@Disabled
+@Config
 @TeleOp
 public class DriveOnlyTeleOp extends OpMode  {
     private final Robot robot = new Robot();
@@ -58,9 +62,9 @@ public class DriveOnlyTeleOp extends OpMode  {
 
 
 
-    private static double fullSpeedModifier = 0.75;
+    public static double fullSpeedModifier = 0.5;
 
-    private static double modifier = fullSpeedModifier;
+    public static double modifier = fullSpeedModifier;
     ElapsedTime gametimer = new ElapsedTime();
 
 

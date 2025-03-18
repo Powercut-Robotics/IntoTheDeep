@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.GBSpeedServo;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.GBTorqueServo;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.RevServo;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.TCS34725;
@@ -19,8 +20,10 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.TCS34725;
 @Config
 public class Ancillary {
     public ServoImplEx intakeWheels;
-    public GBTorqueServo intakeLeftArm = new GBTorqueServo(), intakeRightArm = new GBTorqueServo();
-    public RevServo extendoLeft = new RevServo(), extendoRight = new RevServo(), upperLeftArm = new RevServo(), upperRightArm = new RevServo(), grip = new RevServo();
+    public GBTorqueServo extendoLeft = new GBTorqueServo(), extendoRight = new GBTorqueServo();
+
+    public GBSpeedServo intakeLeftArm = new GBSpeedServo(), intakeRightArm = new GBSpeedServo(), upperLeftArm = new GBSpeedServo(), upperRightArm = new GBSpeedServo();
+    public RevServo grip = new RevServo();
     public TCS34725 colourSensor = null;
     public TouchSensor trayTouchSensor;
 
@@ -79,11 +82,11 @@ public class Ancillary {
     public static double upperArmSpecDeposit = 0.98;
 
     public static double upperArmTravel = 0.5;
-    public static double upperArmIntake = 1.0;
-    public static double upperArmTransfer = 0.0;
+    public static double upperArmIntake = 0.95;
+    public static double upperArmTransfer = 0.05;
 
-    public static double gripClosed = 0.5;
-    public static double gripOpen = 0.3;
+    public static double gripClosed = 0.65;
+    public static double gripOpen = 0.5;
 
 
 

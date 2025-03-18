@@ -21,7 +21,7 @@ public class Lift {
 
     public DigitalChannel liftStop;
 
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.001,0.0000, 500, 150, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.00,0.0000, 500, 150, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
     //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
@@ -395,7 +395,7 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
-            if (Math.abs(leftLiftPos - liftPreHang) < allowableExtensionDeficit && Math.abs(rightLiftPos - liftPreHang) < allowableExtensionDeficit) {
+            if (Math.abs(averagePos - liftPreHang) < allowableExtensionDeficit) {
                 kill();
                 isLiftAvailable = true;
                 return false;

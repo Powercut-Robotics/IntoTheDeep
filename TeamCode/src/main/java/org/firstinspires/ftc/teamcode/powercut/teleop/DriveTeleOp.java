@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -12,6 +13,7 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -20,18 +22,20 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
+import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Drivetrain;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
 import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
 import org.firstinspires.ftc.teamcode.powercut.hardware.SafeAncillary;
 import org.firstinspires.ftc.teamcode.powercut.hardware.SafeAncillary.sampleColour;
-import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Config
 @TeleOp
 public class DriveTeleOp extends OpMode  {
     private final Robot robot = new Robot();
@@ -98,6 +102,10 @@ public class DriveTeleOp extends OpMode  {
         driveLoc = new MecanumDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
         allHubs = hardwareMap.getAll(LynxModule.class);
 
+        Constants.setConstants(FConstants.class, LConstants.class);
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(startPose);
+
         drive.imu.resetYaw();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -126,7 +134,8 @@ public class DriveTeleOp extends OpMode  {
                         ancillary.intakeTravelArm(),
                         ancillary.outtakeTransferArm(),
                         ancillary.closeGrip()
-                )
+                ),
+                lift.liftRetractSensor()
         ));
     }
 
@@ -162,14 +171,14 @@ public class DriveTeleOp extends OpMode  {
         }
         ancillaryActions = newActions;
 
-        driveLoc.updatePoseEstimate();
-        packet.fieldOverlay().setStroke("#3F51B5");
-        Drawing.drawRobot(packet.fieldOverlay(), driveLoc.pose);
-        telemetry.addData("x", driveLoc.pose.position.x);
-        telemetry.addData("y", driveLoc.pose.position.y);
-        telemetry.addData("heading (rad)", driveLoc.pose.heading.toDouble());
-        telemetry.addData("heading (deg)", Math.toDegrees(driveLoc.pose.heading.toDouble()));
-        FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+
+        follower.update();
+        follower.drawOnDashBoard();
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading (Rad)", follower.getPose().getHeading());
+        telemetry.addData("heading (Deg)", Math.toDegrees(follower.getPose().getHeading()));
 
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
@@ -181,14 +190,14 @@ public class DriveTeleOp extends OpMode  {
     }
 
     private void doDrive() {
-        double x = currentGamepad1.left_stick_x;
-        double y = -currentGamepad1.left_stick_y;
-        double theta = currentGamepad1.right_stick_x;
+        double x = gamepad1.left_stick_x;
+        double y = -gamepad1.left_stick_y;
+        double theta = gamepad1.right_stick_x;
 
          if (verbose) {
-             telemetry.addData("Colour", "%d,%d,%d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
+             telemetry.addData("Colour", "%d, %d, %d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
              telemetry.addData("Upper US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
-             telemetry.addData("Lower Reads LR", "%d, %d", drive.getLowerLeftUS(), drive.getLowerRightUS());
+             telemetry.addData("Lower Reads LR", "%5.1f, %5.1f", drive.getLowerLeftUS(), drive.getLowerRightUS());
              telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
          }
 
@@ -224,7 +233,7 @@ public class DriveTeleOp extends OpMode  {
             driveActions.clear();
         }
 
-        if (currentGamepad1.right_bumper) {
+        if (gamepad1.right_bumper) {
             modifier = 0.25;
         } else {
             modifier = 1;
@@ -255,15 +264,14 @@ public class DriveTeleOp extends OpMode  {
             telemetry.addData("extendoRight isMoving", ancillary.extendoRight.isMoving());
             telemetry.addData("grip isMoving", ancillary.grip.isMoving());
             telemetry.addData("Intake active", ancillary.intakeActive);
-
         }
 
         if (extendoControl) {
-            if (currentGamepad2.triangle) {
+            if (gamepad2.triangle) {
                 ancillaryActions.add(ancillary.intakeExtendo());
-            } else if (currentGamepad2.circle) {
+            } else if (gamepad2.circle) {
                 ancillaryActions.add(ancillary.halfExtendo());
-            } else if (currentGamepad2.cross) {
+            } else if (gamepad2.cross) {
                 ancillaryActions.add(ancillary.clearanceExtendo());
             }
         } else {
@@ -459,7 +467,6 @@ public class DriveTeleOp extends OpMode  {
         if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
             driveActions.clear();
             ancillaryActions.clear();
-            isHang = true;
             ancillaryActions.add(new SequentialAction(
                     lift.liftPreHang(),
                     ancillary.transferExtendo(),
@@ -470,6 +477,7 @@ public class DriveTeleOp extends OpMode  {
             driveActions.clear();
             ancillaryActions.clear();
             drive.kill();
+            isHang = true;
             ancillaryActions.add(lift.liftHang());
         }
 
@@ -482,7 +490,7 @@ public class DriveTeleOp extends OpMode  {
             isHang = false;
         }
 
-        if (currentGamepad1.square || currentGamepad2.square) {
+        if (gamepad1.square || gamepad2.square || gamepad1.dpad_right) {
             ancillaryActions.clear();
             driveActions.clear();
             lift.kill();
