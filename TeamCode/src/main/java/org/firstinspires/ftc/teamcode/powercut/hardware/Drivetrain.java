@@ -42,7 +42,7 @@ public class Drivetrain {
     public static double wallAlignDistance = 15;
     public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.05,0,0.005,0,100,0.25);
     public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.025,0,0.02,0,100,0);
-    public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(-1.25,0,0.5,0,0.5,0);
+    public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(1.25,0,0,0,0.5,0);
     public static PIDCoefficientsEx subYCoefficients = new PIDCoefficientsEx(-0.025,0,0.02,0,100,0);
 
     private PIDEx XAlignPID = new PIDEx(basketXYCoefficients);
@@ -56,8 +56,8 @@ public class Drivetrain {
     private ElapsedTime radialTime = new ElapsedTime();
     private double lastYaw, radialVelocity;
 
-    private static double yawLockThetaDeadzone = 0.05;
-    private static double yawLockRadialDeadzone = 0.09;
+    private static double yawLockThetaDeadzone = 0.02;
+    private static double yawLockRadialDeadzone = 0.15;
     private double yawLock = 0;
     private boolean yawLockActive;
 
@@ -265,14 +265,7 @@ public class Drivetrain {
         return ToFYawFilter.estimate(Math.toDegrees(Math.asin(difference/ToFCentreDistance)));
     }
 
-    public double getYawFromUS() {
-        double leftDistance = getLowerLeftUS();
-        double rightDistance = getLowerRightUS();
 
-        double difference = rightDistance - leftDistance;
-
-        return USYawFilter.estimate(Math.toDegrees(Math.asin(difference / USCentreDistance)));
-    }
 
     //Alignment Actions
 
@@ -375,13 +368,13 @@ public class Drivetrain {
             double yawError = (Math.PI - yaw);
 
             double leftDistance = getLowerLeftUS();
-            double rightDistance = getLowerRightUS();
+            //double rightDistance = getLowerRightUS();
 
-            double y = RungAlignPID.calculate(rungAlignDistance, (rightDistance+leftDistance)/2);
+            double y = RungAlignPID.calculate(rungAlignDistance, leftDistance);
             double theta = yawController.calculate(Math.toRadians(180), yaw);
 
 
-            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(rungAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(rungAlignDistance - rightDistance) < rungAlignDeadzone))) {
+            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(rungAlignDistance - leftDistance) < rungAlignDeadzone))) {
                 rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;
@@ -410,12 +403,12 @@ public class Drivetrain {
             double yawError = (0 - yaw);
 
             double leftDistance = getLowerLeftUS();
-            double rightDistance = getLowerRightUS();
 
-            double y = RungAlignPID.calculate(wallAlignDistance, (rightDistance+leftDistance)/2);
+
+            double y = RungAlignPID.calculate(wallAlignDistance, leftDistance);
             double theta = yawController.calculate(Math.toRadians(0), yaw);
 
-            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(wallAlignDistance - leftDistance) < rungAlignDeadzone) && (Math.abs(wallAlignDistance - rightDistance) < rungAlignDeadzone))) {
+            if (!isDriveAction || ((Math.abs(yawError) < yawAlignDeadzone) && (Math.abs(wallAlignDistance - leftDistance) < rungAlignDeadzone))) {
                 rawXYThetaMod(0,0,0,1);
                 isDriveAction = false;
                 return false;

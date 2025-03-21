@@ -40,7 +40,7 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "4 Spec", group = "Specimen")
+@Autonomous(name = "4 Spec", preselectTeleOp = "DriveTeleOp", group = "Specimen")
 public class PedroSpecAuto extends OpMode {
 
     private Follower follower;

@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.GBSpeedServo;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.GBTorqueServo;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.RevServo;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.TCS34725;
@@ -18,8 +19,10 @@ import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.TCS34725;
 @Config
 public class SafeAncillary {
     public ServoImplEx intakeWheels;
-    public GBTorqueServo intakeLeftArm = new GBTorqueServo(), intakeRightArm = new GBTorqueServo();
-    public RevServo extendoLeft = new RevServo(), extendoRight = new RevServo(), upperLeftArm = new RevServo(), upperRightArm = new RevServo(), grip = new RevServo();
+    public GBTorqueServo extendoLeft = new GBTorqueServo(), extendoRight = new GBTorqueServo();
+
+    public GBSpeedServo intakeLeftArm = new GBSpeedServo(), intakeRightArm = new GBSpeedServo(), upperLeftArm = new GBSpeedServo(), upperRightArm = new GBSpeedServo();
+    public RevServo grip = new RevServo();
     public TCS34725 colourSensor = null;
     public TouchSensor trayTouchSensor;
 
@@ -32,37 +35,37 @@ public class SafeAncillary {
 
     public static double colourThreshMultiplier = 1.5;
 
-    public static double intakeArmSafe = 0.95;
-    public static double intakeArmTransfer = 1.0;
-    public static double intakeArmExpel = 0.4;
+    public static double intakeArmSafe = 0.89;
+    public static double intakeArmTransfer = 0.93;
+    public static double intakeArmExpel = 0.35;
 
-    public static double intakeArmIntakeSafe = 0.325;
-    public static double intakeArmIntake = 0.318;
+    public static double intakeArmIntakeSafe = 0.31;
+    public static double intakeArmIntake = 0.28;
 
-    public static double extendoIntake = 0.23;
-    public static double extendoHalf = 0.3675;
+    public static double extendoIntake = 0.28;
+    public static double extendoHalf = 0.39;
+
     public static double extendoSpecClearance = 0.4;
-    public static double extendoClearance = 0.43;
-    public static double extendoTravel = 0.49;
-    public static double extendoTransfer = 0.505;
+    public static double extendoClearance = 0.48;
+    public static double extendoTravel = 0.5;
+    public static double extendoTransfer = 0.535;
 
 
-    public static double upperArmSampDeposit = 0.85;
-    public static double upperArmSpecDeposit = 0.98;
+    public static double upperArmSampDeposit = 0.9;
+    public static double upperArmSpecDeposit = 0.95;
 
     public static double upperArmTravel = 0.5;
-    public static double upperArmIntake = 1.0;
-    public static double upperArmTransfer = 0.0;
+    public static double upperArmIntake = 0.95;
+    public static double upperArmTransfer = 0.1;
 
-    public static double gripClosed = 0.5;
-    public static double gripOpen = 0.3;
+    public static double gripClosed = 0.7;
+    public static double gripOpen = 0.5;
+
+    public static double transferTime = 650;
 
     public boolean intakeActive = false;
 
 
-    private static final double[] upperArmSafetyBounds = {0.05, 0.33};
-
-    private static final double[] lowerArmSafetyBounds = {0.6, 1.01};
 
 
     public void init(HardwareMap hardwareMap) {
@@ -123,13 +126,12 @@ public class SafeAncillary {
         double green = colourSensor.green();
         double blue = colourSensor.blue();
 
-
-        if ((red > (blue * colourThreshMultiplier) && red > (green * colourThreshMultiplier))) {
+        if ((red > (blue * colourThreshMultiplier) && green > (blue * colourThreshMultiplier))) {
+            return sampleColour.YELLOW;
+        } else if ((red > (blue * colourThreshMultiplier) && red > (green * colourThreshMultiplier))) {
             return sampleColour.RED;
         } else if ((blue > (red * colourThreshMultiplier) && blue > (green * colourThreshMultiplier))) {
             return sampleColour.BLUE;
-        } else if ((red > (blue * colourThreshMultiplier) && green > (blue * colourThreshMultiplier))) {
-            return sampleColour.YELLOW;
         } else {
             return sampleColour.NONE;
         }
@@ -253,22 +255,22 @@ public class SafeAncillary {
             sampleColour sample = getSampleColour();
             boolean inTray = trayTouchSensor.isPressed();
 
-            if (sample == sampleColour.NONE || !intakeActive) {
+            //if (sample == sampleColour.NONE || !intakeActive) {
                 // Check if 500 ms have passed since the last detection
-                if ((System.currentTimeMillis() - lastDetectedTime > 700) || inTray || !intakeActive) {
+                if ((System.currentTimeMillis() - lastDetectedTime > transferTime) || inTray || !intakeActive) {
                     intakeActive = false;
                     intakeWheels.setPosition(0.5);
                     return false; // Stop returning true
                 } else {
                     return true; // Continue returning true until timeout expires
                 }
-            } else {
-                intakeWheels.setPosition(1);
-
-                // Update the last detected time when a sample is found
-                lastDetectedTime = System.currentTimeMillis();
-                return true;
-            }
+//            } else {
+//                intakeWheels.setPosition(1);
+//
+//                // Update the last detected time when a sample is found
+//                lastDetectedTime = System.currentTimeMillis();
+//                return true;
+//            }
         }
     }
 
