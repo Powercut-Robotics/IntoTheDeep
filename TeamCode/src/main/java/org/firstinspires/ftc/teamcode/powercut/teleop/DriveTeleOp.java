@@ -132,6 +132,8 @@ public class DriveTeleOp extends OpMode  {
 
         telemetry.clear();
 
+        follower.startTeleopDrive();
+
         ancillaryActions.add(new SequentialAction(
                 ancillary.clearanceExtendo(),
                 new ParallelAction(
