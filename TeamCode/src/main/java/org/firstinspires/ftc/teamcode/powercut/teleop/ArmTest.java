@@ -31,7 +31,7 @@ public class ArmTest extends OpMode {
 
     public static double upperPos =0.50;
     public static double extendo = 0.5;
-    public static double clawPos =0.50;
+    public static double clawPos =0.7;
     public static double lowerPos =0.50;
     public static double wheelSpeed =0.50;
 

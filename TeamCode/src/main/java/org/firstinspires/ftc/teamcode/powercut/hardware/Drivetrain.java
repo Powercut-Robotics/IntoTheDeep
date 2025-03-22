@@ -24,7 +24,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.powercut.hardware.drivers.URM09Sensor;
-
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
 
 @Config
@@ -34,6 +33,8 @@ public class Drivetrain {
     public AnalogInput leftLowerUS, rightLowerUS;
     public Rev2mDistanceSensor frontLeftToF, frontRightToF;
     public IMU imu = null;
+
+
 
     public static double basketAlignDistance = 20;
     public static double basketDisengageDistance = 30;
@@ -92,6 +93,8 @@ public class Drivetrain {
         frontLeftToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontLeftToF");
         frontRightToF = hardwareMap.get(Rev2mDistanceSensor.class, "frontRightToF");
 
+
+
         imu = hardwareMap.get(IMU.class, "imu");
 
         imu.initialize(
@@ -102,6 +105,10 @@ public class Drivetrain {
                         )
                 )
         );
+
+        imu.resetYaw();
+
+
 
         leftUpperUS.setMeasurementMode(true);
         rightUpperUS.setMeasurementMode(true);
@@ -123,6 +130,7 @@ public class Drivetrain {
         robotOrientation = imu.getRobotYawPitchRollAngles();
 
         updateRadialVelocity();
+
         return robotOrientation.getYaw(AngleUnit.RADIANS);
     }
 
@@ -175,16 +183,16 @@ public class Drivetrain {
         updateRadialVelocity();
     }
 
-    public void setDrivetrainPowers(double x, double y, double theta, double modifier) {
+    public void setDrivetrainPowers(double x, double y, double theta, double modifier, double yaw) {
         if (Math.abs(x) > 0.05 || Math.abs(y) > 0.05 || Math.abs(theta) > 0.05) {
             isDriveAction = false;
         }
         if (!isDriveAction) {
-            double yaw = getYaw();
+            //double yaw = getYaw();
 
             if ((Math.abs(theta) < yawLockThetaDeadzone)) {
                 if (!yawLockActive) {
-                    yawLock = getYaw();
+                    yawLock = yaw;
                 }
 
                 if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
@@ -209,17 +217,17 @@ public class Drivetrain {
         }
     }
 
-    public void setDrivetrainPowers(double x, double y, double theta, double modifier, boolean rotate) {
+    public void setDrivetrainPowers(double x, double y, double theta, double modifier, double yaw, boolean rotate) {
         if (Math.abs(x) > 0.05 || Math.abs(y) > 0.05 || Math.abs(theta) > 0.05) {
             isDriveAction = false;
         }
 
         if (!isDriveAction) {
-            double yaw = getYaw();
+            //double yaw = getYaw();
 
             if ((Math.abs(theta) < yawLockThetaDeadzone)) {
                 if (!yawLockActive) {
-                    yawLock = getYaw();
+                    yawLock = yaw;
                 }
 
                 if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
@@ -253,7 +261,7 @@ public class Drivetrain {
     }
 
     public void kill() {
-        setDrivetrainPowers(0,0,0,1);
+        setDrivetrainPowers(0,0,0,0,1);
     }
 
     public double getYawFromToF() {

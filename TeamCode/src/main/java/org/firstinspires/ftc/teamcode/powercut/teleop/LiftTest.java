@@ -48,9 +48,13 @@ public class LiftTest extends OpMode {
     @Override
     public void loop() {
         TelemetryPacket packet = new TelemetryPacket();
-        if (lift.isLiftAvailable && !lift.liftStop.getState()){
-            lift.setLiftPower(0.05);
+        if (lift.isLiftAvailable && lift.liftStop.getState()){
+            telemetry.addLine("Lift Holding");
+            lift.setLiftPower(0.08);
         }
+
+        telemetry.addData("lift available",lift.isLiftAvailable);
+        telemetry.addData("Lift stop", lift.liftStop.getState());
 
         if (gamepad1.cross) {
             ancillaryActions.clear();

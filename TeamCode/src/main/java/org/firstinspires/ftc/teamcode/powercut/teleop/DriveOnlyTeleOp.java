@@ -163,7 +163,7 @@ public class DriveOnlyTeleOp extends OpMode  {
         }
 
         if (gamepad2.cross) {
-            drive.setDrivetrainPowers(x, y, theta, modifier, true);
+            drive.setDrivetrainPowers(x, y, theta, modifier, drive.getYaw(), true);
         } else {
             drive.kill();
         }

@@ -21,25 +21,29 @@ public class Lift {
 
     public DigitalChannel liftStop;
 
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0035,0.00,0.0000, 500, 150, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0045,0.00,0.000, 500, 150, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
     //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
-    public static double liftEqCoef = 0.0001;
+    public static double liftEqCoef = 0.00;
     public static int allowableExtensionDeficit= 50;
     public static int allowableHangDeficit= 10;
 
     public static double liftHoldPower = 0.08;
     public static double liftHangHoldPower = -0.2;
     public static double liftHangPullPower = -1;
-    public static double liftRetractPower = -0.25;
+    public static double liftRetractPower = -0.5;
 
     public static int liftTopBasket = 2800;
 //    public static int liftBottomBasket = 1250;
-    public static int liftTopRung = 1200;
-    public static int liftTopRungAttached = 800;
+    public static int liftTopRung = 1300;
+    public static int liftTopRungMedian = 1250;
+    public static int liftTopRungHigher = 1350;
+    public static int liftTopRungAttached = 700;
 //    public static int liftBottomRung = 1250;
 //    public static int liftBottomRungAttached = 1050;
+
+    public static int liftLevel1Park = 550;
     public static int liftClearance = 500;
 
     public static int liftPreHang = 650;
@@ -52,7 +56,8 @@ public class Lift {
     public boolean isLiftAvailable = true;
     public boolean isDescending = false;
 
-
+public double powerOutLeft = 0.0;
+    public double powerOutRight = 0.0;
 
 
 
@@ -128,6 +133,9 @@ public class Lift {
                     rightPower = rightPowerRaw;
                 }
 
+                powerOutLeft = (leftPower);
+                powerOutRight = rightPower;
+
                 leftLift.setPower(leftPower);
                 rightLift.setPower(rightPower);
             }
@@ -156,6 +164,8 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
+            double power = liftPID.calculate(liftTopBasket, averagePos);
+
 
             if (Math.abs(averagePos - liftTopBasket) < allowableExtensionDeficit || isLiftAvailable) {
                 kill();
@@ -163,7 +173,7 @@ public class Lift {
                 return false;
             } else {
 
-                double power = liftPID.calculate(liftTopBasket, averagePos);
+
 
                 setLiftPower(power);
 
@@ -211,14 +221,13 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
+            double power = liftPID.calculate(liftTopRung, averagePos);
+
             if (Math.abs(averagePos - liftTopRung) < allowableExtensionDeficit || isLiftAvailable) {
                 kill();
                 isLiftAvailable = true;
                 return false;
             } else {
-
-                double power = liftPID.calculate(liftTopRung, averagePos);
-
                 setLiftPower(power);
 
                 return true;
@@ -228,6 +237,58 @@ public class Lift {
 
     public Action liftTopRung() {
         return new liftTopRung();
+    }
+
+    public class liftTopRungMedian implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+            double power = liftPID.calculate(liftTopRungMedian, averagePos);
+
+            if (Math.abs(averagePos - liftTopRungMedian) < allowableExtensionDeficit || isLiftAvailable) {
+                kill();
+                isLiftAvailable = true;
+                return false;
+            } else {
+                setLiftPower(power);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftTopRungMedian() {
+        return new liftTopRungMedian();
+    }
+
+    public class liftTopRungHigher implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+            double power = liftPID.calculate(liftTopRungHigher, averagePos);
+
+            if (Math.abs(averagePos - liftTopRungHigher) < allowableExtensionDeficit || isLiftAvailable) {
+                kill();
+                isLiftAvailable = true;
+                return false;
+            } else {
+                setLiftPower(power);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftTopRungHigher() {
+        return new liftTopRungHigher();
     }
 
     public class liftTopRungAttached implements Action {
@@ -243,7 +304,6 @@ public class Lift {
                 isLiftAvailable = true;
                 return false;
             } else {
-
                 double power = liftPID.calculate(liftTopRungAttached, averagePos);
 
                 setLiftPower(power);
@@ -265,15 +325,13 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
+            double power = liftPID.calculate(liftClearance, averagePos);
 
             if (Math.abs(averagePos - liftClearance) < allowableExtensionDeficit || isLiftAvailable) {
                 kill();
                 isLiftAvailable = true;
                 return false;
             } else {
-
-                double power = liftPID.calculate(liftClearance, averagePos);
-
                 setLiftPower(power);
 
                 return true;
@@ -283,6 +341,32 @@ public class Lift {
 
     public Action liftClearance() {
         return new liftClearance();
+    }
+
+    public class liftLevel1 implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+            double power = liftPID.calculate(liftLevel1Park, averagePos);
+
+            if (Math.abs(averagePos - liftLevel1Park) < allowableExtensionDeficit || isLiftAvailable) {
+                kill();
+                isLiftAvailable = true;
+                return false;
+            } else {
+                setLiftPower(power);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftLevel1() {
+        return new liftLevel1();
     }
 
 //    public class liftBottomRung implements Action {
@@ -402,14 +486,13 @@ public class Lift {
             int rightLiftPos = rightLift.getCurrentPosition();
             int averagePos = (leftLiftPos + rightLiftPos)/2;
 
+            double power = liftPID.calculate(liftPreHang, averagePos);
+
             if (Math.abs(averagePos - liftPreHang) < allowableExtensionDeficit || isLiftAvailable) {
                 kill();
                 isLiftAvailable = true;
                 return false;
             } else {
-
-                double power = liftPID.calculate(liftPreHang, averagePos);
-
                 setLiftPower(power);
 
                 return true;

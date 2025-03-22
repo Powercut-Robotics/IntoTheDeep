@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.powercut.hardware;
 
+import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Robot {
@@ -9,6 +10,9 @@ public class Robot {
     private final LightSystem light = new LightSystem();
 
     private boolean isInitialised = false;
+
+    public static double heading = 0.0;
+    public static Pose pose = new Pose(0,0,0);
 
     public void init(HardwareMap hardwareMap) {
         ancillary.init(hardwareMap);

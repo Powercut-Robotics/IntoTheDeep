@@ -1,20 +1,29 @@
-package org.firstinspires.ftc.teamcode.pedroPathing.examples;
+package org.firstinspires.ftc.teamcode.powercut.auto;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
-import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
+import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
+import org.firstinspires.ftc.teamcode.powercut.hardware.Robot;
+import org.firstinspires.ftc.teamcode.powercut.hardware.SafeAncillary;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is an example auto that showcases movement and control of two servos autonomously.
@@ -26,16 +35,23 @@ import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
  * @version 2.0, 11/28/2024
  */
 
-@Disabled
-@Autonomous(name = "Example Auto Blue", group = "Examples")
-public class ExampleBucketAuto extends OpMode {
+
+@Autonomous(name = "3 Net Zone Pushes", preselectTeleOp = "DriveTeleOp", group = "Sample")
+public class NetZoneAuto extends OpMode {
 
     private Follower follower;
+    private final Robot robot = new Robot();
+    private SafeAncillary ancillary;
+    private Lift lift;
+    private LightSystem light;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
     /** This is the variable where we store the state of our auto.
      * It is used by the pathUpdate method. */
     private int pathState;
+
+    private final FtcDashboard dash = FtcDashboard.getInstance();
+    private List<Action> runningActions = new ArrayList<>();
 
     /* Create and Define Poses + Paths
      * Poses are built with three constructors: x, y, and heading (in Radians).
@@ -47,30 +63,44 @@ public class ExampleBucketAuto extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(9, 111, Math.toRadians(270));
+    private final Pose startPose = new Pose(7, 112, Math.toRadians(0));
+
+    private final Pose align1Control = new Pose(65, 106, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(14, 129, Math.toRadians(315));
+    private final Pose align1Pose = new Pose(65, 120, Math.toRadians(0));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickup1Pose = new Pose(37, 121, Math.toRadians(0));
+    private final Pose push1ControlPose = new Pose(33, 119, Math.toRadians(0));
+    private final Pose push1Pose = new Pose(10, 133, Math.toRadians(-45));
 
     /** Middle (Second) Sample from the Spike Mark */
-    private final Pose pickup2Pose = new Pose(43, 130, Math.toRadians(0));
+    private final Pose align2Control = new Pose(60, 108, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose pickup3Pose = new Pose(49, 135, Math.toRadians(0));
+    private final Pose align2Pose = new Pose(58, 132, Math.toRadians(0));
+    private final Pose push2Pose = new Pose(12, 132, Math.toRadians(0));
+
+    /** Middle (Second) Sample from the Spike Mark */
+    private final Pose align3Control = new Pose(55, 129, Math.toRadians(0));
+
+    /** Highest (Third) Sample from the Spike Mark */
+    private final Pose align3Pose = new Pose(57, 136.5, Math.toRadians(0));
+
+    private final Pose push3Pose = new Pose(17, 136.5, Math.toRadians(0));
+
+    /** Middle (Second) Sample from the Spike Mark */
+
+    private final Pose parkControlPose = new Pose(60, 123, Math.toRadians(90));
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(60, 98, Math.toRadians(90));
+    private final Pose parkPose = new Pose(61, 94.5, Math.toRadians(90));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
-    private final Pose parkControlPose = new Pose(60, 98, Math.toRadians(90));
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
-    private Path scorePreload, park;
-    private PathChain grabPickup1, grabPickup2, grabPickup3, scorePickup1, scorePickup2, scorePickup3;
+    private PathChain align1, push1, align2, push2, align3, push3, park;
 
     /** Build the paths for the auto (adds, for example, constant/linear headings while doing paths)
      * It is necessary to do this so that all the paths are built before the auto starts. **/
@@ -92,51 +122,52 @@ public class ExampleBucketAuto extends OpMode {
          * Here is a explanation of the difference between Paths and PathChains <https://pedropathing.com/commonissues/pathtopathchain.html> */
 
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
-        scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
+        align1 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(startPose), new Point(align1Control), new Point(align1Pose)))
+                .setLinearHeadingInterpolation(startPose.getHeading(), align1Pose.getHeading())
+                .build();
 
         /* Here is an example for Constant Interpolation
         scorePreload.setConstantInterpolation(startPose.getHeading()); */
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup1Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
+        push1 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(align1Pose), new Point(push1ControlPose), new Point(push1Pose)))
+                .setLinearHeadingInterpolation(align1Pose.getHeading(), push1Pose.getHeading())
                 .build();
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup1Pose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+        align2 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(push1Pose), new Point(align2Control), new Point(align2Pose)))
+                .setLinearHeadingInterpolation(push1Pose.getHeading(), align2Pose.getHeading())
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup2Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
+        push2 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(align2Pose), new Point(push2Pose)))
+                .setLinearHeadingInterpolation(align2Pose.getHeading(), push2Pose.getHeading())
                 .build();
 
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        scorePickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup2Pose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
+        align3 = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(push2Pose), new Point(align3Control), new Point(align3Pose)))
+                .setLinearHeadingInterpolation(push2Pose.getHeading(), align3Pose.getHeading())
                 .build();
 
         /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        grabPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(pickup3Pose)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
+        push3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(align3Pose), new Point(push3Pose)))
+                .setLinearHeadingInterpolation(align3Pose.getHeading(), push3Pose.getHeading())
                 .build();
 
         /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(pickup3Pose), new Point(scorePose)))
-                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
+        park = follower.pathBuilder()
+                .addPath(new BezierCurve(new Point(push3Pose), new Point(parkControlPose), new Point(parkPose)))
+                .setLinearHeadingInterpolation(push3Pose.getHeading(), parkPose.getHeading())
                 .build();
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
-        park = new Path(new BezierCurve(new Point(scorePose), /* Control Point */ new Point(parkControlPose), new Point(parkPose)));
-        park.setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading());
+
     }
 
     /** This switch is called continuously and runs the pathing, at certain points, it triggers the action state.
@@ -145,7 +176,7 @@ public class ExampleBucketAuto extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                follower.followPath(scorePreload);
+                follower.followPath(align1);
                 setPathState(1);
                 break;
             case 1:
@@ -161,7 +192,7 @@ public class ExampleBucketAuto extends OpMode {
                     /* Score Preload */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup1,true);
+                    follower.followPath(push1,true);
                     setPathState(2);
                 }
                 break;
@@ -171,7 +202,7 @@ public class ExampleBucketAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup1,true);
+                    follower.followPath(align2,true);
                     setPathState(3);
                 }
                 break;
@@ -181,7 +212,7 @@ public class ExampleBucketAuto extends OpMode {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup2,true);
+                    follower.followPath(push2,true);
                     setPathState(4);
                 }
                 break;
@@ -191,7 +222,7 @@ public class ExampleBucketAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup2,true);
+                    follower.followPath(align3,true);
                     setPathState(5);
                 }
                 break;
@@ -201,31 +232,22 @@ public class ExampleBucketAuto extends OpMode {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup3,true);
+                    follower.followPath(push3,true);
                     setPathState(6);
                 }
                 break;
             case 6:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
                 if(!follower.isBusy()) {
+                    runningActions.add(lift.liftLevel1());
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup3, true);
+                    follower.followPath(park, true);
                     setPathState(7);
                 }
                 break;
             case 7:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if(!follower.isBusy()) {
-                    /* Score Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are parked */
-                    follower.followPath(park,true);
-                    setPathState(8);
-                }
-                break;
-            case 8:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
                     /* Level 1 Ascent */
@@ -247,6 +269,20 @@ public class ExampleBucketAuto extends OpMode {
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
     @Override
     public void loop() {
+        TelemetryPacket packet = new TelemetryPacket();
+        List<Action> newActions = new ArrayList<>();
+
+        for (Action action : runningActions) {
+            action.preview(packet.fieldOverlay());
+            if (action.run(packet)) {
+                newActions.add(action);
+            }
+        }
+        runningActions = newActions;
+
+        if (lift.isLiftAvailable && lift.liftStop.getState()) {
+            lift.holdPosition();
+        }
 
         // These loop the movements of the robot
         follower.update();
@@ -257,6 +293,9 @@ public class ExampleBucketAuto extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+
+        Robot.pose = follower.getPose();
+        Robot.heading = follower.getPose().getHeading();
         telemetry.update();
     }
 
@@ -267,6 +306,20 @@ public class ExampleBucketAuto extends OpMode {
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
+        robot.init(hardwareMap);
+        lift = robot.getLift();
+        ancillary = robot.getAncillary();
+        light = robot.getLight();
+
+        runningActions.add(new ParallelAction(
+                lift.liftRetractSensor(),
+                ancillary.clearanceExtendo(),
+                ancillary.intakeTravelArm(),
+                ancillary.outtakeTransferArm()
+        ));
+
+        light.partyWaves();
+
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -275,7 +328,18 @@ public class ExampleBucketAuto extends OpMode {
 
     /** This method is called continuously after Init while waiting for "play". **/
     @Override
-    public void init_loop() {}
+    public void init_loop() {
+        TelemetryPacket packet = new TelemetryPacket();
+        List<Action> newActions = new ArrayList<>();
+
+        for (Action action : runningActions) {
+            action.preview(packet.fieldOverlay());
+            if (action.run(packet)) {
+                newActions.add(action);
+            }
+        }
+        runningActions = newActions;
+    }
 
     /** This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system **/

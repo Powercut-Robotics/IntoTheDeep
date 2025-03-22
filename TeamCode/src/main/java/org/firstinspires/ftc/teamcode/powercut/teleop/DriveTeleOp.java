@@ -7,10 +7,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.util.Constants;
@@ -56,7 +54,8 @@ public class DriveTeleOp extends OpMode  {
     //Localiser
     private MecanumDrive driveLoc = null;
     private Follower follower;
-    private final Pose startPose = new Pose(0,0,0);
+
+    private double heading = 0;
 
     //System monitoring
     private final ElapsedTime loopTimer = new ElapsedTime();
@@ -101,14 +100,17 @@ public class DriveTeleOp extends OpMode  {
         light = robot.getLight();
         ancillary = robot.getAncillary();
 
-        driveLoc = new MecanumDrive(hardwareMap, new Pose2d(new Vector2d(0, 0), Math.toRadians(0)));
+
+
         allHubs = hardwareMap.getAll(LynxModule.class);
+
+        heading = Robot.heading;
+
+        Pose startPose = new Pose(0, 0, heading);
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
         follower.setStartingPose(startPose);
-
-        drive.imu.resetYaw();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         dashTelemetry = FtcDashboard.getInstance().getTelemetry();
@@ -177,6 +179,9 @@ public class DriveTeleOp extends OpMode  {
 
         follower.update();
         follower.drawOnDashBoard();
+
+        Robot.heading = follower.getPose().getHeading();
+
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading (Rad)", follower.getPose().getHeading());
@@ -196,6 +201,10 @@ public class DriveTeleOp extends OpMode  {
         double y = gamepad1.left_stick_y;
         double theta = -gamepad1.right_stick_x * thetaMultiplier;
 
+        double xMod = -gamepad1.left_stick_x * modifier;
+        double yMod = gamepad1.left_stick_y * modifier;
+        double thetaMod  = -gamepad1.right_stick_x * thetaMultiplier * modifier;
+
         if (Math.abs(x) < 0.1 && Math.abs(y) > 0.9) {
             x = 0;
         }
@@ -206,6 +215,12 @@ public class DriveTeleOp extends OpMode  {
              telemetry.addData("Upper US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
              telemetry.addData("Lower Reads LR", "%5.1f, %5.1f", drive.getLowerLeftUS(), drive.getLowerRightUS());
              telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
+         }
+
+         if (gamepad1.touchpad && gamepad2.touchpad) {
+             follower.setPose(new Pose(0,0,0));
+             gamepad1.rumble(200);
+             gamepad2.rumble(200);
          }
 
 //        if (currentGamepad1.cross && !previousGamepad1.cross) {
@@ -247,7 +262,8 @@ public class DriveTeleOp extends OpMode  {
         }
 
         if (!isHang) {
-            drive.setDrivetrainPowers(x, y, theta, modifier, true);
+            follower.setTeleOpMovementVectors(xMod, yMod, thetaMod, true);
+            //drive.setDrivetrainPowers(x, y, theta, modifier, follower.getPose().getHeading(), true);
         }
     }
 

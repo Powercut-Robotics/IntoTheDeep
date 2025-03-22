@@ -16,6 +16,7 @@ import com.pedropathing.localization.PoseUpdater;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.DashboardPoseTracker;
 import com.pedropathing.util.Drawing;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -37,6 +38,7 @@ import java.util.List;
  * @author Anyi Lin - 10158 Scott's Bots
  * @version 1.0, 5/6/2024
  */
+@Disabled
 @Config
 @TeleOp(group = "Teleop Test", name = "Localization Test")
 public class LocalizationTest extends OpMode {
@@ -57,6 +59,7 @@ public class LocalizationTest extends OpMode {
     public void init() {
         Constants.setConstants(FConstants.class, LConstants.class);
         poseUpdater = new PoseUpdater(hardwareMap);
+
 
         dashboardPoseTracker = new DashboardPoseTracker(poseUpdater);
 
@@ -99,9 +102,9 @@ public class LocalizationTest extends OpMode {
         poseUpdater.update();
         dashboardPoseTracker.update();
 
-        double y = -gamepad1.left_stick_y; // Remember, this is reversed!
-        double x = gamepad1.left_stick_x; // this is strafing
-        double rx = gamepad1.right_stick_x;
+        double y = gamepad1.left_stick_y; // Remember, this is reversed!
+        double x = -gamepad1.left_stick_x; // this is strafing
+        double rx = -gamepad1.right_stick_x;
 
         // Denominator is the largest motor power (absolute value) or 1
         // This ensures all the powers maintain the same ratio, but only when
