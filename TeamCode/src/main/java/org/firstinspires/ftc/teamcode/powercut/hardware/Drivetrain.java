@@ -43,7 +43,7 @@ public class Drivetrain {
     public static double wallAlignDistance = 15;
     public static PIDCoefficientsEx basketXYCoefficients = new PIDCoefficientsEx(0.05,0,0.005,0,100,0.25);
     public static PIDCoefficientsEx rungYCoefficients = new PIDCoefficientsEx(0.025,0,0.02,0,100,0);
-    public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(1.25,0,0,0,0.5,0);
+    public static PIDCoefficientsEx yawLockCoefficients = new PIDCoefficientsEx(-0.8,0,0,0,0.5,0);
     public static PIDCoefficientsEx subYCoefficients = new PIDCoefficientsEx(-0.025,0,0.02,0,100,0);
 
     private PIDEx XAlignPID = new PIDEx(basketXYCoefficients);
@@ -187,19 +187,25 @@ public class Drivetrain {
         if (Math.abs(x) > 0.05 || Math.abs(y) > 0.05 || Math.abs(theta) > 0.05) {
             isDriveAction = false;
         }
+
+        double normalYaw = yaw;
+        if (yaw > Math.PI) {
+            normalYaw = yaw - 2 * Math.PI;
+        }
+
         if (!isDriveAction) {
             //double yaw = getYaw();
 
             if ((Math.abs(theta) < yawLockThetaDeadzone)) {
                 if (!yawLockActive) {
-                    yawLock = yaw;
+                    yawLock = normalYaw;
                 }
 
                 if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
                     yawLockActive = true;
                 }
 
-                theta = yawController.calculate(yawLock, yaw);
+                theta = yawController.calculate(yawLock, normalYaw);
 
                 if (Math.abs(theta) < 0.05) {
                     theta = 0;
@@ -218,6 +224,11 @@ public class Drivetrain {
     }
 
     public void setDrivetrainPowers(double x, double y, double theta, double modifier, double yaw, boolean rotate) {
+        double normalYaw = yaw;
+        if (yaw > Math.PI) {
+            normalYaw = yaw - 2 * Math.PI;
+        }
+
         if (Math.abs(x) > 0.05 || Math.abs(y) > 0.05 || Math.abs(theta) > 0.05) {
             isDriveAction = false;
         }
@@ -227,14 +238,14 @@ public class Drivetrain {
 
             if ((Math.abs(theta) < yawLockThetaDeadzone)) {
                 if (!yawLockActive) {
-                    yawLock = yaw;
+                    yawLock = normalYaw;
                 }
 
                 if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
                     yawLockActive = true;
                 }
 
-                theta = yawController.calculate(yawLock, yaw);
+                theta = yawController.calculate(yawLock, normalYaw);
 
                 if (Math.abs(theta) < 0.05) {
                     theta = 0;
@@ -243,10 +254,10 @@ public class Drivetrain {
                 yawLockActive = false;
             }
 
-            yaw = rotate ? yaw : 0;
+            normalYaw = rotate ? normalYaw : 0;
 
-            double x_rotated = x * Math.cos(-yaw) - y * Math.sin(-yaw);
-            double y_rotated = x * Math.sin(-yaw) + y * Math.cos(-yaw);
+            double x_rotated = x * Math.cos(-normalYaw) - y * Math.sin(-normalYaw);
+            double y_rotated = x * Math.sin(-normalYaw) + y * Math.cos(-normalYaw);
 
             if ((Math.abs(x_rotated - lastX) > driveCacheAmount) || (Math.abs(y_rotated - lastY) > driveCacheAmount) || (Math.abs(theta - lastTheta) > driveCacheAmount)) {
                 rawXYThetaMod(x_rotated, y_rotated, theta, modifier);

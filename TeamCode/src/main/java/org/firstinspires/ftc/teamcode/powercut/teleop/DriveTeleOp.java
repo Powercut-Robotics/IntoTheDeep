@@ -133,7 +133,7 @@ public class DriveTeleOp extends OpMode  {
 
         telemetry.clear();
 
-        follower.startTeleopDrive();
+        //follower.startTeleopDrive();
 
         ancillaryActions.add(new SequentialAction(
                 ancillary.clearanceExtendo(),
@@ -200,9 +200,9 @@ public class DriveTeleOp extends OpMode  {
     }
 
     private void doDrive() {
-        double x = -gamepad1.left_stick_x;
-        double y = gamepad1.left_stick_y;
-        double theta = -gamepad1.right_stick_x * thetaMultiplier;
+        double x = gamepad1.left_stick_x;
+        double y = -gamepad1.left_stick_y;
+        double theta = gamepad1.right_stick_x * thetaMultiplier;
 
         if (Math.abs(y) < 0.1 && Math.abs(x) > 0.9) {
             y = 0;
@@ -213,10 +213,6 @@ public class DriveTeleOp extends OpMode  {
         } else {
             modifier = 1;
         }
-
-        double xMod = x * modifier;
-        double yMod = y * modifier;
-        double thetaMod  = theta * modifier;
 
          if (verbose) {
              telemetry.addData("Controls (X, Y Theta)", "%3.2f, %3.2f, %3.2f", x, y, theta);
@@ -265,17 +261,13 @@ public class DriveTeleOp extends OpMode  {
 //        }
 
 
-
         if (!isHang) {
-            follower.setTeleOpMovementVectors(xMod, yMod, thetaMod, true);
-            //drive.setDrivetrainPowers(x, y, theta, modifier, follower.getPose().getHeading(), true);
+            //follower.setTeleOpMovementVectors(xMod, yMod, thetaMod, true);
+            drive.setDrivetrainPowers(x, y, theta, modifier, follower.getPose().getHeading(), true);
         }
     }
 
     public void doAncillary() {
-
-
-        
         if (gamepad2.left_trigger > 0.2) {
             double power = -gamepad2.left_stick_y;
             telemetry.addData("lift", power);

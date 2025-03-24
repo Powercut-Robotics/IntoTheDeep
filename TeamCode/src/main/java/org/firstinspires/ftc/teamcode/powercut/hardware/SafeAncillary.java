@@ -56,7 +56,7 @@ public class SafeAncillary {
 
     public static double upperArmTravel = 0.5;
     public static double upperArmIntake = 0.95;
-    public static double upperArmTransfer = 0.05;
+    public static double upperArmTransfer = 0.06;
 
     public static double gripClosed = 0.71;
     public static double gripOpen = 0.49;
@@ -548,6 +548,7 @@ public class SafeAncillary {
 
                 first = false;
             }
+
             return upperLeftArm.isMoving();
         }
     }

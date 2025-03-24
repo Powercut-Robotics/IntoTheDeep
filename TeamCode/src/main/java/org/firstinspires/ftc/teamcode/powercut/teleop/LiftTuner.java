@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.powercut.teleop;
 
 import com.ThermalEquilibrium.homeostasis.Controllers.Feedback.PIDEx;
 import com.ThermalEquilibrium.homeostasis.Parameters.PIDCoefficientsEx;
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -29,7 +31,7 @@ public class LiftTuner extends OpMode {
 
     public static int pos = 0;
 
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0045, 0.00, 0.000, 500, 150, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.006, 0.00, 0.8, 0, 500, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
 
@@ -41,16 +43,20 @@ public class LiftTuner extends OpMode {
         lift = robot.getLift();
         light = robot.getLight();
 
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         telemetry.addLine("Initialised");
         telemetry.update();
     }
 
     @Override
     public void loop() {
+
+
         TelemetryPacket packet = new TelemetryPacket();
         if (lift.isLiftAvailable && lift.liftStop.getState()){
             telemetry.addLine("Lift Holding");
-            lift.setLiftPower(0.08);
+            //lift.setLiftPower(0.08);
         }
 
         telemetry.addData("lift available",lift.isLiftAvailable);

@@ -21,7 +21,7 @@ public class Lift {
 
     public DigitalChannel liftStop;
 
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0045,0.00,0.000, 500, 150, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0045, 0.00,0.000, 500, 150, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
     //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
