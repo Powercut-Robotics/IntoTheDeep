@@ -29,18 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/**
- * This is an example auto that showcases movement and control of two servos autonomously.
- * It is a 0+4 (Specimen + Sample) bucket auto. It scores a neutral preload and then pickups 3 samples from the ground and scores them before parking.
- * There are examples of different ways to build paths.
- * A path progression method has been created and can advance based on time, position, or other factors.
- *
- * @author Baron Henderson - 20077 The Indubitables
- * @version 2.0, 11/28/2024
- */
+
 
 @Autonomous(name = "4 Spec", preselectTeleOp = "DriveTeleOp", group = "Specimen")
-public class SpecAuto extends OpMode {
+public class FourSpecAuto extends OpMode {
 
     private Follower follower;
     private final Robot robot = new Robot();
@@ -91,7 +83,7 @@ public class SpecAuto extends OpMode {
     private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(14, 19, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(13.5, 19, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */

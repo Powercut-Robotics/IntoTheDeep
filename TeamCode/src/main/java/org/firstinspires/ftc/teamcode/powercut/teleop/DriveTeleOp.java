@@ -106,7 +106,8 @@ public class DriveTeleOp extends OpMode  {
 
         heading = Robot.heading;
 
-        Pose startPose = new Pose(0, 0, heading);
+        //Pose startPose = new Pose(0, 0, heading);
+        Pose startPose = Robot.pose.copy();
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
@@ -203,13 +204,19 @@ public class DriveTeleOp extends OpMode  {
         double y = gamepad1.left_stick_y;
         double theta = -gamepad1.right_stick_x * thetaMultiplier;
 
-        double xMod = -gamepad1.left_stick_x * modifier;
-        double yMod = gamepad1.left_stick_y * modifier;
-        double thetaMod  = -gamepad1.right_stick_x * thetaMultiplier * modifier;
-
-        if (Math.abs(x) < 0.1 && Math.abs(y) > 0.9) {
-            x = 0;
+        if (Math.abs(y) < 0.1 && Math.abs(x) > 0.9) {
+            y = 0;
         }
+
+        if (gamepad1.right_bumper) {
+            modifier = 0.25;
+        } else {
+            modifier = 1;
+        }
+
+        double xMod = x * modifier;
+        double yMod = y * modifier;
+        double thetaMod  = theta * modifier;
 
          if (verbose) {
              telemetry.addData("Controls (X, Y Theta)", "%3.2f, %3.2f, %3.2f", x, y, theta);
@@ -257,11 +264,7 @@ public class DriveTeleOp extends OpMode  {
 //            driveActions.clear();
 //        }
 
-        if (gamepad1.right_bumper) {
-            modifier = 0.25;
-        } else {
-            modifier = 1;
-        }
+
 
         if (!isHang) {
             follower.setTeleOpMovementVectors(xMod, yMod, thetaMod, true);

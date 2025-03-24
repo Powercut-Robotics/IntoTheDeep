@@ -10,7 +10,6 @@ import static com.pedropathing.follower.FollowerConstants.rightRearMotorDirectio
 import static com.pedropathing.follower.FollowerConstants.rightRearMotorName;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.localization.PoseUpdater;
@@ -48,7 +47,7 @@ import java.util.List;
  */
 
 @Disabled
-@Config
+//@Config
 @Autonomous(name = "Forward Zero Power Acceleration Tuner", group = "Automatic Tuners")
 public class ForwardZeroPowerAccelerationTuner extends OpMode {
     private ArrayList<Double> accelerations = new ArrayList<>();
