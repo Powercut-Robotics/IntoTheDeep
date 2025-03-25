@@ -183,7 +183,12 @@ public class DriveTeleOp extends OpMode  {
         follower.update();
         follower.drawOnDashBoard();
 
+<<<<<<< Updated upstream
         Robot.pose = follower.getPose();
+=======
+        follower.drawOnDashBoard();
+
+>>>>>>> Stashed changes
         Robot.heading = follower.getPose().getHeading();
 
         telemetry.addData("x", follower.getPose().getX());
