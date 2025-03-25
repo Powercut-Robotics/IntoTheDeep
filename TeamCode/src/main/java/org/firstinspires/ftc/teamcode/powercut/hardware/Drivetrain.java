@@ -60,7 +60,7 @@ public class Drivetrain {
     private static double yawLockThetaDeadzone = 0.02;
     private static double yawLockRadialDeadzone = 0.15;
     private double yawLock = 0;
-    private boolean yawLockActive;
+    private boolean yawLockActive = false;
 
     private double lastX = 0;
     private double lastY = 0;
