@@ -38,7 +38,7 @@ public class Lift {
 //    public static int liftBottomBasket = 1250;
     public static int liftTopRung = 1300;
     public static int liftTopRungMedian = 1250;
-    public static int liftTopRungHigher = 1350;
+    public static int liftTopRungHigher = 1300;
     public static int liftTopRungAttached = 700;
 //    public static int liftBottomRung = 1250;
 //    public static int liftBottomRungAttached = 1050;

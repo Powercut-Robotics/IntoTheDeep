@@ -196,23 +196,23 @@ public class Drivetrain {
         if (!isDriveAction) {
             //double yaw = getYaw();
 
-            if ((Math.abs(theta) < yawLockThetaDeadzone)) {
-                if (!yawLockActive) {
-                    yawLock = normalYaw;
-                }
-
-                if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
-                    yawLockActive = true;
-                }
-
-                theta = yawController.calculate(yawLock, normalYaw);
-
-                if (Math.abs(theta) < 0.05) {
-                    theta = 0;
-                }
-            } else {
-                yawLockActive = false;
-            }
+//            if ((Math.abs(theta) < yawLockThetaDeadzone)) {
+//                if (!yawLockActive) {
+//                    yawLock = normalYaw;
+//                }
+//
+//                if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
+//                    yawLockActive = true;
+//                }
+//
+//                theta = yawController.calculate(yawLock, normalYaw);
+//
+//                if (Math.abs(theta) < 0.05) {
+//                    theta = 0;
+//                }
+//            } else {
+//                yawLockActive = false;
+//            }
 
             if ((Math.abs(x - lastX) > driveCacheAmount) || (Math.abs(y - lastY) > driveCacheAmount) || (Math.abs(theta - lastTheta) > driveCacheAmount)) {
                 rawXYThetaMod(x, y, theta, modifier);
@@ -236,23 +236,23 @@ public class Drivetrain {
         if (!isDriveAction) {
             //double yaw = getYaw();
 
-            if ((Math.abs(theta) < yawLockThetaDeadzone)) {
-                if (!yawLockActive) {
-                    yawLock = normalYaw;
-                }
-
-                if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
-                    yawLockActive = true;
-                }
-
-                theta = yawController.calculate(yawLock, normalYaw);
-
-                if (Math.abs(theta) < 0.05) {
-                    theta = 0;
-                }
-            } else {
-                yawLockActive = false;
-            }
+//            if ((Math.abs(theta) < yawLockThetaDeadzone)) {
+//                if (!yawLockActive) {
+//                    yawLock = normalYaw;
+//                }
+//
+//                if (!yawLockActive && getRadialVelocity() < yawLockRadialDeadzone) {
+//                    yawLockActive = true;
+//                }
+//
+//                theta = yawController.calculate(yawLock, normalYaw);
+//
+//                if (Math.abs(theta) < 0.05) {
+//                    theta = 0;
+//                }
+//            } else {
+//                yawLockActive = false;
+//            }
 
             normalYaw = rotate ? normalYaw : 0;
 

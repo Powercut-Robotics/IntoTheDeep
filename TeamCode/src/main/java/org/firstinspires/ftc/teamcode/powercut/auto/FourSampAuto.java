@@ -39,8 +39,8 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "4 Samp", preselectTeleOp = "DriveTeleOp", group = "Sample")
-public class NewSampAuto extends OpMode {
+@Autonomous(name = "4 Basket", preselectTeleOp = "DriveTeleOp", group = "Sample")
+public class FourSampAuto extends OpMode {
 
     private Follower follower;
     private final Robot robot = new Robot();
@@ -70,13 +70,13 @@ public class NewSampAuto extends OpMode {
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
     private final Pose scorePose = new Pose(13.5, 129.5, Math.toRadians(-45));
 
-    private final Pose intake1Pose1 = new Pose(24,122, Math.toRadians(0));
-    private final Pose intake1Pose2 = new Pose(28,122, Math.toRadians(0));
+    private final Pose intake1Pose1 = new Pose(20,121, Math.toRadians(0));
+    private final Pose intake1Pose2 = new Pose(28,121, Math.toRadians(0));
 
-    private final Pose intake2Pose1 = new Pose(22,130, Math.toRadians(0));
-    private final Pose intake2Pose2 = new Pose(28,130, Math.toRadians(0));
-    private final Pose intake3Pose1 = new Pose(22,134, Math.toRadians(25));
-    private final Pose intake3Pose2 = new Pose(28,136, Math.toRadians(0));
+    private final Pose intake2Pose1 = new Pose(20,129, Math.toRadians(0));
+    private final Pose intake2Pose2 = new Pose(28,129, Math.toRadians(0));
+    private final Pose intake3Pose1 = new Pose(20,128, Math.toRadians(20));
+    private final Pose intake3Pose2 = new Pose(28,130, Math.toRadians(20));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Point parkControlPoint = new Point(60, 123);

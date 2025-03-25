@@ -65,14 +65,14 @@ public class ObservationZoneAuto extends OpMode {
     /** Start Pose of our robot */
     private final Pose startPose = new Pose(7, 50, Math.toRadians(0));
 
-    private final Pose align1Control1 = new Pose(45, 20.5, Math.toRadians(0));
-    private final Pose align1Control2 = new Pose(58.5, 51, Math.toRadians(0));
+    private final Pose align1Control1 = new Pose(45, 14, Math.toRadians(0));
+    private final Pose align1Control2 = new Pose(58.5, 46, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
     private final Pose align1Pose = new Pose(59, 23, Math.toRadians(0));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose push1Pose = new Pose(13, 23, Math.toRadians(-45));
+    private final Pose push1Pose = new Pose(13, 23, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose align2Control = new Pose(63, 33, Math.toRadians(0));
@@ -85,9 +85,9 @@ public class ObservationZoneAuto extends OpMode {
     private final Pose align3Control = new Pose(63, 18, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose align3Pose = new Pose(59, 7.5, Math.toRadians(0));
+    private final Pose align3Pose = new Pose(59, 5, Math.toRadians(0));
 
-    private final Pose push3Pose = new Pose(13, 7.5, Math.toRadians(0));
+    private final Pose push3Pose = new Pose(13, 4.5, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
 

@@ -182,7 +182,7 @@ public class DriveTeleOp extends OpMode  {
 
         follower.update();
         follower.drawOnDashBoard();
-        
+
         Robot.pose = follower.getPose();
         Robot.heading = follower.getPose().getHeading();
 
@@ -573,19 +573,19 @@ public class DriveTeleOp extends OpMode  {
         } else if (sampleColour == sampleColour.BLUE) {
             colour = "Blue";
             light.blue();
-        } else if (gametimer.seconds() > 120 && gametimer.seconds() < 122) {
+        } else if (gametimer.seconds() > 90 && gametimer.seconds() < 92) {
             light.redStrobe();
-        } else if (gametimer.seconds() > 122) {
+        } else if (gametimer.seconds() > 92) {
             light.redLarson();
         } else {
             light.greyLarson();
         }
 
-        if (gametimer.seconds() > 120 && gametimer.seconds() < 120.2) {
+        if (gametimer.seconds() > 90 && gametimer.seconds() < 90.2) {
             gamepad1.setLedColor(1.0,0.0,0.0, 30000);
             gamepad2.setLedColor(1.0,0.0,0.0, 30000);
-            gamepad1.rumble(1500);
-            gamepad2.rumble(1500);
+            gamepad1.rumble(2000);
+            gamepad2.rumble(2000);
         }
 
         telemetry.addData("Sample colour", colour);

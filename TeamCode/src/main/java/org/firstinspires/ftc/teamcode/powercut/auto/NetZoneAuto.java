@@ -78,8 +78,8 @@ public class NetZoneAuto extends OpMode {
     private final Pose align2Control = new Pose(60, 108, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose align2Pose = new Pose(58, 132, Math.toRadians(0));
-    private final Pose push2Pose = new Pose(12, 132, Math.toRadians(0));
+    private final Pose align2Pose = new Pose(58, 130, Math.toRadians(0));
+    private final Pose push2Pose = new Pose(12, 130, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose align3Control = new Pose(55, 129, Math.toRadians(0));

@@ -16,7 +16,6 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -40,10 +39,12 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Disabled
-@Autonomous(name = "4 Samp", preselectTeleOp = "DriveTeleOp", group = "Specimen")
-public class OldSampAuto extends OpMode {
+@Autonomous(name = "3 Basket", preselectTeleOp = "DriveTeleOp", group = "Sample")
+public class ThreeBasketAuto extends OpMode {
 
+    public static double speedModifer = 0.8;
+
+    public static double inSpeedModifer = 0.7;
     private Follower follower;
     private final Robot robot = new Robot();
     private SafeAncillary ancillary;
@@ -72,13 +73,13 @@ public class OldSampAuto extends OpMode {
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
     private final Pose scorePose = new Pose(13.5, 129.5, Math.toRadians(-45));
 
-    private final Pose intake1Pose1 = new Pose(24,122, Math.toRadians(0));
-    private final Pose intake1Pose2 = new Pose(28,122, Math.toRadians(0));
+    private final Pose intake1Pose1 = new Pose(20,121, Math.toRadians(0));
+    private final Pose intake1Pose2 = new Pose(28,121, Math.toRadians(0));
 
-    private final Pose intake2Pose1 = new Pose(22,130, Math.toRadians(0));
-    private final Pose intake2Pose2 = new Pose(28,130, Math.toRadians(0));
-    private final Pose intake3Pose1 = new Pose(22,134, Math.toRadians(25));
-    private final Pose intake3Pose2 = new Pose(28,136, Math.toRadians(0));
+    private final Pose intake2Pose1 = new Pose(20,129, Math.toRadians(0));
+    private final Pose intake2Pose2 = new Pose(28,129, Math.toRadians(0));
+//    private final Pose intake3Pose1 = new Pose(20,128, Math.toRadians(20));
+//    private final Pose intake3Pose2 = new Pose(28,130, Math.toRadians(20));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Point parkControlPoint = new Point(60, 123);
@@ -157,21 +158,21 @@ public class OldSampAuto extends OpMode {
                 .build();
 
         /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        grabPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(scorePose), new Point(intake3Pose1)))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), intake3Pose1.getHeading())
-                .build();
-
-        pickupIntake3  = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intake3Pose1), new Point(intake3Pose2)))
-                .setLinearHeadingInterpolation(intake3Pose1.getHeading(), intake3Pose2.getHeading())
-                .build();
-
-        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(intake3Pose2), new Point(scorePose)))
-                .setLinearHeadingInterpolation(intake3Pose2.getHeading(), scorePose.getHeading())
-                .build();
+//        grabPickup3 = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(scorePose), new Point(intake3Pose1)))
+//                .setLinearHeadingInterpolation(scorePose.getHeading(), intake3Pose1.getHeading())
+//                .build();
+//
+//        pickupIntake3  = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(intake3Pose1), new Point(intake3Pose2)))
+//                .setLinearHeadingInterpolation(intake3Pose1.getHeading(), intake3Pose2.getHeading())
+//                .build();
+//
+//        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+//        scorePickup3 = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(intake3Pose2), new Point(scorePose)))
+//                .setLinearHeadingInterpolation(intake3Pose2.getHeading(), scorePose.getHeading())
+//                .build();
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
         park = follower.pathBuilder()
@@ -189,6 +190,8 @@ public class OldSampAuto extends OpMode {
                 readyToContinue = false;
                 actionComplete = false;
 
+                follower.followPath(scorePreload, speedModifer, true);
+
                 runningActions.add(new SequentialAction(
                         new ParallelAction(
                                 ancillary.closeGrip(),
@@ -197,7 +200,8 @@ public class OldSampAuto extends OpMode {
                         new InstantAction(() -> readyToContinue = true),
                         new InstantAction(() -> actionComplete = true)
                 ));
-                follower.followPath(scorePreload);
+
+
                 setPathState(1);
                 break;
             case 1:
@@ -220,29 +224,25 @@ public class OldSampAuto extends OpMode {
                             ancillary.depositSampArm(),
                             new SleepAction(0.2),
                             ancillary.openGrip(),
-                            new SleepAction(0.5),
+                            new SleepAction(0.3),
 
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> lift.kill()),
-                            new InstantAction(() -> follower.followPath(grabPickup1, true)),
+                            new InstantAction(() -> follower.followPath(grabPickup1, speedModifer, true)),
                             new InstantAction(() -> setPathState(2)),
+
                             new ParallelAction(
                                     new SequentialAction(
                                             new SleepAction(1),
-                                    lift.liftRetract()
-                                            ),
+                                            lift.liftRetract()
+                                    ),
                                     ancillary.outtakeTransferArm(),
-                                    ancillary.intakeLowerArmSafe(),
+                                    ancillary.intakeLowerArm(),
                                     ancillary.spinUpAction()
                             ),
 
                             new InstantAction(() -> actionComplete = true)
                     ));
-
-//                    if (readyToContinue) {
-//                        follower.followPath(grabPickup1, true);
-//                        setPathState(2);
-//                    }
                 }
                 break;
             case 2:
@@ -254,40 +254,20 @@ public class OldSampAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
-                            new ParallelAction(
-                                    ancillary.intakeLowerArm(),
-                                    ancillary.intakeExtendo()
-                            ),
+                                new ParallelAction(
+                                        ancillary.intakeLowerArm(),
+                                        ancillary.intakeExtendo()
+                                ),
                                 new ParallelAction(
                                         ancillary.intakeAction(),
-                                        new InstantAction(() -> follower.followPath(pickupIntake1, 0.5, true))
+                                        new InstantAction(() -> follower.followPath(pickupIntake1, inSpeedModifer, true))
                                 ),
 
                                 new InstantAction(() -> readyToContinue = true),
-                                new InstantAction(() -> follower.followPath(scorePickup1, true)),
-                                new InstantAction(() -> setPathState(3)),
-                                new ParallelAction(
-                                        ancillary.outtakeTransferArm(),
-                                        ancillary.transferExtendo(),
-                                        ancillary.intakeTransferArm()
-                                ),
-                                new SleepAction(0.5),
-                                ancillary.transferAction(),
-                                new SleepAction(0.1),
-                                ancillary.closeGrip(),
-                                new SleepAction(0.5),
-                                ancillary.clearanceExtendo(),
-                                lift.liftTopBasket(),
-                                ancillary.depositSampArm(),
-                                new InstantAction(() -> actionComplete = true)
+                                new InstantAction(() -> actionComplete = true),
+                                new InstantAction(() -> setPathState(3))
                             )
                     );
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                    if (readyToContinue) {
-//                        follower.followPath(scorePickup1, true);
-//                        setPathState(3);
-//                    }
                 }
                 break;
             case 3:
@@ -297,108 +277,82 @@ public class OldSampAuto extends OpMode {
                     /* Score Sample */
                     readyToContinue = false;
                     actionComplete = false;
+
+                    follower.followPath(scorePickup1, speedModifer, true);
+                    setPathState(4);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.5),
-                            ancillary.openGrip(),
-                            new SleepAction(0.5),
+                            new ParallelAction(
+                                    ancillary.outtakeTransferArm(),
+                                    ancillary.transferExtendo(),
+                                    ancillary.intakeTransferArm()
+                            ),
+                            new SleepAction(0.2),
+                            ancillary.transferAction(),
+                            new SleepAction(0.1),
+                            ancillary.closeGrip(),
+                            new SleepAction(0.1),
+                            ancillary.clearanceExtendo(),
+                            lift.liftTopBasket(),
+                            ancillary.depositSampArm(),
+
                             new InstantAction(() -> readyToContinue = true),
-                            new InstantAction(() -> follower.followPath(grabPickup2, true)),
-                            new InstantAction(() -> setPathState(4)),
+                            new InstantAction(() -> actionComplete = true),
+                            new InstantAction(() -> setPathState(4))
+                    ));
+
+                }
+                break;
+            case 4:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                if(!follower.isBusy() && actionComplete) {
+                    lift.isLiftAvailable = true;
+                    /* Score Sample */
+                    readyToContinue = false;
+                    actionComplete = false;
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                    runningActions.add(new SequentialAction(
+                            new SleepAction(0.2),
+                            ancillary.openGrip(),
+                            new SleepAction(0.3),
+
+                            new InstantAction(() -> readyToContinue = true),
+                            new InstantAction(() -> follower.followPath(grabPickup2, speedModifer, true)),
+                            new InstantAction(() -> setPathState(5)),
+
                             new ParallelAction(
                                     new SequentialAction(
                                             new SleepAction(1),
                                         lift.liftRetract()
                                     ),
                                     ancillary.outtakeTransferArm(),
-                                    ancillary.intakeLowerArmSafe(),
+                                    ancillary.intakeLowerArm(),
                                     ancillary.spinUpAction()
                             ),
                             new InstantAction(() -> actionComplete = true)
                     ));
-
-//                    if (readyToContinue) {
-//                        /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                        follower.followPath(grabPickup2, true);
-//                        setPathState(4);
-//                    }
                 }
                 break;
-            case 4:
+            case 5:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
-                if(!follower.isBusy() && actionComplete) {
+                if(!follower.isBusy() && readyToContinue) {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
                     actionComplete = false;
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
-                                    ancillary.intakeLowerArm(),
-                                    ancillary.intakeExtendo(),
-                                    new ParallelAction(
-                                    ancillary.intakeAction(),
-                            new SequentialAction(
-                                    new InstantAction(() -> follower.followPath(pickupIntake2)),
-                                    new SleepAction(1)
-                            )),
-                                    new InstantAction(() -> readyToContinue = true),
-                                    new InstantAction(() -> follower.followPath(scorePickup2, true)),
-                                    new InstantAction(() -> setPathState(5)),
+                            ancillary.intakeLowerArm(),
+                            ancillary.intakeExtendo(),
                             new ParallelAction(
-                                    ancillary.outtakeTransferArm(),
-                                    ancillary.transferExtendo(),
-                                    ancillary.intakeTransferArm()
+                                ancillary.intakeAction(),
+                                new InstantAction(() -> follower.followPath(pickupIntake2, inSpeedModifer, true))
                             ),
-                            new SleepAction(0.5),
-                                    ancillary.transferAction(),
-                                    new SleepAction(0.1),
-                                    ancillary.closeGrip(),
-                                    new SleepAction(0.5),
-                                    ancillary.clearanceExtendo(),
-                                    lift.liftTopBasket(),
-                                    ancillary.depositSampArm(),
-                                    new InstantAction(() -> actionComplete = true)
-                            )
-                    );
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                    if (readyToContinue) {
-//                        follower.followPath(scorePickup2, true);
-//                        setPathState(5);
-//                    }
-                }
-                break;
-            case 5:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
-                if(!follower.isBusy() && actionComplete) {
-                    lift.isLiftAvailable = true;
-                    readyToContinue = false;
-                    actionComplete = false;
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    runningActions.add(new SequentialAction(
-                            new SleepAction(0.5),
-                            ancillary.openGrip(),
-                            new SleepAction(0.5),
                             new InstantAction(() -> readyToContinue = true),
-                            new InstantAction(() -> follower.followPath(grabPickup3, true)),
-                            new InstantAction(() -> setPathState(6)),
-                            new ParallelAction(
-                                    new SequentialAction(
-                                            new SleepAction(1),
-                                            lift.liftRetract()
-                                    ),
-                                    ancillary.outtakeTransferArm(),
-                                    ancillary.intakeLowerArmSafe(),
-                                    ancillary.spinUpAction()
-                            ),
-                            new InstantAction(() -> actionComplete = true)
+                            new InstantAction(() -> actionComplete = true),
+                            new InstantAction(() -> setPathState(6))
                     ));
 
-//                    if (readyToContinue) {
-//                        /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-//                        follower.followPath(grabPickup2, true);
-//                        setPathState(6);
-//                    }
                 }
                 break;
             case 6:
@@ -407,57 +361,40 @@ public class OldSampAuto extends OpMode {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
                     actionComplete = false;
-                    /* Score Sample */
 
+                    follower.followPath(scorePickup2);
+                    setPathState(7);
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                                    ancillary.intakeLowerArm(),
-                                    ancillary.intakeExtendo(),
-                                    new ParallelAction(
-                                    ancillary.intakeAction(),
-                                    new SequentialAction(
-                                            new InstantAction(() -> follower.followPath(pickupIntake1)),
-                                            new SleepAction(1)
-                                    )),
-                                    new InstantAction(() -> readyToContinue = true),
-                                    new InstantAction(() -> follower.followPath(scorePickup3, true)),
-                                    new InstantAction(() -> setPathState(7)),
                             new ParallelAction(
                                     ancillary.outtakeTransferArm(),
                                     ancillary.transferExtendo(),
                                     ancillary.intakeTransferArm()
                             ),
-                            new SleepAction(0.5),
-                                    ancillary.transferAction(),
-                                    new SleepAction(0.1),
-                                    ancillary.closeGrip(),
-                                    new SleepAction(0.5),
-                                    ancillary.clearanceExtendo(),
-                                    lift.liftTopBasket(),
-                                    ancillary.depositSampArm(),
-                                    new InstantAction(() -> actionComplete = true)
-                            )
-                    );
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                    if (readyToContinue) {
-//                    follower.followPath(scorePickup3, true);
-//                    setPathState(7);
-//                    }
+                            new SleepAction(0.2),
+                            ancillary.transferAction(),
+                            new SleepAction(0.1),
+                            ancillary.closeGrip(),
+                            new SleepAction(0.1),
+                            ancillary.clearanceExtendo(),
+                            lift.liftTopBasket(),
+                            ancillary.depositSampArm(),
+                            new InstantAction(() -> readyToContinue = true),
+                            new InstantAction(() -> actionComplete = true),
+                            new InstantAction(() -> setPathState(7))
+                    ));
                 }
                 break;
             case 7:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() && actionComplete) {
                     lift.isLiftAvailable = true;
-                    /* Score Sample */
-
                     readyToContinue = false;
                     actionComplete = false;
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.5),
+                            new SleepAction(0.2),
                             ancillary.openGrip(),
-                            new SleepAction(0.5),
+                            new SleepAction(0.3),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(park, true)),
                             new InstantAction(() -> setPathState(8)),
@@ -466,21 +403,15 @@ public class OldSampAuto extends OpMode {
                                             new SleepAction(1),
                                             lift.liftLevel1()
                                     ),
-                                    ancillary.clearanceExtendo(),
                                     ancillary.outtakeTransferArm(),
                                     ancillary.intakeTravelArm(),
-                                    ancillary.openGrip()
+                                    ancillary.clearanceExtendo()
                             ),
                             new InstantAction(() -> actionComplete = true)
                     ));
-
-                    if (readyToContinue) {
-                        follower.followPath(park, true);
-
-                        setPathState(8);
-                    }
                 }
                 break;
+
             case 8:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
@@ -537,6 +468,8 @@ public class OldSampAuto extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+
+        follower.drawOnDashBoard();
 
         Robot.pose = follower.getPose();
         Robot.heading = follower.getPose().getHeading();

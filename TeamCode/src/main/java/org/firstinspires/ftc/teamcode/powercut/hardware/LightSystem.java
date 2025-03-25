@@ -58,6 +58,8 @@ public class LightSystem {
         driver.setPattern(pattern);
     }
 
+
+
     public void setPattern(RevBlinkinLedDriver.BlinkinPattern pattern) {
         this.pattern = pattern;
         driver.setPattern(pattern);

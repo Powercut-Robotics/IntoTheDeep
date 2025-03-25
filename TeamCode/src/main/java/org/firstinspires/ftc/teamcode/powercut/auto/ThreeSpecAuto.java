@@ -73,8 +73,8 @@ public class ThreeSpecAuto extends OpMode {
     private final Pose score1Control = new Pose(15,48);
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose score1Pose1 = new Pose(34, 58, Math.toRadians(180));
-    private final Pose score1Pose2 = new Pose(35, 58, Math.toRadians(180));
+    private final Pose score1Pose1 = new Pose(34, 62, Math.toRadians(180));
+    private final Pose score1Pose2 = new Pose(36, 62, Math.toRadians(180));
 
     private final Pose push1Pose = new Pose(58,21, Math.toRadians(0));
     private final Pose push1Control1 = new Pose(27,12);
@@ -82,20 +82,21 @@ public class ThreeSpecAuto extends OpMode {
 
     private final Pose score2Control = new Pose(15,48);
     private final Pose score2Pose1 = new Pose(34, 59, Math.toRadians(180));
-    private final Pose score2Pose2 = new Pose(35, 59, Math.toRadians(180));
-    private final Pose push2Pose = new Pose(58,9,Math.toRadians(0));
-    private final Pose push2Control1 = new Pose(22,18);
-    private final Pose push2Control2 = new Pose(61,33);
+    private final Pose score2Pose2 = new Pose(36, 59, Math.toRadians(180));
+
+    private final Pose pickup2Control = new Pose(35,16);
+
+    private final Pose pickup2Pose1 = new Pose(15, 19, Math.toRadians(0));
 
     private final Pose score3Control = new Pose(15,48);
-    private final Pose score3Pose1 = new Pose(34, 60, Math.toRadians(180));
-    private final Pose score3Pose2 = new Pose(35, 60, Math.toRadians(180));
-    private final Pose score4Control = new Pose(15,48);
-    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
-    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
+    private final Pose score3Pose1 = new Pose(34, 56, Math.toRadians(180));
+    private final Pose score3Pose2 = new Pose(36, 56, Math.toRadians(180));
+//    private final Pose score4Control = new Pose(15,48);
+//    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
+//    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(13.5, 19, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(12.5, 19, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */
@@ -165,10 +166,10 @@ public class ThreeSpecAuto extends OpMode {
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(score2Pose2), new Point(push2Control1), new Point(push2Control2), new Point(push2Pose)))
-                .setLinearHeadingInterpolation(score2Pose2.getHeading(), push2Pose.getHeading())
-                .addPath(new BezierLine(new Point(push2Pose), new Point(pickupPose)))
-                .setLinearHeadingInterpolation(push2Pose.getHeading(), pickupPose.getHeading())
+                .addPath(new BezierCurve(new Point(score2Pose2), new Point(pickup2Control), new Point(pickup2Pose1)))
+                .setLinearHeadingInterpolation(score2Pose2.getHeading(), pickup2Pose1.getHeading())
+                .addPath(new BezierLine(new Point(pickup2Pose1), new Point(pickupPose)))
+                .setLinearHeadingInterpolation(pickup2Pose1.getHeading(), pickupPose.getHeading())
                 .build();
 
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -202,7 +203,7 @@ public class ThreeSpecAuto extends OpMode {
                 runningActions.add(new SequentialAction(
                         new ParallelAction(
                                 ancillary.closeGrip(),
-                                lift.liftTopRungMedian(),
+                                lift.liftTopRungHigher(),
                                 ancillary.depositSpecArm()
                         ),
                         new InstantAction(() -> readyToContinue = true),
@@ -259,8 +260,9 @@ public class ThreeSpecAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
-                            new SleepAction(1),
+                                new SleepAction(1),
                                 ancillary.closeGrip(),
+                                new SleepAction(0.5),
                                 ancillary.depositSpecArm(),
                                 new InstantAction(() -> readyToContinue = true),
                                 new InstantAction(() -> follower.followPath(scorePickup1, speedModifer, true)),
@@ -316,13 +318,14 @@ public class ThreeSpecAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
-                            new SleepAction(1),
+                                    new SleepAction(1),
                                     ancillary.closeGrip(),
+                                    new SleepAction(0.5),
                                     ancillary.depositSpecArm(),
                                     new InstantAction(() -> readyToContinue = true),
                                     new InstantAction(() -> follower.followPath(scorePickup2, speedModifer, true)),
                                     new InstantAction(() -> setPathState(5)),
-                            lift.liftTopRungMedian(),
+                                    lift.liftTopRungMedian(),
                                     new InstantAction(() -> actionComplete = true)
                             )
                     );

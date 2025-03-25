@@ -16,6 +16,7 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -31,6 +32,7 @@ import java.util.List;
 
 
 
+@Disabled
 @Autonomous(name = "4 Spec", preselectTeleOp = "DriveTeleOp", group = "Specimen")
 public class FourSpecAuto extends OpMode {
 
