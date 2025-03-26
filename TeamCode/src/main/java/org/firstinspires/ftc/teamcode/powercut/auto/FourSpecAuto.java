@@ -467,6 +467,14 @@ public class FourSpecAuto extends OpMode {
             lift.holdPosition();
         }
 
+        if (follower.isRobotStuck()) {
+            light.redStrobe();
+        } else if (follower.isBusy()) {
+            light.greenWaves();
+        } else {
+            light.partyWaves();
+        }
+
         // These loop the movements of the robot
         follower.update();
         autonomousPathUpdate();

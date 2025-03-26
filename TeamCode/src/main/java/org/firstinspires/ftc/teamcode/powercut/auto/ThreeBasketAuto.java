@@ -453,9 +453,9 @@ public class ThreeBasketAuto extends OpMode {
         if (follower.isRobotStuck()) {
             light.redStrobe();
         } else if (follower.isBusy()) {
-            light.partyWaves();
+            light.greenWaves();
         } else {
-            light.greyLarson();
+            light.partyWaves();
         }
 
         // These loop the movements of the robot
