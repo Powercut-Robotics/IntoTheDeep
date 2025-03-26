@@ -39,6 +39,8 @@ import java.util.List;
 @Autonomous(name = "3 Observation Zone Pushes", preselectTeleOp = "DriveTeleOp", group = "Specimen")
 public class ObservationZoneAuto extends OpMode {
 
+    public static double speedModifer = 0.7;
+
     private Follower follower;
     private final Robot robot = new Robot();
     private SafeAncillary ancillary;
@@ -69,10 +71,10 @@ public class ObservationZoneAuto extends OpMode {
     private final Pose align1Control2 = new Pose(58.5, 46, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose align1Pose = new Pose(59, 23, Math.toRadians(0));
+    private final Pose align1Pose = new Pose(59, 21, Math.toRadians(0));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose push1Pose = new Pose(13, 23, Math.toRadians(0));
+    private final Pose push1Pose = new Pose(13, 21, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose align2Control = new Pose(63, 33, Math.toRadians(0));
@@ -85,9 +87,9 @@ public class ObservationZoneAuto extends OpMode {
     private final Pose align3Control = new Pose(63, 18, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose align3Pose = new Pose(59, 5, Math.toRadians(0));
+    private final Pose align3Pose = new Pose(59,2.5, Math.toRadians(0));
 
-    private final Pose push3Pose = new Pose(13, 4.5, Math.toRadians(0));
+    private final Pose push3Pose = new Pose(13, 2.5, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
 
@@ -186,7 +188,7 @@ public class ObservationZoneAuto extends OpMode {
                     /* Score Preload */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(push1,true);
+                    follower.followPath(push1, speedModifer, true);
                     setPathState(2);
                 }
                 break;
@@ -196,7 +198,7 @@ public class ObservationZoneAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(align2,true);
+                    follower.followPath(align2, speedModifer, true);
                     setPathState(3);
                 }
                 break;
@@ -206,7 +208,7 @@ public class ObservationZoneAuto extends OpMode {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(push2,true);
+                    follower.followPath(push2, speedModifer, true);
                     setPathState(4);
                 }
                 break;
@@ -216,7 +218,7 @@ public class ObservationZoneAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(align3,true);
+                    follower.followPath(align3, speedModifer, true);
                     setPathState(5);
                 }
                 break;
@@ -226,7 +228,7 @@ public class ObservationZoneAuto extends OpMode {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(push3,true);
+                    follower.followPath(push3, speedModifer, true);
                     setPathState(6);
                 }
                 break;

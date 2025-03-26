@@ -39,8 +39,8 @@ public class SafeAncillary {
     public static double intakeArmTransfer = 0.93;
     public static double intakeArmExpel = 0.35;
 
-    public static double intakeArmIntakeSafe = 0.30;
-    public static double intakeArmIntake = 0.27;
+    public static double intakeArmIntakeSafe = 0.28;
+    public static double intakeArmIntake = 0.265;
 
     public static double extendoIntake = 0.28;
     public static double extendoHalf = 0.39;
@@ -48,17 +48,17 @@ public class SafeAncillary {
     public static double extendoSpecClearance = 0.4;
     public static double extendoClearance = 0.48;
     public static double extendoTravel = 0.5;
-    public static double extendoTransfer = 0.535;
+    public static double extendoTransfer = 0.545;
 
 
     public static double upperArmSampDeposit = 0.9;
     public static double upperArmSpecDeposit = 0.94;
 
-    public static double upperArmTravel = 0.5;
-    public static double upperArmIntake = 0.96;
+    public static double upperArmTravel = 0.4;
+    public static double upperArmIntake = 0.97;
     public static double upperArmTransfer = 0.06;
 
-    public static double gripClosed = 0.71;
+    public static double gripClosed = 0.715;
     public static double gripOpen = 0.49;
 
     public static double transferTime = 650;
@@ -609,6 +609,20 @@ public class SafeAncillary {
 
     public Action spinUpAction() {
         return new SpinUpAction();
+    }
+
+    public class HoldAction implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            intakeWheels.setPosition(0.3);
+            return false;
+
+        }
+    }
+
+    public Action holdAction() {
+        return new HoldAction();
     }
 
     public class SpinOutAction implements Action {

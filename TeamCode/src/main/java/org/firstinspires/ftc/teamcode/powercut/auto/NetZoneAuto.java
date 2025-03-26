@@ -39,6 +39,8 @@ import java.util.List;
 @Autonomous(name = "3 Net Zone Pushes", preselectTeleOp = "DriveTeleOp", group = "Sample")
 public class NetZoneAuto extends OpMode {
 
+    public static double speedModifer = 0.75;
+
     private Follower follower;
     private final Robot robot = new Robot();
     private SafeAncillary ancillary;
@@ -72,29 +74,29 @@ public class NetZoneAuto extends OpMode {
 
     /** Lowest (First) Sample from the Spike Mark */
     private final Pose push1ControlPose = new Pose(33, 119, Math.toRadians(0));
-    private final Pose push1Pose = new Pose(10, 133, Math.toRadians(-45));
+    private final Pose push1Pose = new Pose(15, 128, Math.toRadians(-45));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose align2Control = new Pose(60, 108, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose align2Pose = new Pose(58, 130, Math.toRadians(0));
-    private final Pose push2Pose = new Pose(12, 130, Math.toRadians(0));
+    private final Pose align2Pose = new Pose(58, 128, Math.toRadians(0));
+    private final Pose push2Pose = new Pose(12, 128, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
     private final Pose align3Control = new Pose(55, 129, Math.toRadians(0));
 
     /** Highest (Third) Sample from the Spike Mark */
-    private final Pose align3Pose = new Pose(57, 136.5, Math.toRadians(0));
+    private final Pose align3Pose = new Pose(57, 134, Math.toRadians(0));
 
-    private final Pose push3Pose = new Pose(17, 136.5, Math.toRadians(0));
+    private final Pose push3Pose = new Pose(17, 134, Math.toRadians(0));
 
     /** Middle (Second) Sample from the Spike Mark */
 
     private final Pose parkControlPose = new Pose(60, 123, Math.toRadians(90));
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(61, 94.5, Math.toRadians(90));
+    private final Pose parkPose = new Pose(61, 92, Math.toRadians(90));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
@@ -192,7 +194,7 @@ public class NetZoneAuto extends OpMode {
                     /* Score Preload */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(push1,true);
+                    follower.followPath(push1, speedModifer, true);
                     setPathState(2);
                 }
                 break;
@@ -202,7 +204,7 @@ public class NetZoneAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(align2,true);
+                    follower.followPath(align2, speedModifer, true);
                     setPathState(3);
                 }
                 break;
@@ -212,7 +214,7 @@ public class NetZoneAuto extends OpMode {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(push2,true);
+                    follower.followPath(push2, speedModifer, true);
                     setPathState(4);
                 }
                 break;
@@ -222,7 +224,7 @@ public class NetZoneAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(align3,true);
+                    follower.followPath(align3, speedModifer, true);
                     setPathState(5);
                 }
                 break;
@@ -232,7 +234,7 @@ public class NetZoneAuto extends OpMode {
                     /* Score Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(push3,true);
+                    follower.followPath(push3, speedModifer, true);
                     setPathState(6);
                 }
                 break;
@@ -243,7 +245,7 @@ public class NetZoneAuto extends OpMode {
                     /* Grab Sample */
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(park, true);
+                    follower.followPath(park, speedModifer, true);
                     setPathState(7);
                 }
                 break;

@@ -35,7 +35,7 @@ public class FConstants {
         FollowerConstants.zeroPowerAccelerationMultiplier = 3;
         FollowerConstants.centripetalScaling = 0.0004;
 
-        FollowerConstants.pathEndTimeoutConstraint = 100;
+        FollowerConstants.pathEndTimeoutConstraint = 150;
         FollowerConstants.pathEndTValueConstraint = 0.995;
         FollowerConstants.pathEndVelocityConstraint = 0.1;
         FollowerConstants.pathEndTranslationalConstraint = 0.1;

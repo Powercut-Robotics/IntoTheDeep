@@ -42,9 +42,9 @@ import java.util.List;
 @Autonomous(name = "3 Basket", preselectTeleOp = "DriveTeleOp", group = "Sample")
 public class ThreeBasketAuto extends OpMode {
 
-    public static double speedModifer = 0.8;
+    public static double speedModifer = 0.75;
 
-    public static double inSpeedModifer = 0.7;
+    public static double inSpeedModifer = 0.5;
     private Follower follower;
     private final Robot robot = new Robot();
     private SafeAncillary ancillary;
@@ -71,19 +71,19 @@ public class ThreeBasketAuto extends OpMode {
     private final Pose startPose = new Pose(7, 112, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(13.5, 129.5, Math.toRadians(-45));
+    private final Pose scorePose = new Pose(14.5, 128.5, Math.toRadians(-45));
 
-    private final Pose intake1Pose1 = new Pose(20,121, Math.toRadians(0));
-    private final Pose intake1Pose2 = new Pose(28,121, Math.toRadians(0));
+    private final Pose intake1Pose1 = new Pose(18,121, Math.toRadians(0));
+    private final Pose intake1Pose2 = new Pose(30,121, Math.toRadians(0));
 
-    private final Pose intake2Pose1 = new Pose(20,129, Math.toRadians(0));
-    private final Pose intake2Pose2 = new Pose(28,129, Math.toRadians(0));
+    private final Pose intake2Pose1 = new Pose(18,129, Math.toRadians(0));
+    private final Pose intake2Pose2 = new Pose(30,129, Math.toRadians(0));
 //    private final Pose intake3Pose1 = new Pose(20,128, Math.toRadians(20));
 //    private final Pose intake3Pose2 = new Pose(28,130, Math.toRadians(20));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Point parkControlPoint = new Point(60, 123);
-    private final Pose parkPose = new Pose(60, 94, Math.toRadians(90));
+    private final Pose parkPose = new Pose(60, 92, Math.toRadians(90));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
@@ -262,7 +262,7 @@ public class ThreeBasketAuto extends OpMode {
                                         ancillary.intakeAction(),
                                         new InstantAction(() -> follower.followPath(pickupIntake1, inSpeedModifer, true))
                                 ),
-
+                                ancillary.holdAction(),
                                 new InstantAction(() -> readyToContinue = true),
                                 new InstantAction(() -> actionComplete = true),
                                 new InstantAction(() -> setPathState(3))
@@ -287,7 +287,7 @@ public class ThreeBasketAuto extends OpMode {
                                     ancillary.transferExtendo(),
                                     ancillary.intakeTransferArm()
                             ),
-                            new SleepAction(0.2),
+                            new SleepAction(0.5),
                             ancillary.transferAction(),
                             new SleepAction(0.1),
                             ancillary.closeGrip(),
@@ -348,6 +348,7 @@ public class ThreeBasketAuto extends OpMode {
                                 ancillary.intakeAction(),
                                 new InstantAction(() -> follower.followPath(pickupIntake2, inSpeedModifer, true))
                             ),
+                            ancillary.holdAction(),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> actionComplete = true),
                             new InstantAction(() -> setPathState(6))
@@ -362,8 +363,8 @@ public class ThreeBasketAuto extends OpMode {
                     readyToContinue = false;
                     actionComplete = false;
 
-                    follower.followPath(scorePickup2);
-                    setPathState(7);
+                    follower.followPath(scorePickup2, speedModifer, true);
+                    //setPathState(7);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
                             new ParallelAction(
@@ -371,7 +372,7 @@ public class ThreeBasketAuto extends OpMode {
                                     ancillary.transferExtendo(),
                                     ancillary.intakeTransferArm()
                             ),
-                            new SleepAction(0.2),
+                            new SleepAction(0.5),
                             ancillary.transferAction(),
                             new SleepAction(0.1),
                             ancillary.closeGrip(),
@@ -396,7 +397,7 @@ public class ThreeBasketAuto extends OpMode {
                             ancillary.openGrip(),
                             new SleepAction(0.3),
                             new InstantAction(() -> readyToContinue = true),
-                            new InstantAction(() -> follower.followPath(park, true)),
+                            new InstantAction(() -> follower.followPath(park, speedModifer, true)),
                             new InstantAction(() -> setPathState(8)),
                             new ParallelAction(
                                     new SequentialAction(
@@ -447,6 +448,14 @@ public class ThreeBasketAuto extends OpMode {
 
         if (lift.isLiftAvailable && lift.liftStop.getState()) {
             lift.holdPosition();
+        }
+
+        if (follower.isRobotStuck()) {
+            light.redStrobe();
+        } else if (follower.isBusy()) {
+            light.partyWaves();
+        } else {
+            light.greyLarson();
         }
 
         // These loop the movements of the robot
