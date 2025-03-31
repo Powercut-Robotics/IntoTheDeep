@@ -470,9 +470,9 @@ public class FourSpecAuto extends OpMode {
         if (follower.isRobotStuck()) {
             light.redStrobe();
         } else if (follower.isBusy()) {
-            light.greenWaves();
-        } else {
             light.partyWaves();
+        } else {
+            light.greenWaves();
         }
 
         // These loop the movements of the robot
