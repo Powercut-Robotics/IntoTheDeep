@@ -16,6 +16,7 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -39,6 +40,7 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
+@Disabled
 @Autonomous(name = "3 Basket", preselectTeleOp = "DriveTeleOp", group = "Sample")
 public class ThreeBasketAuto extends OpMode {
 
