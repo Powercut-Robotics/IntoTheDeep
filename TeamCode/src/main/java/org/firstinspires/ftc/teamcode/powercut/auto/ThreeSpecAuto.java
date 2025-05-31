@@ -69,38 +69,38 @@ public class ThreeSpecAuto extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(7, 50, Math.toRadians(0));
-    private final Pose score1Control = new Pose(15,48);
+    private final Pose startPose = new Pose(7, 43, Math.toRadians(0));
+    private final Pose score1Control = new Pose(15,41);
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose score1Pose1 = new Pose(35, 64, Math.toRadians(180));
-    private final Pose score1Pose2 = new Pose(37, 64, Math.toRadians(180));
+    private final Pose score1Pose1 = new Pose(35, 57, Math.toRadians(180));
+    private final Pose score1Pose2 = new Pose(37, 57, Math.toRadians(180));
 
-    private final Pose push1Pose = new Pose(58,21, Math.toRadians(0));
-    private final Pose push1Control1 = new Pose(27,12);
-    private final Pose push1Control2 = new Pose(52,39);
+    private final Pose push1Pose = new Pose(58,14, Math.toRadians(0));
+    private final Pose push1Control1 = new Pose(27,5);
+    private final Pose push1Control2 = new Pose(52,32);
 
-    private final Pose score2Control = new Pose(15,48);
-    private final Pose score2Pose1 = new Pose(34.5, 61, Math.toRadians(180));
-    private final Pose score2Pose2 = new Pose(36.5, 61, Math.toRadians(180));
+    private final Pose score2Control = new Pose(15,41);
+    private final Pose score2Pose1 = new Pose(34.5, 54, Math.toRadians(180));
+    private final Pose score2Pose2 = new Pose(36.5, 54, Math.toRadians(180));
 
-    private final Pose pickup2Control = new Pose(35,16);
+    private final Pose pickup2Control = new Pose(35,9);
 
-    private final Pose pickup2Pose1 = new Pose(18, 19, Math.toRadians(0));
+    private final Pose pickup2Pose1 = new Pose(18, 12, Math.toRadians(0));
 
-    private final Pose score3Control = new Pose(8,62);
-    private final Pose score3Pose1 = new Pose(34.5, 58, Math.toRadians(180));
-    private final Pose score3Pose2 = new Pose(36.5, 58, Math.toRadians(180));
+    private final Pose score3Control = new Pose(8,55);
+    private final Pose score3Pose1 = new Pose(34.5, 51, Math.toRadians(180));
+    private final Pose score3Pose2 = new Pose(36.5, 51, Math.toRadians(180));
 //    private final Pose score4Control = new Pose(15,48);
 //    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
 //    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(12.5, 19, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(12.5, 12, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(12, 15, Math.toRadians(0));
+    private final Pose parkPose = new Pose(12, 8, Math.toRadians(0));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
@@ -461,7 +461,7 @@ public class ThreeSpecAuto extends OpMode {
                 ancillary.clearanceExtendo(),
                 ancillary.intakeTravelArm(),
                 lift.liftRetractSensor(),
-                ancillary.outtakeTravelArm(),
+                ancillary.outtakeLowerTravelArm(),
                 new SequentialAction(
                         new SleepAction(5),
                         ancillary.closeGrip()

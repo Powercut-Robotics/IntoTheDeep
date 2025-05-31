@@ -48,18 +48,19 @@ public class SafeAncillary {
     public static double extendoSpecClearance = 0.4;
     public static double extendoClearance = 0.48;
     public static double extendoTravel = 0.5;
-    public static double extendoTransfer = 0.545;
+    public static double extendoTransfer = 0.548;
 
 
     public static double upperArmSampDeposit = 0.9;
     public static double upperArmSpecDeposit = 0.94;
 
-    public static double upperArmTravel = 0.4;
+    public static double upperArmLowTravel = 0.4;
+    public static double upperArmHighTravel = 0.6;
     public static double upperArmIntake = 0.97;
     public static double upperArmTransfer = 0.06;
 
-    public static double gripClosed = 0.715;
-    public static double gripOpen = 0.49;
+    public static double gripClosed = 0.86;
+    public static double gripOpen = 0.67;
 
     public static double transferTime = 650;
 
@@ -557,13 +558,13 @@ public class SafeAncillary {
         return new SpecIntakeArm();
     }
 
-    public class OuttakeTravelArm implements Action {
+    public class OuttakeLowerTravelArm implements Action {
         private boolean first = true;
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (first) {
-                upperLeftArm.setPosition(upperArmTravel);
-                upperRightArm.setPosition(upperArmTravel);
+                upperLeftArm.setPosition(upperArmLowTravel);
+                upperRightArm.setPosition(upperArmLowTravel);
 
                 first = false;
             }
@@ -571,8 +572,26 @@ public class SafeAncillary {
         }
     }
 
-    public Action outtakeTravelArm() {
-        return new OuttakeTravelArm();
+    public Action outtakeLowerTravelArm() {
+        return new OuttakeLowerTravelArm();
+    }
+
+    public class OuttakeHigherTravelArm implements Action {
+        private boolean first = true;
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                upperLeftArm.setPosition(upperArmHighTravel);
+                upperRightArm.setPosition(upperArmHighTravel);
+
+                first = false;
+            }
+            return upperLeftArm.isMoving();
+        }
+    }
+
+    public Action outtakeHigherTravelArm() {
+        return new OuttakeHigherTravelArm();
     }
 
     public class OuttakeTransferArm implements Action {

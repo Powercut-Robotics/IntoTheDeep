@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.RaceAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.pedropathing.follower.Follower;
@@ -39,8 +40,8 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
-@Autonomous(name = "3 Basket", preselectTeleOp = "DriveTeleOp", group = "Sample")
-public class ThreeBasketAutoV2 extends OpMode {
+@Autonomous(name = "4 Basket", preselectTeleOp = "DriveTeleOp", group = "Sample")
+public class FourBasketAutoV2 extends OpMode {
 
     public static double speedModifer = 0.7;
 
@@ -71,15 +72,15 @@ public class ThreeBasketAutoV2 extends OpMode {
     private final Pose startPose = new Pose(7, 112, Math.toRadians(0));
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose scorePose = new Pose(14.5, 128.5, Math.toRadians(-45));
+    private final Pose scorePose = new Pose(15, 128.5, Math.toRadians(-45));
 
     private final Pose intake1Pose1 = new Pose(18,121, Math.toRadians(0));
     private final Pose intake1Pose2 = new Pose(30,121, Math.toRadians(0));
 
     private final Pose intake2Pose1 = new Pose(18,129, Math.toRadians(0));
     private final Pose intake2Pose2 = new Pose(30,129, Math.toRadians(0));
-//    private final Pose intake3Pose1 = new Pose(20,128, Math.toRadians(20));
-//    private final Pose intake3Pose2 = new Pose(28,130, Math.toRadians(20));
+    private final Pose intake3Pose1 = new Pose(17,129, Math.toRadians(23));
+    private final Pose intake3Pose2 = new Pose(28,131, Math.toRadians(23));
 
     /** Park Pose for our robot, after we do all of the scoring. */
     private final Point parkControlPoint = new Point(60, 123);
@@ -158,21 +159,21 @@ public class ThreeBasketAutoV2 extends OpMode {
                 .build();
 
         /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-//        grabPickup3 = follower.pathBuilder()
-//                .addPath(new BezierLine(new Point(scorePose), new Point(intake3Pose1)))
-//                .setLinearHeadingInterpolation(scorePose.getHeading(), intake3Pose1.getHeading())
-//                .build();
-//
-//        pickupIntake3  = follower.pathBuilder()
-//                .addPath(new BezierLine(new Point(intake3Pose1), new Point(intake3Pose2)))
-//                .setLinearHeadingInterpolation(intake3Pose1.getHeading(), intake3Pose2.getHeading())
-//                .build();
-//
-//        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-//        scorePickup3 = follower.pathBuilder()
-//                .addPath(new BezierLine(new Point(intake3Pose2), new Point(scorePose)))
-//                .setLinearHeadingInterpolation(intake3Pose2.getHeading(), scorePose.getHeading())
-//                .build();
+        grabPickup3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(scorePose), new Point(intake3Pose1)))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), intake3Pose1.getHeading())
+                .build();
+
+        pickupIntake3  = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(intake3Pose1), new Point(intake3Pose2)))
+                .setLinearHeadingInterpolation(intake3Pose1.getHeading(), intake3Pose2.getHeading())
+                .build();
+
+        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        scorePickup3 = follower.pathBuilder()
+                .addPath(new BezierLine(new Point(intake3Pose2), new Point(scorePose)))
+                .setLinearHeadingInterpolation(intake3Pose2.getHeading(), scorePose.getHeading())
+                .build();
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
         park = follower.pathBuilder()
@@ -194,8 +195,11 @@ public class ThreeBasketAutoV2 extends OpMode {
 
                 runningActions.add(new SequentialAction(
                         new ParallelAction(
-                                ancillary.closeGrip(),
-                                lift.liftTopBasket()
+                                lift.liftTopBasket(),
+                                new SequentialAction(
+                                        ancillary.closeGrip(),
+                                        ancillary.outtakeHigherTravelArm()
+                                )
                         ),
                         new InstantAction(() -> readyToContinue = true),
                         new InstantAction(() -> actionComplete = true)
@@ -259,7 +263,10 @@ public class ThreeBasketAutoV2 extends OpMode {
                                         ancillary.intakeExtendo()
                                 ),
                                 new ParallelAction(
-                                        ancillary.intakeAction(),
+                                        new RaceAction(
+                                                ancillary.intakeAction(),
+                                                new SleepAction(5)
+                                        ),
                                         new InstantAction(() -> follower.followPath(pickupIntake1, inSpeedModifer, true))
                                 ),
                                 ancillary.holdAction(),
@@ -293,7 +300,10 @@ public class ThreeBasketAutoV2 extends OpMode {
                             ancillary.closeGrip(),
                             new SleepAction(0.1),
                             ancillary.clearanceExtendo(),
-                            lift.liftTopBasket(),
+                            new ParallelAction(
+                                    lift.liftTopBasket(),
+                                    ancillary.outtakeHigherTravelArm()
+                            ),
                             ancillary.depositSampArm(),
 
                             new InstantAction(() -> readyToContinue = true),
@@ -345,7 +355,10 @@ public class ThreeBasketAutoV2 extends OpMode {
                             ancillary.intakeLowerArm(),
                             ancillary.intakeExtendo(),
                             new ParallelAction(
-                                ancillary.intakeAction(),
+                                    new RaceAction(
+                                            ancillary.intakeAction(),
+                                            new SleepAction(5)
+                                    ),
                                 new InstantAction(() -> follower.followPath(pickupIntake2, inSpeedModifer, true))
                             ),
                             ancillary.holdAction(),
@@ -378,7 +391,10 @@ public class ThreeBasketAutoV2 extends OpMode {
                             ancillary.closeGrip(),
                             new SleepAction(0.1),
                             ancillary.clearanceExtendo(),
-                            lift.liftTopBasket(),
+                            new ParallelAction(
+                                    lift.liftTopBasket(),
+                                    ancillary.outtakeHigherTravelArm()
+                            ),
                             ancillary.depositSampArm(),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> actionComplete = true),
@@ -387,6 +403,95 @@ public class ThreeBasketAutoV2 extends OpMode {
                 }
                 break;
             case 7:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                if(!follower.isBusy() && actionComplete) {
+                    lift.isLiftAvailable = true;
+                    /* Score Sample */
+                    readyToContinue = false;
+                    actionComplete = false;
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                    runningActions.add(new SequentialAction(
+                            new SleepAction(0.2),
+                            ancillary.openGrip(),
+                            new SleepAction(0.3),
+
+                            new InstantAction(() -> readyToContinue = true),
+                            new InstantAction(() -> follower.followPath(grabPickup3, speedModifer, true)),
+                            new InstantAction(() -> setPathState(8)),
+
+                            new ParallelAction(
+                                    new SequentialAction(
+                                            new SleepAction(1),
+                                            lift.liftRetract()
+                                    ),
+                                    ancillary.outtakeTransferArm(),
+                                    ancillary.intakeLowerArm(),
+                                    ancillary.spinUpAction()
+                            ),
+                            new InstantAction(() -> actionComplete = true)
+                    ));
+                }
+                break;
+            case 8:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
+                if(!follower.isBusy() && readyToContinue) {
+                    lift.isLiftAvailable = true;
+                    readyToContinue = false;
+                    actionComplete = false;
+                    /* Score Sample */
+
+                    runningActions.add(new SequentialAction(
+                            ancillary.intakeLowerArm(),
+                            ancillary.intakeExtendo(),
+                            new ParallelAction(
+                                    new RaceAction(
+                                            ancillary.intakeAction(),
+                                            new SleepAction(5)
+                                    ),
+                                    new InstantAction(() -> follower.followPath(pickupIntake3, inSpeedModifer, true))
+                            ),
+                            ancillary.holdAction(),
+                            new InstantAction(() -> readyToContinue = true),
+                            new InstantAction(() -> actionComplete = true),
+                            new InstantAction(() -> setPathState(9))
+                    ));
+
+                }
+                break;
+            case 9:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
+                if(!follower.isBusy() && actionComplete) {
+                    lift.isLiftAvailable = true;
+                    readyToContinue = false;
+                    actionComplete = false;
+
+                    follower.followPath(scorePickup3, speedModifer, true);
+                    //setPathState(7);
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                    runningActions.add(new SequentialAction(
+                            new ParallelAction(
+                                    ancillary.outtakeTransferArm(),
+                                    ancillary.transferExtendo(),
+                                    ancillary.intakeTransferArm()
+                            ),
+                            new SleepAction(0.5),
+                            ancillary.transferAction(),
+                            new SleepAction(0.1),
+                            ancillary.closeGrip(),
+                            new SleepAction(0.1),
+                            ancillary.clearanceExtendo(),
+                            new ParallelAction(
+                                    lift.liftTopBasket(),
+                                    ancillary.outtakeHigherTravelArm()
+                            ),
+                            ancillary.depositSampArm(),
+                            new InstantAction(() -> readyToContinue = true),
+                            new InstantAction(() -> actionComplete = true),
+                            new InstantAction(() -> setPathState(10))
+                    ));
+                }
+                break;
+            case 10:
                 if(!follower.isBusy() && actionComplete) {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
@@ -398,7 +503,7 @@ public class ThreeBasketAutoV2 extends OpMode {
                             new SleepAction(0.3),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(park, speedModifer, true)),
-                            new InstantAction(() -> setPathState(8)),
+                            new InstantAction(() -> setPathState(11)),
                             new ParallelAction(
                                     new SequentialAction(
                                             new SleepAction(1),
@@ -413,7 +518,7 @@ public class ThreeBasketAutoV2 extends OpMode {
                 }
                 break;
 
-            case 8:
+            case 11:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
 
@@ -460,6 +565,7 @@ public class ThreeBasketAutoV2 extends OpMode {
 
         // These loop the movements of the robot
         follower.update();
+        follower.drawOnDashBoard();
         autonomousPathUpdate();
 
         telemetry.addData("Left Lift", lift.powerOutLeft);
@@ -501,7 +607,7 @@ public class ThreeBasketAutoV2 extends OpMode {
                 ancillary.clearanceExtendo(),
                 ancillary.intakeTravelArm(),
                 lift.liftRetractSensor(),
-                ancillary.outtakeTravelArm(),
+                ancillary.outtakeLowerTravelArm(),
                 new SequentialAction(
                         new SleepAction(5),
                         ancillary.closeGrip()

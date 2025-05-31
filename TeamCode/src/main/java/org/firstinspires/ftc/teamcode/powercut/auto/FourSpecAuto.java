@@ -514,7 +514,7 @@ public class FourSpecAuto extends OpMode {
                 ancillary.clearanceExtendo(),
                 ancillary.intakeTravelArm(),
                 lift.liftRetractSensor(),
-                ancillary.outtakeTravelArm(),
+                ancillary.outtakeLowerTravelArm(),
                 new SequentialAction(
                         new SleepAction(5),
                         ancillary.closeGrip()

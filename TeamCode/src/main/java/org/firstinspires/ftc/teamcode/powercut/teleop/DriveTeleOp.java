@@ -423,7 +423,7 @@ public class DriveTeleOp extends OpMode  {
                                 ancillary.closeGrip(),
                                 new SleepAction(0.3),
                                 new ParallelAction(
-                                    ancillary.outtakeTravelArm(),
+                                    ancillary.outtakeLowerTravelArm(),
                                         ancillary.clearanceExtendo()
                                 )
                         )
