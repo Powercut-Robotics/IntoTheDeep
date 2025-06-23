@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.powercut.auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
@@ -15,8 +16,8 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -30,11 +31,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * This is an example auto that showcases movement and control of two servos autonomously.
+ * It is a 0+4 (Specimen + Sample) bucket auto. It scores a neutral preload and then pickups 3 samples from the ground and scores them before parking.
+ * There are examples of different ways to build paths.
+ * A path progression method has been created and can advance based on time, position, or other factors.
+ *
+ * @author Baron Henderson - 20077 The Indubitables
+ * @version 2.0, 11/28/2024
+ */
 
-
-@Disabled
+@Config
 @Autonomous(name = "4 Spec", preselectTeleOp = "DriveTeleOp", group = "Specimen")
 public class FourSpecAuto extends OpMode {
+
+    List<LynxModule> allHubs;
+
+    public static double speedModifer = 1.0;
 
     private Follower follower;
     private final Robot robot = new Robot();
@@ -59,44 +72,61 @@ public class FourSpecAuto extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(7, 50, Math.toRadians(0));
-    private final Pose score1Control = new Pose(15,48);
+    private final Pose startPose = new Pose(7, 56.5, Math.toRadians(0));
+    private final Pose score1Control = new Pose(16,75);
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose score1Pose1 = new Pose(34, 58, Math.toRadians(180));
-    private final Pose score1Pose2 = new Pose(35, 58, Math.toRadians(180));
+    private final Pose score1Pose1 = new Pose(40, 74, Math.toRadians(180));
+    private final Pose score1Pose2 = new Pose(36.5, 72, Math.toRadians(180));
 
-    private final Pose push1Pose = new Pose(58,21, Math.toRadians(0));
-    private final Pose push1Control1 = new Pose(27,12);
-    private final Pose push1Control2 = new Pose(52,39);
+    private final Pose push1Pose1 = new Pose(58,26, Math.toRadians(0));
+    private final Pose push1Control1 = new Pose(27, 17);
+    private final Pose push1Control2 = new Pose(52, 45.5);
 
-    private final Pose score2Control = new Pose(15,48);
-    private final Pose score2Pose1 = new Pose(34, 59, Math.toRadians(180));
-    private final Pose score2Pose2 = new Pose(35, 59, Math.toRadians(180));
-    private final Pose push2Pose = new Pose(58,9,Math.toRadians(0));
-    private final Pose push2Control1 = new Pose(22,18);
-    private final Pose push2Control2 = new Pose(61,33);
+    private final Pose pickup1Pose1 = new Pose(17, 22, Math.toRadians(0));
 
-    private final Pose score3Control = new Pose(15,48);
-    private final Pose score3Pose1 = new Pose(34, 60, Math.toRadians(180));
-    private final Pose score3Pose2 = new Pose(35, 60, Math.toRadians(180));
-    private final Pose score4Control = new Pose(15,48);
-    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
-    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
+    private final Pose push2Pose1 = new Pose(58,12, Math.toRadians(0));
+    private final Pose push2Control = new Pose(61.5, 30);
+
+
+
+
+    private final Pose score2Control = new Pose(6,73.5);
+    private final Pose score2Pose1 = new Pose(34, 72, Math.toRadians(180));
+    private final Pose score2Pose2 = new Pose(40, 72, Math.toRadians(180));
+
+    private final Pose pickup2Control = new Pose(32,22.5);
+
+    private final Pose pickup2Pose1 = new Pose(18, 25.5, Math.toRadians(0));
+
+    private final Pose score3Control = new Pose(6,71.5);
+    private final Pose score3Pose1 = new Pose(34, 70, Math.toRadians(180));
+    private final Pose score3Pose2 = new Pose(40, 70, Math.toRadians(180));
+
+    private final Pose pickup3Control = new Pose(32,22.5);
+
+    private final Pose pickup3Pose1 = new Pose(18, 25.5, Math.toRadians(0));
+
+    private final Pose score4Control = new Pose(6,71.5);
+    private final Pose score4Pose1 = new Pose(34, 68, Math.toRadians(180));
+    private final Pose score4Pose2 = new Pose(40, 68, Math.toRadians(180));
+//    private final Pose score4Control = new Pose(15,48);
+//    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
+//    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(13.5, 19, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(12, 24, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(12, 15, Math.toRadians(90));
+    private final Pose parkPose = new Pose(12, 21.5, Math.toRadians(0));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
 
 
     /* These are our Paths and PathChains that we will define in buildPaths() */
-    private PathChain scorePreload, grabPickup1, grabPickup2, grabPickup3, scorePickup1, scorePickup2, scorePickup3, score0Push,  score1Push, score2Push, score3Push, park;
+    private PathChain scorePreload, grabPickup1, grabPickup2, grabPickup3, scorePickup1, scorePickup2, scorePickup3, park;
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
 
@@ -124,75 +154,79 @@ public class FourSpecAuto extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(startPose), new Point(score1Control), new Point(score1Pose1)))
                 .setLinearHeadingInterpolation(startPose.getHeading(), score1Pose1.getHeading())
+                .setPathEndHeadingConstraint(500)
                 .build();
 
-        score0Push = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(score1Pose1), new Point(score1Pose2)))
-                .setConstantHeadingInterpolation(score1Pose1.getHeading())
-                .build();
+//        score0Push = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(score1Pose1), new Point(score1Pose2)))
+//                .setConstantHeadingInterpolation(score1Pose1.getHeading())
+//                .setPathEndHeadingConstraint(250)
+//                .build();
 
         /* Here is an example for Constant Interpolation
         scorePreload.setConstantInterpolation(startPose.getHeading()); */
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(score1Pose2), new Point(push1Control1), new Point(push1Control2), new Point(push1Pose)))
-                .setLinearHeadingInterpolation(score1Pose2.getHeading(), push1Pose.getHeading())
-                .addPath(new BezierLine(new Point(push1Pose), new Point(pickupPose)))
-                .setLinearHeadingInterpolation(push1Pose.getHeading(), pickupPose.getHeading())
+                .addPath(new BezierCurve(new Point(score1Pose1), new Point(push1Control1), new Point(push1Control2), new Point(push1Pose1)))
+                .setLinearHeadingInterpolation(score1Pose1.getHeading(), push1Pose1.getHeading())
+                .addPath(new BezierLine(new Point(push1Pose1), new Point(pickup1Pose1)))
+                .setLinearHeadingInterpolation(push1Pose1.getHeading(), pickup1Pose1.getHeading())
+                .addPath(new BezierCurve(new Point(pickup1Pose1), new Point(push2Control), new Point(push2Pose1)))
+                .setConstantHeadingInterpolation(pickup1Pose1.getHeading())
+                .addPath(new BezierLine(new Point(push2Pose1), new Point(pickupPose)))
+                .setLinearHeadingInterpolation(push2Pose1.getHeading(), pickupPose.getHeading())
                 .build();
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup1 = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(pickupPose), new Point(score2Control), new Point(score2Pose1)))
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), score2Pose1.getHeading())
-                .build();
-
-        score1Push = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score2Pose1), new Point(score2Pose2)))
                 .setConstantHeadingInterpolation(score2Pose1.getHeading())
+                .setPathEndHeadingConstraint(500)
                 .build();
+
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(score2Pose2), new Point(push2Control1), new Point(push2Control2), new Point(push2Pose)))
-                .setLinearHeadingInterpolation(score2Pose2.getHeading(), push2Pose.getHeading())
-                .addPath(new BezierLine(new Point(push2Pose), new Point(pickupPose)))
-                .setLinearHeadingInterpolation(push2Pose.getHeading(), pickupPose.getHeading())
+                .addPath(new BezierCurve(new Point(score2Pose1), new Point(pickup2Control), new Point(pickup2Pose1)))
+                .setLinearHeadingInterpolation(score2Pose1.getHeading(), pickup2Pose1.getHeading())
+                .addPath(new BezierLine(new Point(pickup2Pose1), new Point(pickupPose)))
+                .setLinearHeadingInterpolation(pickup2Pose1.getHeading(), pickupPose.getHeading())
                 .build();
 
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(pickupPose), new Point(score3Control), new Point(score3Pose1)))
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), score3Pose1.getHeading())
-                .build();
-
-        score2Push = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score3Pose1), new Point(score3Pose2)))
                 .setConstantHeadingInterpolation(score3Pose1.getHeading())
+                .setPathEndHeadingConstraint(500)
                 .build();
 
-        /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(score3Pose2), new Point(pickupPose)))
-                .setLinearHeadingInterpolation(score3Pose2.getHeading(), pickupPose.getHeading())
+                .addPath(new BezierCurve(new Point(score3Pose1), new Point(pickup3Control), new Point(pickup3Pose1)))
+                .setLinearHeadingInterpolation(score3Pose1.getHeading(), pickup3Pose1.getHeading())
+                .addPath(new BezierLine(new Point(pickup3Pose1), new Point(pickupPose)))
+                .setLinearHeadingInterpolation(pickup3Pose1.getHeading(), pickupPose.getHeading())
                 .build();
 
-        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+
         scorePickup3 = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(pickupPose), new Point(score4Control), new Point(score4Pose1)))
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), score4Pose1.getHeading())
-                .build();
-
-        score3Push = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score4Pose1), new Point(score4Pose2)))
                 .setConstantHeadingInterpolation(score4Pose1.getHeading())
+                .setPathEndHeadingConstraint(500)
                 .build();
+
+
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
         park = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(score4Pose2), new Point(parkPose)))
-                .setLinearHeadingInterpolation(score4Pose2.getHeading(), parkPose.getHeading())
+                .addPath(new BezierLine(new Point(score4Pose1), new Point(parkPose)))
+                .setLinearHeadingInterpolation(score4Pose1.getHeading(), parkPose.getHeading())
                 .build();
     }
 
@@ -207,40 +241,31 @@ public class FourSpecAuto extends OpMode {
                 runningActions.add(new SequentialAction(
                         new ParallelAction(
                                 ancillary.closeGrip(),
-                                lift.liftTopRungMedian(),
-                                ancillary.depositSpecArm()
+                                lift.liftTopRungHigher(),
+                                ancillary.alignMedianSpecArm()
                         ),
                         new InstantAction(() -> readyToContinue = true),
                         new InstantAction(() -> actionComplete = true)
                 ));
-                follower.followPath(scorePreload);
+                follower.followPath(scorePreload, speedModifer, true);
                 setPathState(1);
                 break;
             case 1:
 
-                /* You could check for
-                - Follower State: "if(!follower.isBusy() {}"
-                - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
-                - Robot Position: "if(follower.getPose().getX() > 36) {}"
-                */
+                //else below runs before main if body
 
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() && readyToContinue) {
                     lift.isLiftAvailable = true;
                     runningActions.clear();
                     /* Score Preload */
                     readyToContinue = false;
                     actionComplete = false;
-                    follower.followPath(score0Push);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            //new SleepAction(0.3),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.3),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
-                             new InstantAction(() -> lift.kill()),
-                             new InstantAction(() -> follower.followPath(grabPickup1, true)),
+                             //new InstantAction(() -> lift.kill()),
+                             new InstantAction(() -> follower.followPath(grabPickup1, speedModifer, true)),
                              new InstantAction(() -> setPathState(2)),
                              new ParallelAction(
                                      lift.liftRetract(),
@@ -249,10 +274,14 @@ public class FourSpecAuto extends OpMode {
                             new InstantAction(() -> actionComplete = true)
                     ));
 
-//                    if (readyToContinue) {
-//                        follower.followPath(grabPickup1, true);
-//                        setPathState(2);
-//                    }
+
+                } else if (follower.getPose().getX() > 33) {
+                    runningActions.add(
+                            new ParallelAction(
+                            ancillary.looseCloseGrip(),
+                            ancillary.depositMedianSpecArm()
+                            )
+                    );
                 }
                 break;
             case 2:
@@ -264,41 +293,98 @@ public class FourSpecAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
-                            new SleepAction(1),
+                                ancillary.openGrip(),
+                                ancillary.specIntakeArm(),
+                                new SleepAction(0.5),
                                 ancillary.closeGrip(),
-                                ancillary.depositSpecArm(),
-                                new InstantAction(() -> readyToContinue = true),
-                                new InstantAction(() -> follower.followPath(scorePickup1, true)),
-                                new InstantAction(() -> setPathState(3)),
+                                new SleepAction(0.3),
+                                ancillary.alignMedianSpecArm(),
                                 lift.liftTopRungMedian(),
+
+                                new InstantAction(() -> readyToContinue = true),
+                                new InstantAction(() -> follower.followPath(scorePickup1, speedModifer, true)),
+                                new InstantAction(() -> setPathState(3)),
                                 new InstantAction(() -> actionComplete = true)
                             )
                     );
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                    if (readyToContinue) {
-//                        follower.followPath(scorePickup1, true);
-//                        setPathState(3);
-//                    }
+
                 }
                 break;
             case 3:
+
+                //else below runs before main body
+
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() && actionComplete) {
                     lift.isLiftAvailable = true;
                     /* Score Sample */
                     readyToContinue = false;
                     actionComplete = false;
-                    follower.followPath(score1Push);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.3),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.5),
+                            ancillary.openGrip(),
+                            new ParallelAction(
+                                    lift.liftRetract(),
+                                    ancillary.specIntakeArm()
+                            ),
+
+                            new InstantAction(() -> readyToContinue = true),
+                            new InstantAction(() -> follower.followPath(grabPickup2, speedModifer, true)),
+                            new InstantAction(() -> setPathState(4)),
+                            new InstantAction(() -> actionComplete = true)
+                    ));
+
+
+                } else if (follower.getPose().getX() > 31.5) {
+                    runningActions.add(
+                            new ParallelAction(
+                                    ancillary.looseCloseGrip(),
+                                    ancillary.depositMedianSpecArm()
+                            )
+                    );
+                }
+                break;
+            case 4:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
+                if(!follower.isBusy() && actionComplete) {
+                    lift.isLiftAvailable = true;
+                    readyToContinue = false;
+                    actionComplete = false;
+                    /* Score Sample */
+
+                    runningActions.add(new SequentialAction(
+                                    ancillary.specIntakeArm(),
+                                    new SleepAction(0.5),
+                                    ancillary.closeGrip(),
+                                    new SleepAction(0.3),
+                                    ancillary.alignMedianSpecArm(),
+                                    new InstantAction(() -> readyToContinue = true),
+                                    new InstantAction(() -> follower.followPath(scorePickup2, speedModifer, true)),
+                                    new InstantAction(() -> setPathState(5)),
+                                    lift.liftTopRungMedian(),
+                                    new InstantAction(() -> actionComplete = true)
+                            )
+                    );
+
+                }
+                break;
+            case 5:
+
+                //else below runs previous to main body
+
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                if(!follower.isBusy() && actionComplete) {
+                    lift.isLiftAvailable = true;
+                    /* Score Sample */
+                    readyToContinue = false;
+                    actionComplete = false;
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                    runningActions.add(new SequentialAction(
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
-                            new InstantAction(() -> follower.followPath(grabPickup2, true)),
-                            new InstantAction(() -> setPathState(4)),
+                            new InstantAction(() -> follower.followPath(grabPickup3, speedModifer, true)),
+                            new InstantAction(() -> setPathState(6)),
                             new ParallelAction(
                                     lift.liftRetract(),
                                     ancillary.specIntakeArm()
@@ -311,63 +397,13 @@ public class FourSpecAuto extends OpMode {
 //                        follower.followPath(grabPickup2, true);
 //                        setPathState(4);
 //                    }
-                }
-                break;
-            case 4:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
-                if(!follower.isBusy() && actionComplete) {
-                    lift.isLiftAvailable = true;
-                    readyToContinue = false;
-                    actionComplete = false;
-                    /* Score Sample */
-
-                    runningActions.add(new SequentialAction(
-                            new SleepAction(1),
-                                    ancillary.closeGrip(),
-                                    ancillary.depositSpecArm(),
-                                    new InstantAction(() -> readyToContinue = true),
-                                    new InstantAction(() -> follower.followPath(scorePickup2, true)),
-                                    new InstantAction(() -> setPathState(5)),
-                            lift.liftTopRungMedian(),
-                                    new InstantAction(() -> actionComplete = true)
+                } else if (follower.getPose().getX() > 31.5) {
+                    runningActions.add(
+                            new ParallelAction(
+                                    ancillary.looseCloseGrip(),
+                                    ancillary.depositMedianSpecArm()
                             )
                     );
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                    if (readyToContinue) {
-//                        follower.followPath(scorePickup2, true);
-//                        setPathState(5);
-//                    }
-                }
-                break;
-            case 5:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
-                if(!follower.isBusy() && actionComplete) {
-                    lift.isLiftAvailable = true;
-                    readyToContinue = false;
-                    actionComplete = false;
-                    follower.followPath(score2Push);
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    runningActions.add(new SequentialAction(
-                            new SleepAction(0.3),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.3),
-                            ancillary.openGrip(),
-                            new InstantAction(() -> readyToContinue = true),
-                            new InstantAction(() -> follower.followPath(grabPickup3, true)),
-                            new InstantAction(() -> setPathState(6)),
-                            new ParallelAction(
-                                    lift.liftRetract(),
-                                    ancillary.specIntakeArm()
-                            ),
-                            new InstantAction(() -> actionComplete = true)
-                    ));
-
-//                    if (readyToContinue) {
-//                        /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-//                        follower.followPath(grabPickup2, true);
-//                        setPathState(6);
-//                    }
                 }
                 break;
             case 6:
@@ -379,39 +415,29 @@ public class FourSpecAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
-                            new SleepAction(1),
+                                    ancillary.specIntakeArm(),
+                                    new SleepAction(1),
                                     ancillary.closeGrip(),
-                                    ancillary.depositSpecArm(),
+                                    new SleepAction(0.5),
+                                    ancillary.alignMedianSpecArm(),
                                     new InstantAction(() -> readyToContinue = true),
-                                    new InstantAction(() -> follower.followPath(scorePickup3, true)),
+                                    new InstantAction(() -> follower.followPath(scorePickup3, speedModifer, true)),
                                     new InstantAction(() -> setPathState(7)),
                                     lift.liftTopRungMedian(),
                                     new InstantAction(() -> actionComplete = true)
                             )
                     );
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                    if (readyToContinue) {
-//                    follower.followPath(scorePickup3, true);
-//                    setPathState(7);
-//                    }
+
                 }
                 break;
             case 7:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() && actionComplete) {
                     lift.isLiftAvailable = true;
-                    /* Score Sample */
-
                     readyToContinue = false;
                     actionComplete = false;
 
-                    follower.followPath(score3Push);
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.3),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.5),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(park, true)),
@@ -423,11 +449,15 @@ public class FourSpecAuto extends OpMode {
                             new InstantAction(() -> actionComplete = true)
                     ));
 
-                    if (readyToContinue) {
-                        follower.followPath(park, true);
 
-                        setPathState(8);
-                    }
+
+                } else if (follower.getPose().getX() > 31.5) {
+                    runningActions.add(
+                            new ParallelAction(
+                                    ancillary.looseCloseGrip(),
+                                    ancillary.depositMedianSpecArm()
+                            )
+                    );
                 }
                 break;
             case 8:
@@ -452,6 +482,10 @@ public class FourSpecAuto extends OpMode {
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
     @Override
     public void loop() {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
         TelemetryPacket packet = new TelemetryPacket();
         List<Action> newActions = new ArrayList<>();
 
@@ -520,6 +554,12 @@ public class FourSpecAuto extends OpMode {
                         ancillary.closeGrip()
                 )
         ));
+
+        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);

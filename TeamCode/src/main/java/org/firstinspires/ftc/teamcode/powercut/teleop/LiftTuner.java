@@ -9,6 +9,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.powercut.hardware.Lift;
 import org.firstinspires.ftc.teamcode.powercut.hardware.LightSystem;
@@ -31,7 +32,7 @@ public class LiftTuner extends OpMode {
 
     public static int pos = 0;
 
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.006, 0.00, 0.8, 0, 500, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.01, 0.00, 0.0, 0, 500, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
 
@@ -57,6 +58,13 @@ public class LiftTuner extends OpMode {
         if (lift.isLiftAvailable && lift.liftStop.getState()){
             telemetry.addLine("Lift Holding");
             //lift.setLiftPower(0.08);
+        }
+
+        if (!lift.liftStop.getState()) {
+            lift.leftLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            lift.rightLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            lift.leftLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            lift.rightLift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
         telemetry.addData("lift available",lift.isLiftAvailable);

@@ -12,6 +12,7 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -47,6 +48,8 @@ public class NetZoneAuto extends OpMode {
     private Lift lift;
     private LightSystem light;
     private Timer pathTimer, actionTimer, opmodeTimer;
+
+    List<LynxModule> allHubs;
 
     /** This is the variable where we store the state of our auto.
      * It is used by the pathUpdate method. */
@@ -271,6 +274,10 @@ public class NetZoneAuto extends OpMode {
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
     @Override
     public void loop() {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
         TelemetryPacket packet = new TelemetryPacket();
         List<Action> newActions = new ArrayList<>();
 
@@ -329,6 +336,12 @@ public class NetZoneAuto extends OpMode {
         ));
 
         light.partyWaves();
+
+        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);

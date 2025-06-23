@@ -16,6 +16,7 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -44,7 +45,9 @@ import java.util.List;
 @Autonomous(name = "3 Spec", preselectTeleOp = "DriveTeleOp", group = "Specimen")
 public class ThreeSpecAuto extends OpMode {
 
-    public static double speedModifer = 0.85;
+    List<LynxModule> allHubs;
+
+    public static double speedModifer = 1.0;
 
     private Follower follower;
     private final Robot robot = new Robot();
@@ -69,38 +72,38 @@ public class ThreeSpecAuto extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(7, 43, Math.toRadians(0));
-    private final Pose score1Control = new Pose(15,41);
+    private final Pose startPose = new Pose(7, 56.5, Math.toRadians(0));
+    private final Pose score1Control = new Pose(16,75);
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
-    private final Pose score1Pose1 = new Pose(35, 57, Math.toRadians(180));
-    private final Pose score1Pose2 = new Pose(37, 57, Math.toRadians(180));
+    private final Pose score1Pose1 = new Pose(40, 74, Math.toRadians(180));
+    private final Pose score1Pose2 = new Pose(36.5, 72, Math.toRadians(180));
 
-    private final Pose push1Pose = new Pose(58,14, Math.toRadians(0));
-    private final Pose push1Control1 = new Pose(27,5);
-    private final Pose push1Control2 = new Pose(52,32);
+    private final Pose push1Pose = new Pose(58,27.5, Math.toRadians(0));
+    private final Pose push1Control1 = new Pose(27, 17);
+    private final Pose push1Control2 = new Pose(52, 45.5);
 
-    private final Pose score2Control = new Pose(15,41);
-    private final Pose score2Pose1 = new Pose(34.5, 54, Math.toRadians(180));
-    private final Pose score2Pose2 = new Pose(36.5, 54, Math.toRadians(180));
+    private final Pose score2Control = new Pose(6,73.5);
+    private final Pose score2Pose1 = new Pose(34, 72, Math.toRadians(180));
+    private final Pose score2Pose2 = new Pose(40, 72, Math.toRadians(180));
 
-    private final Pose pickup2Control = new Pose(35,9);
+    private final Pose pickup2Control = new Pose(32,22.5);
 
-    private final Pose pickup2Pose1 = new Pose(18, 12, Math.toRadians(0));
+    private final Pose pickup2Pose1 = new Pose(18, 25.5, Math.toRadians(0));
 
-    private final Pose score3Control = new Pose(8,55);
-    private final Pose score3Pose1 = new Pose(34.5, 51, Math.toRadians(180));
-    private final Pose score3Pose2 = new Pose(36.5, 51, Math.toRadians(180));
+    private final Pose score3Control = new Pose(6,71.5);
+    private final Pose score3Pose1 = new Pose(34, 70, Math.toRadians(180));
+    private final Pose score3Pose2 = new Pose(40, 70, Math.toRadians(180));
 //    private final Pose score4Control = new Pose(15,48);
 //    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
 //    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(12.5, 12, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(12, 24, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(12, 8, Math.toRadians(0));
+    private final Pose parkPose = new Pose(12, 21.5, Math.toRadians(0));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
@@ -135,22 +138,22 @@ public class ThreeSpecAuto extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(startPose), new Point(score1Control), new Point(score1Pose1)))
                 .setLinearHeadingInterpolation(startPose.getHeading(), score1Pose1.getHeading())
-                .setPathEndHeadingConstraint(250)
+                .setPathEndHeadingConstraint(500)
                 .build();
 
-        score0Push = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(score1Pose1), new Point(score1Pose2)))
-                .setConstantHeadingInterpolation(score1Pose1.getHeading())
-                .setPathEndHeadingConstraint(250)
-                .build();
+//        score0Push = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(score1Pose1), new Point(score1Pose2)))
+//                .setConstantHeadingInterpolation(score1Pose1.getHeading())
+//                .setPathEndHeadingConstraint(250)
+//                .build();
 
         /* Here is an example for Constant Interpolation
         scorePreload.setConstantInterpolation(startPose.getHeading()); */
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(score1Pose2), new Point(push1Control1), new Point(push1Control2), new Point(push1Pose)))
-                .setLinearHeadingInterpolation(score1Pose2.getHeading(), push1Pose.getHeading())
+                .addPath(new BezierCurve(new Point(score1Pose1), new Point(push1Control1), new Point(push1Control2), new Point(push1Pose)))
+                .setLinearHeadingInterpolation(score1Pose1.getHeading(), push1Pose.getHeading())
                 .addPath(new BezierLine(new Point(push1Pose), new Point(pickup2Pose1)))
                 .setLinearHeadingInterpolation(push1Pose.getHeading(), pickup2Pose1.getHeading())
                 .addPath(new BezierLine(new Point(pickup2Pose1), new Point(pickupPose)))
@@ -161,19 +164,21 @@ public class ThreeSpecAuto extends OpMode {
         scorePickup1 = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(pickupPose), new Point(score2Control), new Point(score2Pose1)))
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), score2Pose1.getHeading())
-                .setPathEndHeadingConstraint(250)
-                .build();
-
-        score1Push = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score2Pose1), new Point(score2Pose2)))
                 .setConstantHeadingInterpolation(score2Pose1.getHeading())
-                .setPathEndHeadingConstraint(250)
+                .setPathEndHeadingConstraint(500)
                 .build();
+
+//        score1Push = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(score2Pose1), new Point(score2Pose2)))
+//                .setConstantHeadingInterpolation(score2Pose1.getHeading())
+//                .setPathEndHeadingConstraint(250)
+//                .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(score2Pose2), new Point(pickup2Control), new Point(pickup2Pose1)))
-                .setLinearHeadingInterpolation(score2Pose2.getHeading(), pickup2Pose1.getHeading())
+                .addPath(new BezierCurve(new Point(score2Pose1), new Point(pickup2Control), new Point(pickup2Pose1)))
+                .setLinearHeadingInterpolation(score2Pose1.getHeading(), pickup2Pose1.getHeading())
                 .addPath(new BezierLine(new Point(pickup2Pose1), new Point(pickupPose)))
                 .setLinearHeadingInterpolation(pickup2Pose1.getHeading(), pickupPose.getHeading())
                 .build();
@@ -182,21 +187,23 @@ public class ThreeSpecAuto extends OpMode {
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(pickupPose), new Point(score3Control), new Point(score3Pose1)))
                 .setLinearHeadingInterpolation(pickupPose.getHeading(), score3Pose1.getHeading())
-                .setPathEndHeadingConstraint(250)
-                .build();
-
-        score2Push = follower.pathBuilder()
                 .addPath(new BezierLine(new Point(score3Pose1), new Point(score3Pose2)))
                 .setConstantHeadingInterpolation(score3Pose1.getHeading())
-                .setPathEndHeadingConstraint(250)
+                .setPathEndHeadingConstraint(500)
                 .build();
+
+//        score2Push = follower.pathBuilder()
+//                .addPath(new BezierLine(new Point(score3Pose1), new Point(score3Pose2)))
+//                .setConstantHeadingInterpolation(score3Pose1.getHeading())
+//                .setPathEndHeadingConstraint(250)
+//                .build();
 
         /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
         park = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(score3Pose2), new Point(parkPose)))
-                .setLinearHeadingInterpolation(score3Pose2.getHeading(), parkPose.getHeading())
+                .addPath(new BezierLine(new Point(score3Pose1), new Point(parkPose)))
+                .setLinearHeadingInterpolation(score3Pose1.getHeading(), parkPose.getHeading())
                 .build();
     }
 
@@ -212,7 +219,7 @@ public class ThreeSpecAuto extends OpMode {
                         new ParallelAction(
                                 ancillary.closeGrip(),
                                 lift.liftTopRungHigher(),
-                                ancillary.depositSpecArm()
+                                ancillary.alignMedianSpecArm()
                         ),
                         new InstantAction(() -> readyToContinue = true),
                         new InstantAction(() -> actionComplete = true)
@@ -228,6 +235,8 @@ public class ThreeSpecAuto extends OpMode {
                 - Robot Position: "if(follower.getPose().getX() > 36) {}"
                 */
 
+
+
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() && readyToContinue) {
                     lift.isLiftAvailable = true;
@@ -235,15 +244,11 @@ public class ThreeSpecAuto extends OpMode {
                     /* Score Preload */
                     readyToContinue = false;
                     actionComplete = false;
-                    follower.followPath(score0Push, speedModifer, true);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.5),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.5),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
-                             new InstantAction(() -> lift.kill()),
+                             //new InstantAction(() -> lift.kill()),
                              new InstantAction(() -> follower.followPath(grabPickup1, speedModifer, true)),
                              new InstantAction(() -> setPathState(2)),
                              new ParallelAction(
@@ -257,6 +262,13 @@ public class ThreeSpecAuto extends OpMode {
 //                        follower.followPath(grabPickup1, true);
 //                        setPathState(2);
 //                    }
+                } else if (follower.getPose().getX() > 33) {
+                    runningActions.add(
+                            new ParallelAction(
+                            ancillary.looseCloseGrip(),
+                            ancillary.depositMedianSpecArm()
+                            )
+                    );
                 }
                 break;
             case 2:
@@ -268,10 +280,12 @@ public class ThreeSpecAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
+                            ancillary.openGrip(),
+                                ancillary.specIntakeArm(),
                                 new SleepAction(1),
                                 ancillary.closeGrip(),
                                 new SleepAction(0.5),
-                                ancillary.depositSpecArm(),
+                                ancillary.alignMedianSpecArm(),
                                 new InstantAction(() -> readyToContinue = true),
                                 new InstantAction(() -> follower.followPath(scorePickup1, speedModifer, true)),
                                 new InstantAction(() -> setPathState(3)),
@@ -288,18 +302,15 @@ public class ThreeSpecAuto extends OpMode {
                 }
                 break;
             case 3:
+
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() && actionComplete) {
                     lift.isLiftAvailable = true;
                     /* Score Sample */
                     readyToContinue = false;
                     actionComplete = false;
-                    follower.followPath(score1Push, speedModifer, true);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.5),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.5),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(grabPickup2, speedModifer, true)),
@@ -316,6 +327,13 @@ public class ThreeSpecAuto extends OpMode {
 //                        follower.followPath(grabPickup2, true);
 //                        setPathState(4);
 //                    }
+                } else if (follower.getPose().getX() > 31.5) {
+                    runningActions.add(
+                            new ParallelAction(
+                                    ancillary.looseCloseGrip(),
+                                    ancillary.depositMedianSpecArm()
+                            )
+                    );
                 }
                 break;
             case 4:
@@ -327,10 +345,11 @@ public class ThreeSpecAuto extends OpMode {
                     /* Score Sample */
 
                     runningActions.add(new SequentialAction(
+                                    ancillary.specIntakeArm(),
                                     new SleepAction(1),
                                     ancillary.closeGrip(),
                                     new SleepAction(0.5),
-                                    ancillary.depositSpecArm(),
+                                    ancillary.alignMedianSpecArm(),
                                     new InstantAction(() -> readyToContinue = true),
                                     new InstantAction(() -> follower.followPath(scorePickup2, speedModifer, true)),
                                     new InstantAction(() -> setPathState(5)),
@@ -347,17 +366,14 @@ public class ThreeSpecAuto extends OpMode {
                 }
                 break;
             case 5:
+
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
                 if(!follower.isBusy() && actionComplete) {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
                     actionComplete = false;
-                    follower.followPath(score2Push, speedModifer, true);
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     runningActions.add(new SequentialAction(
-                            new SleepAction(0.5),
-                            lift.liftTopRungAttached(),
-                            new SleepAction(0.5),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(park, true)),
@@ -375,6 +391,13 @@ public class ThreeSpecAuto extends OpMode {
 //                        follower.followPath(grabPickup2, true);
 //                        setPathState(6);
 //                    }
+                } else if (follower.getPose().getX() > 31.5) {
+                    runningActions.add(
+                            new ParallelAction(
+                                    ancillary.looseCloseGrip(),
+                                    ancillary.depositMedianSpecArm()
+                            )
+                    );
                 }
                 break;
             case 6:
@@ -399,6 +422,10 @@ public class ThreeSpecAuto extends OpMode {
     /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
     @Override
     public void loop() {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
         TelemetryPacket packet = new TelemetryPacket();
         List<Action> newActions = new ArrayList<>();
 
@@ -467,6 +494,12 @@ public class ThreeSpecAuto extends OpMode {
                         ancillary.closeGrip()
                 )
         ));
+
+        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);

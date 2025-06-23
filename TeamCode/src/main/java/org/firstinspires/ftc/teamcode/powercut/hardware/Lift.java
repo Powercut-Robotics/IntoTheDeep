@@ -21,7 +21,7 @@ public class Lift {
 
     public DigitalChannel liftStop;
 
-    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.0045, 0.00,0.000, 500, 150, 0);
+    public static PIDCoefficientsEx liftCoefficients = new PIDCoefficientsEx(0.008, 0.00,0.00007, 0, 1500, 0);
     private PIDEx liftPID = new PIDEx(liftCoefficients);
 
     //public static PIDCoefficientsEx liftHangCoefficients = new PIDCoefficientsEx(2,1,0.00000, 1000, 0, 0);
@@ -37,8 +37,9 @@ public class Lift {
     public static int liftTopBasket = 2800;
 //    public static int liftBottomBasket = 1250;
     public static int liftTopRung = 1300;
-    public static int liftTopRungMedian = 1250;
-    public static int liftTopRungHigher = 1300;
+    public static int liftTopRungLowest = 930;
+    public static int liftTopRungMedian = 930;
+    public static int liftTopRungHigher = 950;
     public static int liftTopRungAttached = 700;
 //    public static int liftBottomRung = 1250;
 //    public static int liftBottomRungAttached = 1050;
@@ -237,6 +238,32 @@ public double powerOutLeft = 0.0;
 
     public Action liftTopRung() {
         return new liftTopRung();
+    }
+
+    public class liftTopRungLowest implements Action {
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            isLiftAvailable = false;
+            int leftLiftPos = leftLift.getCurrentPosition();
+            int rightLiftPos = rightLift.getCurrentPosition();
+            int averagePos = (leftLiftPos + rightLiftPos)/2;
+
+            double power = liftPID.calculate(liftTopRungLowest, averagePos);
+
+            if (Math.abs(averagePos - liftTopRungLowest) < allowableExtensionDeficit || isLiftAvailable) {
+                kill();
+                isLiftAvailable = true;
+                return false;
+            } else {
+                setLiftPower(power);
+
+                return true;
+            }
+        }
+    }
+
+    public Action liftTopRungLowest() {
+        return new liftTopRungLowest();
     }
 
     public class liftTopRungMedian implements Action {

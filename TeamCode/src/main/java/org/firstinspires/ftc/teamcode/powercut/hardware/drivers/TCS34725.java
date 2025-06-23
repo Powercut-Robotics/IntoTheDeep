@@ -97,7 +97,7 @@ public class TCS34725 extends I2cDeviceSynchDevice<I2cDeviceSynch> implements Co
         }
     }
 
-    private static final I2cDeviceSynch.ReadWindow READ_WINDOW = new I2cDeviceSynch.ReadWindow(Registers.TCS34725_CDATAL | TCS34725_COMMAND_BIT, 8, I2cDeviceSynch.ReadMode.REPEAT);
+    private static final I2cDeviceSynch.ReadWindow READ_WINDOW = new I2cDeviceSynch.ReadWindow(Registers.TCS34725_CDATAL, 8, I2cDeviceSynch.ReadMode.REPEAT);
 
     private IntegrationTime integrationTime;
     private Gain gain;
@@ -115,6 +115,7 @@ public class TCS34725 extends I2cDeviceSynchDevice<I2cDeviceSynch> implements Co
         i2cAddr = addr;
         gain = Gain.GAIN_1X;
         integrationTime = IntegrationTime.INTEGRATION_TIME_700MS;
+        deviceClient.setReadWindow(READ_WINDOW);
 
         deviceClient.setLoggingTag("TCS34725");
         deviceClient.setLogging(true);

@@ -33,6 +33,8 @@ public class SafeAncillary {
         NONE
     }
 
+    public sampleColour currentColour;
+
     public static double colourThreshMultiplier = 1.5;
 
     public static double intakeArmSafe = 0.89;
@@ -54,12 +56,19 @@ public class SafeAncillary {
     public static double upperArmSampDeposit = 0.9;
     public static double upperArmSpecDeposit = 0.94;
 
+    public static double upperArmHighSpecDeposit = 0.75;
+
+    public static double upperArmAngledSpecAlign = 0.85;
+    public static double upperArmAngledSpecDeposit = 0.96;
+
     public static double upperArmLowTravel = 0.4;
-    public static double upperArmHighTravel = 0.6;
+    public static double upperArmHighTravel = 0.675;
     public static double upperArmIntake = 0.97;
+    public static double upperArmIntakeLow = 1;
     public static double upperArmTransfer = 0.06;
 
     public static double gripClosed = 0.86;
+    public static double gripLoose = 0.82;
     public static double gripOpen = 0.67;
 
     public static double transferTime = 650;
@@ -122,18 +131,38 @@ public class SafeAncillary {
 //
 //        return intakeMoving || upperArmMoving || extendoMoving;
 //    }
+
+    public void refreshSampleColour() {
+        double red = colourSensor.red();
+        double green = colourSensor.green();
+        double blue = colourSensor.blue();
+
+        if ((red > (blue * colourThreshMultiplier) && green > (blue * colourThreshMultiplier))) {
+            currentColour = sampleColour.YELLOW;
+        } else if ((red > (blue * colourThreshMultiplier) && red > (green * colourThreshMultiplier))) {
+            currentColour = sampleColour.RED;
+        } else if ((blue > (red * colourThreshMultiplier) && blue > (green * colourThreshMultiplier))) {
+            currentColour = sampleColour.BLUE;
+        } else {
+            currentColour = sampleColour.NONE;
+        }
+    }
     public sampleColour getSampleColour() {
         double red = colourSensor.red();
         double green = colourSensor.green();
         double blue = colourSensor.blue();
 
         if ((red > (blue * colourThreshMultiplier) && green > (blue * colourThreshMultiplier))) {
+            currentColour = sampleColour.YELLOW;
             return sampleColour.YELLOW;
         } else if ((red > (blue * colourThreshMultiplier) && red > (green * colourThreshMultiplier))) {
+            currentColour = sampleColour.RED;
             return sampleColour.RED;
         } else if ((blue > (red * colourThreshMultiplier) && blue > (green * colourThreshMultiplier))) {
+            currentColour = sampleColour.BLUE;
             return sampleColour.BLUE;
         } else {
+            currentColour = sampleColour.NONE;
             return sampleColour.NONE;
         }
     }
@@ -538,6 +567,65 @@ public class SafeAncillary {
         return new DepositSpecArm();
     }
 
+    public class DepositMedianSpecArm implements Action {
+        private boolean first = true;
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                upperLeftArm.setPosition(upperArmAngledSpecDeposit);
+                upperRightArm.setPosition(upperArmAngledSpecDeposit);
+
+                first = false;
+            }
+
+            return upperLeftArm.isMoving();
+        }
+    }
+
+    public Action depositMedianSpecArm() {
+        return new DepositMedianSpecArm();
+    }
+
+    public class DepositHigherSpecArm implements Action {
+        private boolean first = true;
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                upperLeftArm.setPosition(upperArmHighSpecDeposit);
+                upperRightArm.setPosition(upperArmHighSpecDeposit);
+
+                first = false;
+            }
+
+            return upperLeftArm.isMoving();
+        }
+    }
+
+    public Action depositHigherSpecArm() {
+        return new DepositHigherSpecArm();
+    }
+
+    public class AlignMedianSpecArm implements Action {
+        private boolean first = true;
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                upperLeftArm.setPosition(upperArmAngledSpecAlign);
+                upperRightArm.setPosition(upperArmAngledSpecAlign);
+
+                first = false;
+            }
+
+            return upperLeftArm.isMoving();
+        }
+    }
+
+    public Action alignMedianSpecArm() {
+        return new AlignMedianSpecArm();
+    }
+
+
+
     public class SpecIntakeArm implements Action {
 
         private boolean first = true;
@@ -556,6 +644,26 @@ public class SafeAncillary {
 
     public Action specIntakeArm() {
         return new SpecIntakeArm();
+    }
+
+    public class LowSpecIntakeArm implements Action {
+
+        private boolean first = true;
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                upperLeftArm.setPosition(upperArmIntakeLow);
+                upperRightArm.setPosition(upperArmIntakeLow);
+
+                first = false;
+            }
+
+            return upperLeftArm.isMoving();
+        }
+    }
+
+    public Action lowSpecIntakeArm() {
+        return new LowSpecIntakeArm();
     }
 
     public class OuttakeLowerTravelArm implements Action {
@@ -693,6 +801,25 @@ public class SafeAncillary {
 
     public Action closeGrip() {
         return new CloseGrip();
+    }
+
+    public class LooseCloseGrip implements Action {
+
+        private boolean first = true;
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (first) {
+                grip.setPosition(gripLoose);
+
+                first = false;
+            }
+
+            return grip.isMoving();
+        }
+    }
+
+    public Action looseCloseGrip() {
+        return new LooseCloseGrip();
     }
 
     public class OpenGrip implements Action {

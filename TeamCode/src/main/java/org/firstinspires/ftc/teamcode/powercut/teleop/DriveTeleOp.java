@@ -59,6 +59,8 @@ public class DriveTeleOp extends OpMode  {
 
     //System monitoring
     private final ElapsedTime loopTimer = new ElapsedTime();
+
+    private long startTime, cacheClearTime, refreshColorTime, gamepadDoneTime, actionsCompleteTime, localiserDoneTime, driveDone, ancillaryDone, telemetryDone, lightsDone;
     private final FtcDashboard dash = FtcDashboard.getInstance();
     private Telemetry dashTelemetry = null;
     private List<Action> driveActions = new ArrayList<>();
@@ -88,6 +90,9 @@ public class DriveTeleOp extends OpMode  {
     private double modifier = 1;
     ElapsedTime gametimer = new ElapsedTime();
 
+    //control
+    double x, y, theta;
+
 
 
 
@@ -100,10 +105,6 @@ public class DriveTeleOp extends OpMode  {
         light = robot.getLight();
         ancillary = robot.getAncillary();
 
-
-
-        allHubs = hardwareMap.getAll(LynxModule.class);
-
         heading = Robot.heading;
 
         //Pose startPose = new Pose(0, 0, heading);
@@ -115,6 +116,8 @@ public class DriveTeleOp extends OpMode  {
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         dashTelemetry = FtcDashboard.getInstance().getTelemetry();
+
+        allHubs = hardwareMap.getAll(LynxModule.class);
 
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -148,17 +151,27 @@ public class DriveTeleOp extends OpMode  {
 
     @Override
     public void loop() {
+        startTime = System.nanoTime();
+
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
+        cacheClearTime = System.nanoTime();
+
+        //to run in background
+        ancillary.refreshSampleColour();
+
+        refreshColorTime = System.nanoTime();
+
         previousGamepad1.copy(currentGamepad1);
         previousGamepad2.copy(currentGamepad2);
         currentGamepad1.copy(gamepad1);
         currentGamepad2.copy(gamepad2);
 
-        doDrive();
-        doAncillary();
-        lights();
+        gamepadDoneTime = System.nanoTime();
 
         TelemetryPacket packet = new TelemetryPacket();
-
 
         List<Action> newActions = new ArrayList<>();
         for (Action action : driveActions) {
@@ -178,32 +191,35 @@ public class DriveTeleOp extends OpMode  {
         }
         ancillaryActions = newActions;
 
-
+        actionsCompleteTime = System.nanoTime();
 
         follower.update();
-        follower.drawOnDashBoard();
+
+        if (verbose) {
+            follower.drawOnDashBoard();
+        }
 
         Robot.pose = follower.getPose();
         Robot.heading = follower.getPose().getHeading();
 
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading (Rad)", follower.getPose().getHeading());
-        telemetry.addData("heading (Deg)", Math.toDegrees(follower.getPose().getHeading()));
+        localiserDoneTime = System.nanoTime();
 
-        for (LynxModule hub : allHubs) {
-            hub.clearBulkCache();
-        }
+        doDrive();
+        driveDone = System.nanoTime();
+        doAncillary();
+        ancillaryDone = System.nanoTime();
+        lights();
+        lightsDone = System.nanoTime();
+        doTelemetry();
 
-
-        telemetry.update();
         loopTimer.reset();
+        telemetry.update();
     }
 
     private void doDrive() {
-        double x = gamepad1.left_stick_x;
-        double y = -gamepad1.left_stick_y;
-        double theta = gamepad1.right_stick_x * thetaMultiplier;
+        x = gamepad1.left_stick_x;
+        y = -gamepad1.left_stick_y;
+        theta = gamepad1.right_stick_x * thetaMultiplier;
 
         if (Math.abs(y) < 0.1 && Math.abs(x) > 0.9) {
             y = 0;
@@ -214,14 +230,6 @@ public class DriveTeleOp extends OpMode  {
         } else {
             modifier = 1;
         }
-
-         if (verbose) {
-             telemetry.addData("Controls (X, Y Theta)", "%3.2f, %3.2f, %3.2f", x, y, theta);
-             telemetry.addData("Colour", "%d, %d, %d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
-             telemetry.addData("Upper US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
-             telemetry.addData("Lower Reads LR", "%5.1f, %5.1f", drive.getLowerLeftUS(), drive.getLowerRightUS());
-             telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
-         }
 
          if (gamepad1.touchpad && gamepad2.touchpad) {
              follower.setPose(new Pose(0,0,0));
@@ -263,20 +271,19 @@ public class DriveTeleOp extends OpMode  {
 
 
         if (!isHang) {
-            //follower.setTeleOpMovementVectors(xMod, yMod, thetaMod, true);
-            drive.setDrivetrainPowers(x, y, theta, modifier, follower.getPose().getHeading(), true);
+            drive.setDrivetrainPowers(x, y, theta, modifier, Robot.heading, true);
         }
     }
 
     public void doAncillary() {
         if (gamepad2.left_trigger > 0.2) {
-            double power = -gamepad2.left_stick_y;
-            telemetry.addData("lift", power);
+            double liftPower = -gamepad2.left_stick_y;
+            telemetry.addData("Lift under manual control, Power", liftPower);
             lift.isLiftAvailable = true;
-            if (power == 0) {
+            if (liftPower == 0) {
                 lift.holdPosition();
             } else {
-                lift.setLiftPower(power);
+                lift.setLiftPower(liftPower);
             }
         } else if (lift.isLiftAvailable && lift.liftStop.getState() && !isHang) {
             lift.holdPosition();
@@ -287,19 +294,7 @@ public class DriveTeleOp extends OpMode  {
 
 
 
-        if (verbose) {
-            telemetry.addData("L/R Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
-            telemetry.addData("L/R Lift Current", "%3.2f, %3.2f", lift.getLeftLiftCurrent(), lift.getRightLiftCurrent());
 
-            telemetry.addData("intakeLeftArm isMoving", ancillary.intakeLeftArm.isMoving());
-            telemetry.addData("intakeRightArm isMoving", ancillary.intakeRightArm.isMoving());
-            telemetry.addData("upperLeftArm isMoving", ancillary.upperLeftArm.isMoving());
-            telemetry.addData("upperRightArm isMoving", ancillary.upperRightArm.isMoving());
-            telemetry.addData("extendoLeft isMoving", ancillary.extendoLeft.isMoving());
-            telemetry.addData("extendoRight isMoving", ancillary.extendoRight.isMoving());
-            telemetry.addData("grip isMoving", ancillary.grip.isMoving());
-            telemetry.addData("Intake active", ancillary.intakeActive);
-        }
 
         if (extendoControl) {
             if (gamepad2.triangle) {
@@ -561,8 +556,51 @@ public class DriveTeleOp extends OpMode  {
 
     }
 
+    public void doTelemetry() {
+        telemetry.addData("L/R Lift Pos", "%d, %d", lift.leftLift.getCurrentPosition(), lift.rightLift.getCurrentPosition());
+
+        if (verbose) {
+            telemetry.addData("cacheTime", (cacheClearTime - startTime)/100);
+            telemetry.addData("refreshColourTime", (refreshColorTime - cacheClearTime)/100);
+            telemetry.addData("gamepadTime", (gamepadDoneTime - refreshColorTime)/100);
+            telemetry.addData("actionTime", (actionsCompleteTime - gamepadDoneTime)/100);
+            telemetry.addData("localiserTime", (localiserDoneTime - actionsCompleteTime)/100);
+            telemetry.addData("driveTime", (driveDone - localiserDoneTime)/100);
+            telemetry.addData("ancillaryTime", (ancillaryDone - driveDone)/100);
+            telemetry.addData("lightsTime", (lightsDone - ancillaryDone)/100);
+
+            telemetry.addData("Refresh rate", 1/loopTimer.seconds());
+        }
+
+        if (verbose) {
+            telemetry.addData("L/R Lift Current", "%3.2f, %3.2f", lift.getLeftLiftCurrent(), lift.getRightLiftCurrent());
+
+            telemetry.addData("intakeLeftArm isMoving", ancillary.intakeLeftArm.isMoving());
+            telemetry.addData("intakeRightArm isMoving", ancillary.intakeRightArm.isMoving());
+            telemetry.addData("upperLeftArm isMoving", ancillary.upperLeftArm.isMoving());
+            telemetry.addData("upperRightArm isMoving", ancillary.upperRightArm.isMoving());
+            telemetry.addData("extendoLeft isMoving", ancillary.extendoLeft.isMoving());
+            telemetry.addData("extendoRight isMoving", ancillary.extendoRight.isMoving());
+            telemetry.addData("grip isMoving", ancillary.grip.isMoving());
+            telemetry.addData("Intake active", ancillary.intakeActive);
+
+            telemetry.addData("Controls (X, Y Theta)", "%3.2f, %3.2f, %3.2f", x, y, theta);
+            telemetry.addData("Colour", "%d, %d, %d", ancillary.colourSensor.red(), ancillary.colourSensor.green(), ancillary.colourSensor.blue());
+            telemetry.addData("Upper US Reads LR", "%d, %d", drive.leftUpperUS.getDistance(), drive.rightUpperUS.getDistance());
+            telemetry.addData("Lower Reads LR", "%5.1f, %5.1f", drive.getLowerLeftUS(), drive.getLowerRightUS());
+            telemetry.addData("ToF Reads LR", "%4.1f, %4.1f", drive.frontLeftToF.getDistance(DistanceUnit.MM), drive.frontRightToF.getDistance(DistanceUnit.MM));
+        }
+
+
+        telemetry.addData("x", Robot.pose.getX());
+        telemetry.addData("y", Robot.pose.getY());
+        telemetry.addData("heading (Rad)", Robot.pose.getHeading());
+        telemetry.addData("heading (Deg)", Math.toDegrees(Robot.heading));
+
+    }
+
     public void lights() {
-        sampleColour sampleColour = ancillary.getSampleColour();
+        sampleColour sampleColour = ancillary.currentColour;
         String colour = "None";
         if (sampleColour == sampleColour.RED) {
             colour = "Red";
