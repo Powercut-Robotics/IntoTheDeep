@@ -56,7 +56,7 @@ public class SafeAncillary {
     public static double upperArmSampDeposit = 0.9;
     public static double upperArmSpecDeposit = 0.94;
 
-    public static double upperArmHighSpecDeposit = 0.75;
+    public static double upperArmHighSpecDeposit = 0.8;
 
     public static double upperArmAngledSpecAlign = 0.85;
     public static double upperArmAngledSpecDeposit = 0.96;
@@ -65,11 +65,11 @@ public class SafeAncillary {
     public static double upperArmHighTravel = 0.675;
     public static double upperArmIntake = 0.97;
     public static double upperArmIntakeLow = 1;
-    public static double upperArmTransfer = 0.06;
+    public static double upperArmTransfer = 0.08;
 
-    public static double gripClosed = 0.86;
-    public static double gripLoose = 0.82;
-    public static double gripOpen = 0.67;
+    public static double gripClosed = 0.82;
+    public static double gripLoose = 0.77;
+    public static double gripOpen = 0.63;
 
     public static double transferTime = 650;
 

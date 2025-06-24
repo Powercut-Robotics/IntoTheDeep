@@ -80,7 +80,7 @@ public class FourBasketAuto extends OpMode {
     private final Pose intake1Pose1 = new Pose(18,121, Math.toRadians(0));
     private final Pose intake1Pose2 = new Pose(30,121, Math.toRadians(0));
 
-    private final Pose intake2Pose1 = new Pose(18,129, Math.toRadians(0));
+    private final Pose intake2Pose1 = new Pose(16,129, Math.toRadians(0));
     private final Pose intake2Pose2 = new Pose(30,129, Math.toRadians(0));
     private final Pose intake3Pose1 = new Pose(17,129, Math.toRadians(23));
     private final Pose intake3Pose2 = new Pose(28,131, Math.toRadians(23));

@@ -16,6 +16,7 @@ import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
@@ -38,6 +39,7 @@ import java.util.List;
  * @version 2.0, 11/28/2024
  */
 
+@Disabled
 @Autonomous(name = "4 Spec v2", preselectTeleOp = "DriveTeleOp", group = "Specimen")
 public class FourSpecAutoV2 extends OpMode {
 
@@ -81,12 +83,12 @@ public class FourSpecAutoV2 extends OpMode {
     /** Push Points */
     private final Pose push1Control1 = new Pose(21, 23);
     private final Pose push1Control2 = new Pose(63.5, 37);
-    private final Pose push1MidPose = new Pose(58, 20, Math.toRadians(0));
-    private final Pose push1FinishPose = new Pose(12, 20.5, Math.toRadians(0));
+    private final Pose push1MidPose = new Pose(58, 22, Math.toRadians(0));
+    private final Pose push1FinishPose = new Pose(18, 22, Math.toRadians(0));
 
     private final Pose push2Contol1 = new Pose(41.5, 18);
     private final Pose push2Control2 = new Pose(62.5, 27.5);
-    private final Pose push2MidPose = new Pose(58, 69, Math.toRadians(0));
+    private final Pose push2MidPose = new Pose(58, 12, Math.toRadians(0));
     private final Pose push2FinishPose = pickupPose;
 
     /** Score pickup 1 */
@@ -109,7 +111,7 @@ public class FourSpecAutoV2 extends OpMode {
 
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(15, 26.5, Math.toRadians(-120));
+    private final Pose parkPose = new Pose(20, 35, Math.toRadians(-120));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
@@ -142,6 +144,7 @@ public class FourSpecAutoV2 extends OpMode {
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierCurve(new Point(startPose), new Point(scorePreloadControl), new Point(scorePreloadFinishPose)))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePreloadFinishPose.getHeading())
+                .setZeroPowerAccelerationMultiplier(1.5)
                 .build();
 
         /* Here is an example for Constant Interpolation
@@ -153,6 +156,7 @@ public class FourSpecAutoV2 extends OpMode {
                 .setLinearHeadingInterpolation(scorePreloadFinishPose.getHeading(), push1MidPose.getHeading())
                 .addPath(new BezierLine(new Point(push1MidPose), new Point(push1FinishPose)))
                 .setLinearHeadingInterpolation(push1MidPose.getHeading(), push1FinishPose.getHeading())
+                .setZeroPowerAccelerationMultiplier(1.5)
                 .addPath(new BezierCurve(new Point(push1FinishPose), new Point(push2Contol1), new Point(push2Control2), new Point(push2MidPose)))
                 .setLinearHeadingInterpolation(push1FinishPose.getHeading(), push2MidPose.getHeading())
                 .addPath(new BezierLine(new Point(push2MidPose), new Point(push2FinishPose)))
@@ -165,6 +169,7 @@ public class FourSpecAutoV2 extends OpMode {
                 .setLinearHeadingInterpolation(push2FinishPose.getHeading(), score1MidPose.getHeading())
                 .addPath(new BezierLine(new Point(score1MidPose), new Point(score1FinishPose)))
                 .setLinearHeadingInterpolation(score1MidPose.getHeading(), score1FinishPose.getHeading())
+                .setZeroPowerAccelerationMultiplier(1.5)
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -179,6 +184,7 @@ public class FourSpecAutoV2 extends OpMode {
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), score2MidPose.getHeading())
                 .addPath(new BezierLine(new Point(score2MidPose), new Point(score2FinishPose)))
                 .setLinearHeadingInterpolation(score2MidPose.getHeading(), score2FinishPose.getHeading())
+                .setZeroPowerAccelerationMultiplier(1.5)
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -194,6 +200,7 @@ public class FourSpecAutoV2 extends OpMode {
                 .setLinearHeadingInterpolation(pickup3Pose.getHeading(), score3MidPose.getHeading())
                 .addPath(new BezierLine(new Point(score3MidPose), new Point(score3FinishPose)))
                 .setLinearHeadingInterpolation(score3MidPose.getHeading(), score3FinishPose.getHeading())
+                .setZeroPowerAccelerationMultiplier(1.5)
                 .build();
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
@@ -258,12 +265,13 @@ public class FourSpecAutoV2 extends OpMode {
                     runningActions.add(new SequentialAction(
                             new SleepAction(0.5),
                             ancillary.closeGrip(),
-                            new SleepAction(0.2),
+                            new SleepAction(0.5),
                             new InstantAction(() -> follower.followPath(scorePickup1,true)),
                             new ParallelAction(
                                     ancillary.depositHigherSpecArm(),
                                     lift.liftTopRungLowest()
-                            )
+                            ),
+                            new InstantAction(() -> readyToContinue = true)
                     ));
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
 
@@ -300,12 +308,13 @@ public class FourSpecAutoV2 extends OpMode {
                     runningActions.add(new SequentialAction(
                             new SleepAction(0.5),
                             ancillary.closeGrip(),
-                            new SleepAction(0.2),
+                            new SleepAction(0.5),
                             new InstantAction(() -> follower.followPath(scorePickup1,true)),
                             new ParallelAction(
                                     ancillary.depositHigherSpecArm(),
                                     lift.liftTopRungLowest()
-                            )
+                            ),
+                            new InstantAction(() -> readyToContinue = true)
                     ));
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
@@ -344,12 +353,13 @@ public class FourSpecAutoV2 extends OpMode {
                     runningActions.add(new SequentialAction(
                             new SleepAction(0.5),
                             ancillary.closeGrip(),
-                            new SleepAction(0.2),
+                            new SleepAction(0.5),
                             new InstantAction(() -> follower.followPath(scorePickup1,true)),
                             new ParallelAction(
                                     ancillary.depositHigherSpecArm(),
                                     lift.liftTopRungLowest()
-                            )
+                            ),
+                            new InstantAction(() -> readyToContinue = true)
                     ));
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
@@ -373,8 +383,8 @@ public class FourSpecAutoV2 extends OpMode {
                                     lift.liftRetract(),
                                     ancillary.outtakeLowerTravelArm()
                             ),
-                            new InstantAction(() -> readyToContinue = true)
-
+                            new InstantAction(() -> readyToContinue = true),
+                            new ParallelAction(ancillary.intakeExtendo(), ancillary.intakeLowerArmSafe())
                     ));
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are parked */
                     follower.followPath(park, true);

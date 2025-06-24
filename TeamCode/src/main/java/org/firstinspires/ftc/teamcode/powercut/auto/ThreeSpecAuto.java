@@ -47,7 +47,7 @@ public class ThreeSpecAuto extends OpMode {
 
     List<LynxModule> allHubs;
 
-    public static double speedModifer = 1.0;
+    public static double speedModifer = 0.9;
 
     private Follower follower;
     private final Robot robot = new Robot();
@@ -99,7 +99,7 @@ public class ThreeSpecAuto extends OpMode {
 //    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(12, 24, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(11.5, 24, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */

@@ -42,8 +42,8 @@ public class FConstants {
         FollowerConstants.pathEndHeadingConstraint = 0.007;
         FollowerConstants.automaticHoldEnd = true;
 
-        FollowerConstants.useVoltageCompensationInAuto = true;
-        FollowerConstants.nominalVoltage = 12;
+//        FollowerConstants.useVoltageCompensationInAuto = true;
+//        FollowerConstants.nominalVoltage = 12;
 
         FollowerConstants.xMovement = 54.4208;
         FollowerConstants.yMovement = 41.363;

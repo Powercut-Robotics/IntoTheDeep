@@ -62,6 +62,8 @@ public class FourSpecAuto extends OpMode {
 
     private boolean readyToContinue = false;
     private boolean actionComplete = false;
+
+    private boolean scored = false;
     /* Create and Define Poses + Paths
      * Poses are built with three constructors: x, y, and heading (in Radians).
      * Pedro uses 0 - 144 for x and y, with 0, 0 being on the bottom left.
@@ -77,22 +79,23 @@ public class FourSpecAuto extends OpMode {
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
     private final Pose score1Pose1 = new Pose(40, 74, Math.toRadians(180));
-    private final Pose score1Pose2 = new Pose(36.5, 72, Math.toRadians(180));
+    //   private final Pose score1Pose2 = new Pose(36.5, 72, Math.toRadians(180));
 
     private final Pose push1Pose1 = new Pose(58,26, Math.toRadians(0));
-    private final Pose push1Control1 = new Pose(27, 17);
-    private final Pose push1Control2 = new Pose(52, 45.5);
+    private final Pose push1Control1 = new Pose(25, 76);
+    private final Pose push1Control2 = new Pose(20, 17);
+    private final Pose push1Control3 = new Pose(62, 40);
 
-    private final Pose pickup1Pose1 = new Pose(17, 22, Math.toRadians(0));
+    private final Pose pickup1Pose1 = new Pose(20, 22, Math.toRadians(0));
 
-    private final Pose push2Pose1 = new Pose(58,12, Math.toRadians(0));
+    private final Pose push2Pose1 = new Pose(58, 14, Math.toRadians(0));
     private final Pose push2Control = new Pose(61.5, 30);
 
 
 
 
     private final Pose score2Control = new Pose(6,73.5);
-    private final Pose score2Pose1 = new Pose(34, 72, Math.toRadians(180));
+    private final Pose score2Pose1 = new Pose(33, 72, Math.toRadians(180));
     private final Pose score2Pose2 = new Pose(40, 72, Math.toRadians(180));
 
     private final Pose pickup2Control = new Pose(32,22.5);
@@ -100,26 +103,24 @@ public class FourSpecAuto extends OpMode {
     private final Pose pickup2Pose1 = new Pose(18, 25.5, Math.toRadians(0));
 
     private final Pose score3Control = new Pose(6,71.5);
-    private final Pose score3Pose1 = new Pose(34, 70, Math.toRadians(180));
+    private final Pose score3Pose1 = new Pose(33, 70, Math.toRadians(180));
     private final Pose score3Pose2 = new Pose(40, 70, Math.toRadians(180));
 
     private final Pose pickup3Control = new Pose(32,22.5);
 
     private final Pose pickup3Pose1 = new Pose(18, 25.5, Math.toRadians(0));
 
-    private final Pose score4Control = new Pose(6,71.5);
-    private final Pose score4Pose1 = new Pose(34, 68, Math.toRadians(180));
+    private final Pose score4Control = new Pose(6,69.5);
+    private final Pose score4Pose1 = new Pose(33, 68, Math.toRadians(180));
     private final Pose score4Pose2 = new Pose(40, 68, Math.toRadians(180));
-//    private final Pose score4Control = new Pose(15,48);
-//    private final Pose score4Pose1 = new Pose(34, 61, Math.toRadians(180));
-//    private final Pose score4Pose2 = new Pose(35, 61, Math.toRadians(180));
 
     /** Lowest (First) Sample from the Spike Mark */
-    private final Pose pickupPose = new Pose(12, 24, Math.toRadians(0));
+    private final Pose pickupPose = new Pose(11.5, 24, Math.toRadians(0));
 
 
     /** Park Pose for our robot, after we do all of the scoring. */
-    private final Pose parkPose = new Pose(12, 21.5, Math.toRadians(0));
+    private final Pose parkMidPose = new Pose(29, 49.5, Math.toRadians(-135));
+    private final Pose parkFinishPose = new Pose(20, 35, Math.toRadians(-135));
 
     /** Park Control Pose for our robot, this is used to manipulate the bezier curve that we will create for the parking.
      * The Robot will not go to this pose, it is used a control point for our bezier curve. */
@@ -168,7 +169,7 @@ public class FourSpecAuto extends OpMode {
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierCurve(new Point(score1Pose1), new Point(push1Control1), new Point(push1Control2), new Point(push1Pose1)))
+                .addPath(new BezierCurve(new Point(score1Pose1), new Point(push1Control1), new Point(push1Control2), new Point(push1Control3), new Point(push1Pose1)))
                 .setLinearHeadingInterpolation(score1Pose1.getHeading(), push1Pose1.getHeading())
                 .addPath(new BezierLine(new Point(push1Pose1), new Point(pickup1Pose1)))
                 .setLinearHeadingInterpolation(push1Pose1.getHeading(), pickup1Pose1.getHeading())
@@ -225,8 +226,10 @@ public class FourSpecAuto extends OpMode {
 
         /* This is our park path. We are using a BezierCurve with 3 points, which is a curved line that is curved based off of the control point */
         park = follower.pathBuilder()
-                .addPath(new BezierLine(new Point(score4Pose1), new Point(parkPose)))
-                .setLinearHeadingInterpolation(score4Pose1.getHeading(), parkPose.getHeading())
+                .addPath(new BezierLine(new Point(score4Pose1), new Point(parkMidPose)))
+                .setLinearHeadingInterpolation(score4Pose1.getHeading(), parkMidPose.getHeading())
+                .addPath(new BezierLine(new Point(parkMidPose), new Point(parkFinishPose)))
+                .setConstantHeadingInterpolation(parkFinishPose.getHeading())
                 .build();
     }
 
@@ -238,6 +241,8 @@ public class FourSpecAuto extends OpMode {
             case 0:
                 readyToContinue = false;
                 actionComplete = false;
+                scored = false;
+
                 runningActions.add(new SequentialAction(
                         new ParallelAction(
                                 ancillary.closeGrip(),
@@ -256,26 +261,30 @@ public class FourSpecAuto extends OpMode {
 
                 if(!follower.isBusy() && readyToContinue) {
                     lift.isLiftAvailable = true;
-                    runningActions.clear();
                     /* Score Preload */
                     readyToContinue = false;
                     actionComplete = false;
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
+                            new InstantAction(() -> scored = true),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
-                             //new InstantAction(() -> lift.kill()),
                              new InstantAction(() -> follower.followPath(grabPickup1, speedModifer, true)),
                              new InstantAction(() -> setPathState(2)),
                              new ParallelAction(
-                                     lift.liftRetract(),
-                                     ancillary.specIntakeArm()
+                                     new SequentialAction(
+                                             new SleepAction(0.5),
+                                             lift.liftRetract()
+                                     ),
+                                     ancillary.specIntakeArm(),
+                                     ancillary.openGrip()
                              ),
                             new InstantAction(() -> actionComplete = true)
                     ));
 
 
-                } else if (follower.getPose().getX() > 33) {
+                } else if (follower.getPose().getX() > 33  && !scored) {
                     runningActions.add(
                             new ParallelAction(
                             ancillary.looseCloseGrip(),
@@ -290,19 +299,23 @@ public class FourSpecAuto extends OpMode {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
                     actionComplete = false;
+                    scored = false;
                     /* Score Sample */
 
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
                                 ancillary.openGrip(),
                                 ancillary.specIntakeArm(),
                                 new SleepAction(0.5),
                                 ancillary.closeGrip(),
-                                new SleepAction(0.3),
+                                new SleepAction(0.2),
+
+                                new InstantAction(() -> follower.followPath(scorePickup1, speedModifer, true)),
+
                                 ancillary.alignMedianSpecArm(),
                                 lift.liftTopRungMedian(),
 
                                 new InstantAction(() -> readyToContinue = true),
-                                new InstantAction(() -> follower.followPath(scorePickup1, speedModifer, true)),
                                 new InstantAction(() -> setPathState(3)),
                                 new InstantAction(() -> actionComplete = true)
                             )
@@ -322,21 +335,30 @@ public class FourSpecAuto extends OpMode {
                     readyToContinue = false;
                     actionComplete = false;
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
+                            new InstantAction(() -> scored = true),
                             ancillary.openGrip(),
+
+                            new InstantAction(() -> follower.followPath(grabPickup2, speedModifer, true)),
+
                             new ParallelAction(
-                                    lift.liftRetract(),
-                                    ancillary.specIntakeArm()
+                                    new SequentialAction(
+                                            new SleepAction(1),
+                                            lift.liftRetract()
+                                    ),
+                                    ancillary.specIntakeArm(),
+                                    ancillary.openGrip()
                             ),
 
                             new InstantAction(() -> readyToContinue = true),
-                            new InstantAction(() -> follower.followPath(grabPickup2, speedModifer, true)),
                             new InstantAction(() -> setPathState(4)),
                             new InstantAction(() -> actionComplete = true)
                     ));
 
 
-                } else if (follower.getPose().getX() > 31.5) {
+                } else if (follower.getPose().getX() > 31.5 && !scored) {
                     runningActions.add(
                             new ParallelAction(
                                     ancillary.looseCloseGrip(),
@@ -351,22 +373,27 @@ public class FourSpecAuto extends OpMode {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
                     actionComplete = false;
+                    scored = false;
                     /* Score Sample */
 
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
+                                    ancillary.openGrip(),
                                     ancillary.specIntakeArm(),
                                     new SleepAction(0.5),
                                     ancillary.closeGrip(),
-                                    new SleepAction(0.3),
-                                    ancillary.alignMedianSpecArm(),
-                                    new InstantAction(() -> readyToContinue = true),
+                                    new SleepAction(0.2),
+
                                     new InstantAction(() -> follower.followPath(scorePickup2, speedModifer, true)),
-                                    new InstantAction(() -> setPathState(5)),
+
+                                    ancillary.alignMedianSpecArm(),
                                     lift.liftTopRungMedian(),
+
+                                    new InstantAction(() -> readyToContinue = true),
+                                    new InstantAction(() -> setPathState(5)),
                                     new InstantAction(() -> actionComplete = true)
                             )
                     );
-
                 }
                 break;
             case 5:
@@ -380,24 +407,29 @@ public class FourSpecAuto extends OpMode {
                     readyToContinue = false;
                     actionComplete = false;
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
+                            new InstantAction(() -> scored = true),
                             ancillary.openGrip(),
+
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(grabPickup3, speedModifer, true)),
                             new InstantAction(() -> setPathState(6)),
+
                             new ParallelAction(
-                                    lift.liftRetract(),
-                                    ancillary.specIntakeArm()
+                                    new SequentialAction(
+                                            new SleepAction(0.5),
+                                            lift.liftRetract()
+                                    ),
+                                    ancillary.specIntakeArm(),
+                                    ancillary.openGrip()
                             ),
                             new InstantAction(() -> actionComplete = true)
                     ));
 
-//                    if (readyToContinue) {
-//                        /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                        follower.followPath(grabPickup2, true);
-//                        setPathState(4);
-//                    }
-                } else if (follower.getPose().getX() > 31.5) {
+
+                } else if (follower.getPose().getX() > 31.5 && !scored) {
                     runningActions.add(
                             new ParallelAction(
                                     ancillary.looseCloseGrip(),
@@ -412,23 +444,27 @@ public class FourSpecAuto extends OpMode {
                     lift.isLiftAvailable = true;
                     readyToContinue = false;
                     actionComplete = false;
+                    scored = false;
                     /* Score Sample */
 
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
                                     ancillary.specIntakeArm(),
-                                    new SleepAction(1),
-                                    ancillary.closeGrip(),
                                     new SleepAction(0.5),
-                                    ancillary.alignMedianSpecArm(),
-                                    new InstantAction(() -> readyToContinue = true),
+                                    ancillary.closeGrip(),
+                                    new SleepAction(0.2),
+
                                     new InstantAction(() -> follower.followPath(scorePickup3, speedModifer, true)),
+
+                                    ancillary.alignMedianSpecArm(),
+
+                                    new InstantAction(() -> readyToContinue = true),
+
                                     new InstantAction(() -> setPathState(7)),
                                     lift.liftTopRungMedian(),
                                     new InstantAction(() -> actionComplete = true)
                             )
                     );
-
-
                 }
                 break;
             case 7:
@@ -437,21 +473,26 @@ public class FourSpecAuto extends OpMode {
                     readyToContinue = false;
                     actionComplete = false;
 
+                    runningActions.clear();
                     runningActions.add(new SequentialAction(
+                            new InstantAction(() -> scored = true),
                             ancillary.openGrip(),
                             new InstantAction(() -> readyToContinue = true),
                             new InstantAction(() -> follower.followPath(park, true)),
                             new InstantAction(() -> setPathState(8)),
                             new ParallelAction(
-                                    lift.liftRetract(),
+                                    ancillary.intakeExpelArm(),
+                                    ancillary.intakeExtendo(),
+                                    new SequentialAction(
+                                            new SleepAction(0.5),
+                                            lift.liftRetract()
+                                    ),
                                     ancillary.outtakeTransferArm()
                             ),
                             new InstantAction(() -> actionComplete = true)
                     ));
 
-
-
-                } else if (follower.getPose().getX() > 31.5) {
+                } else if (follower.getPose().getX() > 31.5 && !scored) {
                     runningActions.add(
                             new ParallelAction(
                                     ancillary.looseCloseGrip(),
@@ -511,6 +552,7 @@ public class FourSpecAuto extends OpMode {
 
         // These loop the movements of the robot
         follower.update();
+        follower.drawOnDashBoard();
         autonomousPathUpdate();
 
         telemetry.addData("Left Lift", lift.powerOutLeft);
