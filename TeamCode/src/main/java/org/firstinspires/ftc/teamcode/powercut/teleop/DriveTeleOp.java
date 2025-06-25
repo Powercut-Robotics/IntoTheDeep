@@ -355,8 +355,7 @@ public class DriveTeleOp extends OpMode  {
                     ancillaryActions.add(new SequentialAction(
                                     lift.liftTopRung(),
                                     ancillary.depositSpecArm()
-                            )
-                    );
+                    ));
             } else if (!currentGamepad2.triangle && previousGamepad2.triangle) {
                 ancillaryActions.clear();
                 ancillaryActions.add(new SequentialAction(

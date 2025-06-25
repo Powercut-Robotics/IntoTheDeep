@@ -67,8 +67,8 @@ public class SafeAncillary {
     public static double upperArmIntakeLow = 1;
     public static double upperArmTransfer = 0.08;
 
-    public static double gripClosed = 0.82;
-    public static double gripLoose = 0.77;
+    public static double gripClosed = 0.84;
+    public static double gripLoose = 0.79;
     public static double gripOpen = 0.63;
 
     public static double transferTime = 650;

@@ -18,7 +18,7 @@ public class FConstants {
         FollowerConstants.rightFrontMotorDirection = DcMotorSimple.Direction.REVERSE;
         FollowerConstants.rightRearMotorDirection = DcMotorSimple.Direction.REVERSE;
 
-        FollowerConstants.mass = 12.7;
+        FollowerConstants.mass = 13.6;
 
         FollowerConstants.translationalPIDFCoefficients.setCoefficients(0.15,0,0.01,0);
         FollowerConstants.useSecondaryTranslationalPID = false;

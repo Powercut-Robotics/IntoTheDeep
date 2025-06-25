@@ -358,7 +358,7 @@ public class FourSpecAuto extends OpMode {
                     ));
 
 
-                } else if (follower.getPose().getX() > 31.5 && !scored) {
+                } else if (follower.getPose().getX() > 32.5 && !scored) {
                     runningActions.add(
                             new ParallelAction(
                                     ancillary.looseCloseGrip(),
