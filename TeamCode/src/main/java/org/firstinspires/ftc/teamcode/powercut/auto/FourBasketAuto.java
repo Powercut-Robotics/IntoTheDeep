@@ -620,7 +620,8 @@ public class FourBasketAuto extends OpMode {
                 ancillary.outtakeLowerTravelArm(),
                 new SequentialAction(
                         new SleepAction(5),
-                        ancillary.closeGrip()
+                        ancillary.closeGrip(),
+                        ancillary.transferExtendo()
                 )
         ));
 

@@ -74,7 +74,7 @@ public class FourSpecAuto extends OpMode {
      * Lets assume the Robot is facing the human player and we want to score in the bucket */
 
     /** Start Pose of our robot */
-    private final Pose startPose = new Pose(7, 56.5, Math.toRadians(0));
+    private final Pose startPose = new Pose(7.5, 56.5, Math.toRadians(0));
     private final Pose score1Control = new Pose(16,75);
 
     /** Scoring Pose of our robot. It is facing the submersible at a -45 degree (315 degree) angle. */
@@ -593,7 +593,8 @@ public class FourSpecAuto extends OpMode {
                 ancillary.outtakeLowerTravelArm(),
                 new SequentialAction(
                         new SleepAction(5),
-                        ancillary.closeGrip()
+                        ancillary.closeGrip(),
+                        ancillary.transferExtendo()
                 )
         ));
 
