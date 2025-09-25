@@ -105,8 +105,7 @@ public class OnePersonDemo extends OpMode  {
 
         heading = Robot.heading;
 
-        //Pose startPose = new Pose(0, 0, heading);
-        Pose startPose = Robot.pose.copy();
+        Pose startPose = new Pose(-64, -64, heading);
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
@@ -190,10 +189,9 @@ public class OnePersonDemo extends OpMode  {
         actionsCompleteTime = System.nanoTime();
 
         follower.update();
+        follower.drawOnDashBoard();
 
-        if (verbose) {
-            follower.drawOnDashBoard();
-        }
+
 
         Robot.pose = follower.getPose();
         Robot.heading = follower.getPose().getHeading();
