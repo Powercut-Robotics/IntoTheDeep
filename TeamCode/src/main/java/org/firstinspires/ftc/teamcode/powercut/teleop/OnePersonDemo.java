@@ -84,6 +84,7 @@ public class OnePersonDemo extends OpMode  {
     //Game monitoring
     boolean isHang = false;
     boolean completedAction = false;
+    boolean liftTakeover = false;
     private double modifier = 1;
     ElapsedTime gametimer = new ElapsedTime();
 
@@ -212,9 +213,9 @@ public class OnePersonDemo extends OpMode  {
     }
 
     private void doDrive() {
-        x = gamepad1.left_stick_x;
-        y = -gamepad1.left_stick_y;
-        theta = gamepad1.right_stick_x * thetaMultiplier;
+        x = liftTakeover ? 0 : gamepad1.left_stick_x;
+        y = liftTakeover ? 0 : -gamepad1.left_stick_y;
+        theta = liftTakeover ? 0 : gamepad1.right_stick_x * thetaMultiplier;
 
         if (Math.abs(y) < 0.1 && Math.abs(x) > 0.9) {
             y = 0;
@@ -238,8 +239,9 @@ public class OnePersonDemo extends OpMode  {
     }
 
     public void doAncillary() {
-        if (gamepad2.left_trigger > 0.2) {
-            double liftPower = -gamepad2.left_stick_y;
+        if (gamepad1.left_trigger > 0.2) {
+            liftTakeover = true;
+            double liftPower = -gamepad1.left_stick_y;
             telemetry.addData("Lift under manual control, Power", liftPower);
             lift.isLiftAvailable = true;
             if (liftPower == 0) {
@@ -248,10 +250,13 @@ public class OnePersonDemo extends OpMode  {
                 lift.setLiftPower(liftPower);
             }
         } else if (lift.isLiftAvailable && lift.liftStop.getState() && !isHang) {
+            liftTakeover = false;
             lift.holdPosition();
             if (verbose) {
                 telemetry.addLine("Lift Hold active");
             }
+        } else {
+            liftTakeover = false;
         }
 
 
