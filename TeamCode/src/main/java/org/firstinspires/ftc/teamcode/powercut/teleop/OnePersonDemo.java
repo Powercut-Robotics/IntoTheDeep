@@ -105,7 +105,7 @@ public class OnePersonDemo extends OpMode  {
 
         heading = Robot.heading;
 
-        Pose startPose = new Pose(-64, -64, heading);
+        Pose startPose = new Pose(0, 0, heading);
 
         Constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap);
@@ -507,6 +507,8 @@ public class OnePersonDemo extends OpMode  {
         telemetry.addData("heading (Rad)", Robot.pose.getHeading());
         telemetry.addData("heading (Deg)", Math.toDegrees(Robot.heading));
 
+
+        follower.drawOnDashBoard();
     }
 
     public void lights() {
